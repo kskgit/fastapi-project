@@ -1,0 +1,14 @@
+{
+  "python.defaultInterpreterPath": "./.venv/bin/python",
+  "python.formatting.provider": "none",
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "explicit",
+      "source.organizeImports.ruff": "explicit"
+    }
+  },
+  "ruff.path": ["./.venv/bin/ruff"],
+  "mypy-type-checker.path": ["./.venv/bin/mypy"]
+}
