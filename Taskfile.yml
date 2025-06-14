@@ -26,3 +26,23 @@ tasks:
     cmds:
       - uv run ruff check .
       - uv run ruff format --check .
+
+  db-up:
+    desc: Start PostgreSQL container
+    cmd: docker compose up -d postgres
+
+  db-down:
+    desc: Stop PostgreSQL container
+    cmd: docker compose down
+
+  migrate:
+    desc: Run database migrations
+    cmd: uv run alembic upgrade head
+
+  migrate-auto:
+    desc: Generate migration from model changes
+    cmd: uv run alembic revision --autogenerate
+
+  migrate-create:
+    desc: Create empty migration file
+    cmd: uv run alembic revision

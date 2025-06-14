@@ -3,7 +3,7 @@ from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import func
 
 from app.core.database import Base
-from app.schemas.todo import TodoPriority, TodoStatus
+from app.todo.schemas.todo import TodoPriority, TodoStatus
 
 
 class Todo(Base):
