@@ -1,0 +1,21 @@
+pre-commit:
+  commands:
+    ruff-check:
+      run: uv run ruff check {staged_files}
+      glob: "*.py"
+    ruff-format-check:
+      run: uv run ruff format --check {staged_files}
+      glob: "*.py"
+    mypy:
+      run: uv run mypy {staged_files}
+      glob: "*.py"
+      exclude: "alembic/versions/"
+
+pre-push:
+  commands:
+    ruff-check-all:
+      run: uv run ruff check .
+    ruff-format-check-all:
+      run: uv run ruff format --check .
+    mypy-all:
+      run: uv run mypy .
