@@ -17,4 +17,5 @@ class Todo(Base):
     priority = mapped_column(Enum(TodoPriority), default=TodoPriority.medium)
     created_at = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

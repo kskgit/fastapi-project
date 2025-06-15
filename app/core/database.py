@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://fastapi_user:fastapi_password@localhost:5432/fastapi_db"
+    "postgresql://fastapi_user:fastapi_password@localhost:5432/fastapi_db",
 )
 
 engine = create_engine(DATABASE_URL)
