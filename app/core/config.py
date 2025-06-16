@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -25,5 +27,13 @@ class Settings(BaseSettings):
         "case_sensitive": False,
     }
 
+    FASTAPI_API_PATH: str = "/api"
 
-settings = Settings()
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
+
+
+# 创建全局配置实例
+settings = get_settings()
