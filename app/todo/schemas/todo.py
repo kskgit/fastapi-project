@@ -27,20 +27,3 @@ class TodoBase(BaseModel):
 
 class TodoCreate(TodoBase):
     pass
-
-
-class TodoUpdate(BaseModel):
-    title: str | None = None
-    description: str | None = None
-    due_date: datetime | None = None
-    priority: TodoPriority | None = None
-    status: TodoStatus | None = None
-
-
-class Todo(TodoBase):
-    id: int
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
