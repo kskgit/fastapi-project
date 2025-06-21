@@ -1,80 +1,123 @@
+from typing import Protocol
+
+from fastapi import Depends
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from app.todo.models.todo import Todo
+from app.core.database import get_db
+from app.todo.models.todo import Todo as TodoModel
+from app.todo.schemas.todo import Todo as TodoDTO
 from app.todo.schemas.todo import TodoCreate, TodoPriority, TodoStatus, TodoUpdate
 
 
-class TodoCRUD:
-    """CRUD operations for Todo model."""
+class TodoCRUDInterface(Protocol):
+    """Interface for Todo CRUD operations."""
 
-    def get(self, db: Session, todo_id: int) -> Todo | None:
-        """Get todo by ID."""
-        return db.query(Todo).filter(Todo.id == todo_id).first()
+    def get(self, todo_id: int) -> TodoDTO | None: ...
 
     def get_multi(
         self,
-        db: Session,
         skip: int = 0,
         limit: int = 100,
         status: TodoStatus | None = None,
         priority: TodoPriority | None = None,
-    ) -> list[Todo]:
+    ) -> list[TodoDTO]: ...
+
+    def create(self, obj_in: TodoCreate) -> TodoDTO: ...
+
+    def update(self, db_obj: TodoModel, obj_in: TodoUpdate) -> TodoDTO: ...
+
+    def delete(self, todo_id: int) -> TodoDTO | None: ...
+
+    def get_by_status(self, status: TodoStatus) -> list[TodoDTO]: ...
+
+    def count(self) -> int: ...
+
+
+class TodoCRUD(TodoCRUDInterface):
+    """CRUD operations for Todo model."""
+
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get(self, todo_id: int) -> TodoModel | None:
+        """Get todo by ID."""
+        db_obj = self.db.query(TodoModel).filter(TodoModel.id == todo_id).first()
+        return db_obj
+
+    def get_multi(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        status: TodoStatus | None = None,
+        priority: TodoPriority | None = None,
+    ) -> list[TodoDTO]:
         """Get multiple todos with optional filters."""
-        query = db.query(Todo)
+        query = self.db.query(TodoModel)
 
         filters = []
         if status:
-            filters.append(Todo.status == status)
+            filters.append(TodoModel.status == status)
         if priority:
-            filters.append(Todo.priority == priority)
+            filters.append(TodoModel.priority == priority)
 
         if filters:
             query = query.filter(and_(*filters))
 
-        return query.offset(skip).limit(limit).all()
+        db_objs = query.offset(skip).limit(limit).all()
+        return [TodoDTO.model_validate(obj) for obj in db_objs]
 
-    def create(self, db: Session, obj_in: TodoCreate) -> Todo:
+    def create(self, obj_in: TodoCreate) -> TodoDTO:
         """Create new todo."""
-        db_obj = Todo(
+        db_obj = TodoModel(
             title=obj_in.title,
             description=obj_in.description,
             due_date=obj_in.due_date,
             priority=obj_in.priority,
             status=obj_in.status,
         )
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj
+        self.db.add(db_obj)
+        self.db.commit()
+        self.db.refresh(db_obj)
+        return TodoDTO.model_validate(db_obj)
 
-    def update(self, db: Session, db_obj: Todo, obj_in: TodoUpdate) -> Todo:
+    def update(self, db_obj: TodoModel, obj_in: TodoUpdate) -> TodoDTO:
         """Update existing todo."""
         update_data = obj_in.model_dump(exclude_unset=True)
 
         for field, value in update_data.items():
             setattr(db_obj, field, value)
 
-        db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
-        return db_obj
+        self.db.add(db_obj)
+        self.db.commit()
+        self.db.refresh(db_obj)
+        return TodoDTO.model_validate(db_obj)
 
-    def delete(self, db: Session, todo_id: int) -> Todo | None:
+    def delete(self, todo_id: int) -> TodoDTO | None:
         """Delete todo by ID."""
-        db_obj = db.query(Todo).filter(Todo.id == todo_id).first()
+        db_obj = self.db.query(TodoModel).filter(TodoModel.id == todo_id).first()
         if db_obj:
-            db.delete(db_obj)
-            db.commit()
-        return db_obj
+            self.db.delete(db_obj)
+            self.db.commit()
+            return TodoDTO.model_validate(db_obj)
+        return None
 
-    def get_by_status(self, db: Session, status: TodoStatus) -> list[Todo]:
+    def get_by_status(self, status: TodoStatus) -> list[TodoDTO]:
         """Get todos by status."""
-        return db.query(Todo).filter(Todo.status == status).all()
+        db_objs = self.db.query(TodoModel).filter(TodoModel.status == status).all()
+        return [TodoDTO.model_validate(obj) for obj in db_objs]
 
-    def count(self, db: Session) -> int:
+    def count(self) -> int:
         """Count total todos."""
-        return db.query(Todo).count()
+        return self.db.query(TodoModel).count()
 
 
-todo = TodoCRUD()
+# todo dbセッションを渡す
+def getTodoCRID(db: Session = Depends(get_db)) -> TodoCRUD:
+    return TodoCRUD(db)
+
+
+__all__ = [
+    "TodoCRUD",
+    "getTodoCRID",
+]

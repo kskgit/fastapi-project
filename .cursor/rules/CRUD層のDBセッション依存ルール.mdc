@@ -1,0 +1,50 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# CRUD層のDBセッション依存ルール
+
+## 概要
+
+- CRUD層のクラス（例：`TodoCRUD`）は、**インスタンス生成時に`Depends(get_db)`でDBセッション（Session）を注入**します。
+- 各CRUDメソッドは`db`引数を持たず、**インスタンス変数`self.db`を利用**してDB操作を行います。
+
+---
+
+## 具体例
+
+```python
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+
+class TodoCRUD:
+    def __init__(self, db: Session = Depends(get_db)):
+        self.db = db
+
+    def get(self, todo_id: int) -> TodoDTO | None:
+        return self.db.query(...).filter(...).first()
+    # 他のメソッドも同様
+```
+
+- `getTodoCRID`などのファクトリ関数も`Depends(get_db)`でインスタンスを生成します。
+
+---
+
+## 依存関係
+
+- **API層・Service層は`db`を直接受け渡ししない**  
+  → CRUD層のインスタンス生成時に自動的にDBセッションが注入されるため、  
+    上位層はDBセッションの管理から解放されます。
+
+---
+
+## 参考ファイル
+
+- [app/todo/crud/crud_todo.py](mdc:app/todo/crud/crud_todo.py)
+- [app/core/database.py](mdc:app/core/database.py)
+
+---
+
+このルールに従い、CRUD層のDBセッション管理・依存注入を実装してください。

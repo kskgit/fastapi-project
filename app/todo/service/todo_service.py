@@ -1,18 +1,19 @@
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from fastapi import status as http_status
-from sqlalchemy.orm import Session
 
-from app.todo.crud.crud_todo import todo as todo_crud
-from app.todo.models.todo import Todo as TodoModel
-from app.todo.schemas.todo import TodoCreate, TodoPriority, TodoStatus, TodoUpdate
+from app.todo.crud.crud_todo import TodoCRUDInterface, getTodoCRID
+from app.todo.schemas.todo import Todo, TodoCreate, TodoPriority, TodoStatus, TodoUpdate
 
 
 class TodoService:
     """Business logic layer for Todo operations."""
 
-    def get_todo(self, db: Session, todo_id: int) -> TodoModel:
+    def __init__(self, crud: TodoCRUDInterface):
+        self.crud = crud
+
+    def get_todo(self, todo_id: int) -> Todo:
         """Get todo by ID with error handling."""
-        db_todo = todo_crud.get(db=db, todo_id=todo_id)
+        db_todo = self.crud.get(todo_id=todo_id)
         if not db_todo:
             raise HTTPException(
                 status_code=http_status.HTTP_404_NOT_FOUND,
@@ -22,12 +23,11 @@ class TodoService:
 
     def get_todos(
         self,
-        db: Session,
         skip: int = 0,
         limit: int = 100,
         status: TodoStatus | None = None,
         priority: TodoPriority | None = None,
-    ) -> list[TodoModel]:
+    ) -> list[Todo]:
         """Get multiple todos with validation."""
         if limit > 1000:
             raise HTTPException(
@@ -41,11 +41,11 @@ class TodoService:
                 detail="Skip cannot be negative",
             )
 
-        return todo_crud.get_multi(
-            db=db, skip=skip, limit=limit, status=status, priority=priority
+        return self.crud.get_multi(
+            skip=skip, limit=limit, status=status, priority=priority
         )
 
-    def create_todo(self, db: Session, todo_in: TodoCreate) -> TodoModel:
+    def create_todo(self, todo_in: TodoCreate) -> Todo:
         """Create new todo with validation."""
         # Business logic: validate title length
         if len(todo_in.title.strip()) < 3:
@@ -61,11 +61,11 @@ class TodoService:
                 detail="Description cannot exceed 500 characters",
             )
 
-        return todo_crud.create(db=db, obj_in=todo_in)
+        return self.crud.create(obj_in=todo_in)
 
-    def update_todo(self, db: Session, todo_id: int, todo_in: TodoUpdate) -> TodoModel:
+    def update_todo(self, todo_id: int, todo_in: TodoUpdate) -> Todo:
         """Update todo with validation."""
-        db_todo = self.get_todo(db=db, todo_id=todo_id)
+        db_todo = self.get_todo(todo_id=todo_id)
 
         # Business logic: validate title if being updated
         if todo_in.title is not None and len(todo_in.title.strip()) < 3:
@@ -91,11 +91,11 @@ class TodoService:
                 detail="Cannot change completed todo back to pending",
             )
 
-        return todo_crud.update(db=db, db_obj=db_todo, obj_in=todo_in)
+        return self.crud.update(db_obj=db_todo, obj_in=todo_in)
 
-    def delete_todo(self, db: Session, todo_id: int) -> TodoModel:
+    def delete_todo(self, todo_id: int) -> Todo:
         """Delete todo with validation."""
-        db_todo = self.get_todo(db=db, todo_id=todo_id)
+        db_todo = self.get_todo(todo_id=todo_id)
 
         # Business logic: prevent deletion of in-progress todos
         if db_todo.status == TodoStatus.in_progress:
@@ -105,7 +105,7 @@ class TodoService:
                 "Complete or cancel it first.",
             )
 
-        deleted_todo = todo_crud.delete(db=db, todo_id=todo_id)
+        deleted_todo = self.crud.delete(todo_id=todo_id)
         if not deleted_todo:
             raise HTTPException(
                 status_code=http_status.HTTP_404_NOT_FOUND,
@@ -113,17 +113,17 @@ class TodoService:
             )
         return deleted_todo
 
-    def get_todos_by_status(self, db: Session, status: TodoStatus) -> list[TodoModel]:
+    def get_todos_by_status(self, status: TodoStatus) -> list[Todo]:
         """Get todos by status."""
-        return todo_crud.get_by_status(db=db, status=status)
+        return self.crud.get_by_status(status=status)
 
-    def get_todo_stats(self, db: Session) -> dict:
+    def get_todo_stats(self) -> dict:
         """Get todo statistics."""
-        total = todo_crud.count(db=db)
-        pending = len(todo_crud.get_by_status(db=db, status=TodoStatus.pending))
-        in_progress = len(todo_crud.get_by_status(db=db, status=TodoStatus.in_progress))
-        completed = len(todo_crud.get_by_status(db=db, status=TodoStatus.completed))
-        canceled = len(todo_crud.get_by_status(db=db, status=TodoStatus.canceled))
+        total = self.crud.count()
+        pending = len(self.crud.get_by_status(status=TodoStatus.pending))
+        in_progress = len(self.crud.get_by_status(status=TodoStatus.in_progress))
+        completed = len(self.crud.get_by_status(status=TodoStatus.completed))
+        canceled = len(self.crud.get_by_status(status=TodoStatus.canceled))
 
         return {
             "total": total,
@@ -133,9 +133,9 @@ class TodoService:
             "canceled": canceled,
         }
 
-    def mark_as_completed(self, db: Session, todo_id: int) -> TodoModel:
+    def mark_as_completed(self, todo_id: int) -> Todo:
         """Mark todo as completed."""
-        db_todo = self.get_todo(db=db, todo_id=todo_id)
+        db_todo = self.get_todo(todo_id=todo_id)
 
         if db_todo.status == TodoStatus.completed:
             raise HTTPException(
@@ -150,7 +150,8 @@ class TodoService:
             )
 
         todo_update = TodoUpdate(status=TodoStatus.completed)
-        return todo_crud.update(db=db, db_obj=db_todo, obj_in=todo_update)
+        return self.crud.update(db_obj=db_todo, obj_in=todo_update)
 
 
-todo_service = TodoService()
+def getTodoService(crud: TodoCRUDInterface = Depends(getTodoCRID)) -> TodoService:
+    return TodoService(crud)
