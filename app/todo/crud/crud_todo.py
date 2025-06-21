@@ -25,7 +25,7 @@ class TodoCRUDInterface(Protocol):
 
     def create(self, obj_in: TodoCreate) -> TodoDTO: ...
 
-    def update(self, db_obj: TodoModel, obj_in: TodoUpdate) -> TodoDTO: ...
+    def update(self, db_obj: TodoDTO, obj_in: TodoUpdate) -> TodoDTO: ...
 
     def delete(self, todo_id: int) -> TodoDTO | None: ...
 
@@ -40,10 +40,10 @@ class TodoCRUD(TodoCRUDInterface):
     def __init__(self, db: Session):
         self.db = db
 
-    def get(self, todo_id: int) -> TodoModel | None:
+    def get(self, todo_id: int) -> TodoDTO | None:
         """Get todo by ID."""
         db_obj = self.db.query(TodoModel).filter(TodoModel.id == todo_id).first()
-        return db_obj
+        return TodoDTO.model_validate(db_obj) if db_obj else None
 
     def get_multi(
         self,
@@ -81,17 +81,29 @@ class TodoCRUD(TodoCRUDInterface):
         self.db.refresh(db_obj)
         return TodoDTO.model_validate(db_obj)
 
-    def update(self, db_obj: TodoModel, obj_in: TodoUpdate) -> TodoDTO:
+    def update(self, db_obj: TodoDTO, obj_in: TodoUpdate) -> TodoDTO:
         """Update existing todo."""
+        # DTOからDBモデルに変換
+        todo_model = TodoModel(
+            id=db_obj.id,
+            title=db_obj.title,
+            description=db_obj.description,
+            due_date=db_obj.due_date,
+            priority=db_obj.priority,
+            status=db_obj.status,
+            created_at=db_obj.created_at,
+            updated_at=db_obj.updated_at,
+        )
+
         update_data = obj_in.model_dump(exclude_unset=True)
 
         for field, value in update_data.items():
-            setattr(db_obj, field, value)
+            setattr(todo_model, field, value)
 
-        self.db.add(db_obj)
+        self.db.add(todo_model)
         self.db.commit()
-        self.db.refresh(db_obj)
-        return TodoDTO.model_validate(db_obj)
+        self.db.refresh(todo_model)
+        return TodoDTO.model_validate(todo_model)
 
     def delete(self, todo_id: int) -> TodoDTO | None:
         """Delete todo by ID."""
