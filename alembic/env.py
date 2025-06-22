@@ -8,8 +8,8 @@ from alembic import context
 # Add project root to path for imports
 sys.path.append("../")
 
-from app.core.database import Base
-from app.todo.models.todo import Todo  # Import models for metadata
+from app.infrastructure.database.connection import Base
+from app.infrastructure.database.models import TodoModel  # Import models for metadata
 
 
 # this is the Alembic Config object, which provides
