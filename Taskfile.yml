@@ -27,6 +27,18 @@ tasks:
       - uv run ruff check .
       - uv run ruff format --check .
 
+  test:
+    desc: Run unit tests
+    cmd: uv run pytest tests/unit -v
+
+  test-coverage:
+    desc: Run tests with coverage report
+    cmd: uv run pytest tests/unit --cov=app --cov-report=term-missing
+
+  test-all:
+    desc: Run all tests
+    cmd: uv run pytest tests -v
+
   db-up:
     desc: Start PostgreSQL container
     cmd: docker compose up -d postgres
