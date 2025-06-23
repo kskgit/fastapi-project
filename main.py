@@ -1,6 +1,7 @@
 from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
+from app.api.endpoints import todos
 from app.infrastructure.database.connection import get_db
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
@@ -21,8 +22,6 @@ def get_todo_service(
     """Dependency injection for TodoService."""
     return TodoService(repository)
 
-
-from app.api.endpoints import todos
 
 todos.get_todo_service = get_todo_service
 

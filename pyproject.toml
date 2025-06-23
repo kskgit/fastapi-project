@@ -37,6 +37,7 @@ select = [
 ]
 ignore = [
     "B008",  # FastAPI uses function calls in defaults for dependency injection
+    "B904",  # Within `except` clause, raise exceptions with `raise ... from err`
 ]
 
 [tool.ruff.format]

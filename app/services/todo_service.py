@@ -6,7 +6,7 @@ from app.domain.repositories.todo_repository import TodoRepository
 
 class TodoService:
     """Business logic layer for Todo operations.
-    
+
     This service layer:
     - Contains pure business logic
     - Depends only on Repository Interface (not implementation)
@@ -25,8 +25,8 @@ class TodoService:
         priority: TodoPriority = TodoPriority.medium,
         user_id: int | None = None,
     ) -> Todo:
-        """Create new todo. 
-        
+        """Create new todo.
+
         Note: Basic validation (title length, etc.) is handled by API DTOs.
         This method focuses on business logic only.
         """
@@ -39,7 +39,7 @@ class TodoService:
             )
             return self.repository.save(todo)
         except Exception as e:
-            raise RuntimeError(f"Failed to create todo: {str(e)}")
+            raise RuntimeError(f"Failed to create todo: {str(e)}") from e
 
     def get_todo(self, todo_id: int) -> Todo:
         """Get todo by ID with error handling."""
@@ -108,8 +108,7 @@ class TodoService:
 
         if not todo.can_be_deleted():
             raise ValueError(
-                "Cannot delete todo that is in progress. "
-                "Complete or cancel it first."
+                "Cannot delete todo that is in progress. Complete or cancel it first."
             )
 
         return self.repository.delete(todo_id)
@@ -208,7 +207,7 @@ class TodoService:
         deleted_count = 0
 
         for todo in completed_todos:
-            if self.repository.delete(todo.id):
+            if todo.id is not None and self.repository.delete(todo.id):
                 deleted_count += 1
 
         return deleted_count

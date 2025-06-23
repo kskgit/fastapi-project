@@ -19,14 +19,16 @@ class TodoCreateDTO(BaseModel):
     @field_validator("title")
     @classmethod
     def validate_title(cls, v: str) -> str:
-        """Validate title - must not be None and at least 3 characters after stripping."""
+        """Validate title - must not be None and at least 3 characters after strip."""
         if not v:
             raise ValueError("Title cannot be None or empty")
-        
+
         stripped = v.strip()
         if len(stripped) < 3:
-            raise ValueError("Title must be at least 3 characters long after removing whitespace")
-        
+            raise ValueError(
+                "Title must be at least 3 characters long after removing whitespace"
+            )
+
         return stripped
 
 
@@ -46,17 +48,19 @@ class TodoUpdateDTO(BaseModel):
     @field_validator("title")
     @classmethod
     def validate_title(cls, v: str | None) -> str | None:
-        """Validate title if provided - must be at least 3 characters after stripping."""
+        """Validate title if provided - must be at least 3 characters after strip."""
         if v is None:
             return None
-        
+
         if not v:
             raise ValueError("Title cannot be empty")
-        
+
         stripped = v.strip()
         if len(stripped) < 3:
-            raise ValueError("Title must be at least 3 characters long after removing whitespace")
-        
+            raise ValueError(
+                "Title must be at least 3 characters long after removing whitespace"
+            )
+
         return stripped
 
 
@@ -75,6 +79,13 @@ class TodoResponseDTO(BaseModel):
     @classmethod
     def from_domain_entity(cls, entity: TodoEntity) -> "TodoResponseDTO":
         """Convert domain entity to response DTO."""
+        if entity.id is None:
+            raise ValueError("Cannot create response DTO from entity without ID")
+        if entity.created_at is None:
+            raise ValueError("Cannot create response DTO without created_at")
+        if entity.updated_at is None:
+            raise ValueError("Cannot create response DTO without updated_at")
+
         return cls(
             id=entity.id,
             title=entity.title,
@@ -104,4 +115,3 @@ class BulkUpdateDTO(BaseModel):
 
     todo_ids: list[int] = Field(..., description="List of todo IDs")
     status: TodoStatus = Field(..., description="New status to apply")
-

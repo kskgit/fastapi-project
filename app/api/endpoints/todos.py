@@ -1,5 +1,5 @@
-
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import status as http_status
 
 from app.api.dtos.todo_dto import (
     BulkUpdateDTO,
@@ -14,7 +14,7 @@ from app.services.todo_service import TodoService
 
 def get_todo_service() -> TodoService:
     """Dependency to get TodoService instance.
-    
+
     This will be overridden by dependency injection in main.py.
     """
     raise NotImplementedError("Dependency injection not configured")
@@ -38,15 +38,17 @@ async def get_todos(
         )
         return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
 
-@router.post("/", response_model=TodoResponseDTO, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=TodoResponseDTO, status_code=http_status.HTTP_201_CREATED
+)
 async def create_todo(
     todo_data: TodoCreateDTO,
     service: TodoService = Depends(get_todo_service),
@@ -61,10 +63,10 @@ async def create_todo(
         )
         return TodoResponseDTO.from_domain_entity(todo)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -79,10 +81,10 @@ async def get_todo(
         todo = service.get_todo(todo_id)
         return TodoResponseDTO.from_domain_entity(todo)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=http_status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -106,16 +108,18 @@ async def update_todo(
         return TodoResponseDTO.from_domain_entity(todo)
     except ValueError as e:
         if "not found" in str(e):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+            raise HTTPException(
+                status_code=http_status.HTTP_404_NOT_FOUND, detail=str(e)
+            )
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
 
-@router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{todo_id}", status_code=http_status.HTTP_204_NO_CONTENT)
 async def delete_todo(
     todo_id: int,
     service: TodoService = Depends(get_todo_service),
@@ -125,16 +129,18 @@ async def delete_todo(
         deleted = service.delete_todo(todo_id)
         if not deleted:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=http_status.HTTP_404_NOT_FOUND,
                 detail=f"Todo with id {todo_id} not found",
             )
     except ValueError as e:
         if "not found" in str(e):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+            raise HTTPException(
+                status_code=http_status.HTTP_404_NOT_FOUND, detail=str(e)
+            )
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -150,11 +156,13 @@ async def complete_todo(
         return TodoResponseDTO.from_domain_entity(todo)
     except ValueError as e:
         if "not found" in str(e):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+            raise HTTPException(
+                status_code=http_status.HTTP_404_NOT_FOUND, detail=str(e)
+            )
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -170,11 +178,13 @@ async def start_todo(
         return TodoResponseDTO.from_domain_entity(todo)
     except ValueError as e:
         if "not found" in str(e):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+            raise HTTPException(
+                status_code=http_status.HTTP_404_NOT_FOUND, detail=str(e)
+            )
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -190,11 +200,13 @@ async def cancel_todo(
         return TodoResponseDTO.from_domain_entity(todo)
     except ValueError as e:
         if "not found" in str(e):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+            raise HTTPException(
+                status_code=http_status.HTTP_404_NOT_FOUND, detail=str(e)
+            )
+        raise HTTPException(status_code=http_status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -210,7 +222,7 @@ async def get_todos_by_status(
         return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -226,7 +238,7 @@ async def get_todos_by_priority(
         return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -241,7 +253,7 @@ async def get_todo_summary(
         return TodoSummaryDTO(**summary)
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -256,7 +268,7 @@ async def get_overdue_todos(
         return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -271,7 +283,7 @@ async def get_active_todos(
         return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
@@ -287,12 +299,12 @@ async def bulk_update_status(
         return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )
 
 
-@router.delete("/bulk/completed", status_code=status.HTTP_200_OK)
+@router.delete("/bulk/completed", status_code=http_status.HTTP_200_OK)
 async def bulk_delete_completed(
     service: TodoService = Depends(get_todo_service),
 ) -> dict:
@@ -302,6 +314,6 @@ async def bulk_delete_completed(
         return {"deleted_count": deleted_count}
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
         )

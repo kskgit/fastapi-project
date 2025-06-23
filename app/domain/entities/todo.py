@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class TodoPriority(str, Enum):
@@ -19,7 +19,7 @@ class TodoStatus(str, Enum):
 
 class Todo(BaseModel):
     """Domain Entity for Todo - Pure business logic, no database dependencies.
-    
+
     Note: Basic field validation (length, format) is handled by API DTOs.
     This entity focuses on business logic and state management.
     """
@@ -42,8 +42,8 @@ class Todo(BaseModel):
         priority: TodoPriority = TodoPriority.medium,
     ) -> "Todo":
         """Create a new Todo.
-        
-        Note: Basic validation (title length, description length) is handled by API DTOs.
+
+        Note: Basic validation (title length, description length) is handled by DTOs.
         This method focuses on domain-specific business logic only.
         """
         return cls(
@@ -86,10 +86,10 @@ class Todo(BaseModel):
         if not self.due_date:
             return False
 
-        return (
-            self.due_date < datetime.now()
-            and self.status in [TodoStatus.pending, TodoStatus.in_progress]
-        )
+        return self.due_date < datetime.now() and self.status in [
+            TodoStatus.pending,
+            TodoStatus.in_progress,
+        ]
 
     def can_be_deleted(self) -> bool:
         """Check if todo can be deleted."""
@@ -97,14 +97,14 @@ class Todo(BaseModel):
 
     def update_title(self, title: str) -> None:
         """Update title.
-        
+
         Note: Title validation is handled by API DTOs.
         """
         self.title = title
 
     def update_description(self, description: str | None) -> None:
         """Update description.
-        
+
         Note: Description validation is handled by API DTOs.
         """
         self.description = description
@@ -135,4 +135,3 @@ class Todo(BaseModel):
 
     class Config:
         use_enum_values = True
-

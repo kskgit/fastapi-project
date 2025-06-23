@@ -11,7 +11,7 @@ from app.infrastructure.database.models import TodoModel
 
 class SQLAlchemyTodoRepository(TodoRepository):
     """SQLAlchemy implementation of TodoRepository.
-    
+
     Handles all database-specific concerns including:
     - SQLAlchemy model ↔ Domain entity conversion
     - Query optimization and lazy loading prevention
@@ -61,15 +61,18 @@ class SQLAlchemyTodoRepository(TodoRepository):
                 )
                 self.db.add(model)
             else:
-                model = self.db.query(TodoModel).filter(TodoModel.id == todo.id).first()
-                if not model:
+                existing_model = (
+                    self.db.query(TodoModel).filter(TodoModel.id == todo.id).first()
+                )
+                if not existing_model:
                     raise ValueError(f"Todo with id {todo.id} not found")
 
-                model.title = todo.title
-                model.description = todo.description
-                model.due_date = todo.due_date
-                model.status = todo.status
-                model.priority = todo.priority
+                existing_model.title = todo.title
+                existing_model.description = todo.description
+                existing_model.due_date = todo.due_date
+                existing_model.status = todo.status
+                existing_model.priority = todo.priority
+                model = existing_model
 
             self.db.commit()
             self.db.refresh(model)
@@ -89,7 +92,7 @@ class SQLAlchemyTodoRepository(TodoRepository):
 
     def find_all_by_user_id(self, user_id: int) -> list[Todo]:
         """Find all todos for a specific user.
-        
+
         Note: Current implementation doesn't include user filtering.
         This method is prepared for future user-based filtering.
         """
@@ -122,7 +125,9 @@ class SQLAlchemyTodoRepository(TodoRepository):
             models = query.all()
             return [self._to_domain_entity(model) for model in models]
         except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding todos by status: {str(e)}")
+            raise RuntimeError(
+                f"Database error while finding todos by status: {str(e)}"
+            )
 
     def find_by_priority(
         self, priority: TodoPriority, user_id: int | None = None
@@ -133,7 +138,9 @@ class SQLAlchemyTodoRepository(TodoRepository):
             models = query.all()
             return [self._to_domain_entity(model) for model in models]
         except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding todos by priority: {str(e)}")
+            raise RuntimeError(
+                f"Database error while finding todos by priority: {str(e)}"
+            )
 
     def find_overdue_todos(self, user_id: int | None = None) -> list[Todo]:
         """Find overdue todos."""
@@ -144,7 +151,9 @@ class SQLAlchemyTodoRepository(TodoRepository):
                 .filter(
                     and_(
                         TodoModel.due_date < current_time,
-                        TodoModel.status.in_([TodoStatus.pending, TodoStatus.in_progress]),
+                        TodoModel.status.in_(
+                            [TodoStatus.pending, TodoStatus.in_progress]
+                        ),
                     )
                 )
                 .all()
@@ -177,7 +186,9 @@ class SQLAlchemyTodoRepository(TodoRepository):
             models = query.offset(skip).limit(limit).all()
             return [self._to_domain_entity(model) for model in models]
         except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding todos with pagination: {str(e)}")
+            raise RuntimeError(
+                f"Database error while finding todos with pagination: {str(e)}"
+            )
 
     def delete(self, todo_id: int) -> bool:
         """Delete todo by ID."""
@@ -193,18 +204,14 @@ class SQLAlchemyTodoRepository(TodoRepository):
             self.db.rollback()
             raise RuntimeError(f"Database error while deleting todo: {str(e)}")
 
-    def count_by_status(
-        self, status: TodoStatus, user_id: int | None = None
-    ) -> int:
+    def count_by_status(self, status: TodoStatus, user_id: int | None = None) -> int:
         """Count todos by status."""
         try:
-            return (
-                self.db.query(TodoModel)
-                .filter(TodoModel.status == status)
-                .count()
-            )
+            return self.db.query(TodoModel).filter(TodoModel.status == status).count()
         except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while counting todos by status: {str(e)}")
+            raise RuntimeError(
+                f"Database error while counting todos by status: {str(e)}"
+            )
 
     def count_total(self, user_id: int | None = None) -> int:
         """Count total todos."""
@@ -217,10 +224,10 @@ class SQLAlchemyTodoRepository(TodoRepository):
         """Check if todo exists."""
         try:
             return (
-                self.db.query(TodoModel.id)
-                .filter(TodoModel.id == todo_id)
-                .first()
+                self.db.query(TodoModel.id).filter(TodoModel.id == todo_id).first()
                 is not None
             )
         except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while checking todo existence: {str(e)}")
+            raise RuntimeError(
+                f"Database error while checking todo existence: {str(e)}"
+            )
