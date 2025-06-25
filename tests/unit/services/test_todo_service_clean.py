@@ -3,9 +3,9 @@ from unittest.mock import Mock
 
 import pytest
 
-from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.domain.repositories.todo_repository import TodoRepository
-from app.services.todo_service import TodoService
+from app.clean.todo.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.clean.todo.domain.repositories.todo_repository import TodoRepository
+from app.clean.todo.services.todo_service import TodoService
 
 
 class TestTodoService:

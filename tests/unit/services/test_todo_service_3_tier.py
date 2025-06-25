@@ -4,9 +4,9 @@ from unittest.mock import Mock
 import pytest
 from fastapi import HTTPException
 
-from app.todo.crud.crud_todo import TodoCRUDInterface
-from app.todo.schemas.todo import Todo, TodoPriority, TodoStatus
-from app.todo.service.todo_service import TodoService
+from app.tier.todo.crud.crud_todo import TodoCRUDInterface
+from app.tier.todo.schemas.todo import Todo, TodoPriority, TodoStatus
+from app.tier.todo.service.todo_service import TodoService
 
 
 class TestOldTodoService:

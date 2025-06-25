@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.todo.api.router import api_router as todo_router
+from app.tier.todo.api.router import api_router as todo_router
 
 main_router = APIRouter()
 

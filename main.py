@@ -1,12 +1,12 @@
 from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
-from app.api.endpoints import todos
-from app.infrastructure.database.connection import get_db
-from app.infrastructure.repositories.sqlalchemy_todo_repository import (
+from app.clean.todo.api.endpoints import todos
+from app.clean.todo.core.database import get_db
+from app.clean.todo.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
 )
-from app.services.todo_service import TodoService
+from app.clean.todo.services.todo_service import TodoService
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 
