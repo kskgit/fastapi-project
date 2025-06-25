@@ -217,3 +217,60 @@ class TestTodoService:
         saved_todo = self.mock_repository.save.call_args[0][0]
         assert saved_todo.title == title
         # Service layer does not perform validation - that's DTO's responsibility
+
+    def test_get_todo_success(self):
+        """Test successful todo retrieval."""
+        # Arrange
+        todo_id = 1
+        expected_todo = Todo(
+            id=todo_id,
+            title="Test Todo",
+            status=TodoStatus.pending,
+            priority=TodoPriority.medium,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        self.mock_repository.find_by_id.return_value = expected_todo
+
+        # Act
+        result = self.service.get_todo(todo_id)
+
+        # Assert
+        assert result == expected_todo
+        self.mock_repository.find_by_id.assert_called_once_with(todo_id)
+
+    def test_get_todo_not_found(self):
+        """Test error handling when todo is not found."""
+        # Arrange
+        todo_id = 999
+        self.mock_repository.find_by_id.return_value = None
+
+        # Act & Assert
+        with pytest.raises(ValueError) as exc_info:
+            self.service.get_todo(todo_id)
+
+        assert f"Todo with id {todo_id} not found" in str(exc_info.value)
+        self.mock_repository.find_by_id.assert_called_once_with(todo_id)
+
+    def test_get_todo_repository_call_verification(self):
+        """Test that repository is called with correct parameters."""
+        # Arrange
+        todo_id = 42
+        mock_todo = Todo(
+            id=todo_id,
+            title="Repository Test Todo",
+            status=TodoStatus.in_progress,
+            priority=TodoPriority.high,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        self.mock_repository.find_by_id.return_value = mock_todo
+
+        # Act
+        self.service.get_todo(todo_id)
+
+        # Assert
+        self.mock_repository.find_by_id.assert_called_once_with(todo_id)
+        # Verify no other repository methods were called
+        assert not self.mock_repository.save.called
+        assert not self.mock_repository.delete.called
