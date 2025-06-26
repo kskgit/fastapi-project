@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.clean.todo.api.endpoints import todos
@@ -24,6 +24,30 @@ def get_todo_service(
 
 
 todos.get_todo_service = get_todo_service
+
+
+@app.exception_handler(ValueError)
+async def value_error_handler(request: Request, exc: ValueError) -> HTTPException:
+    """Handle ValueError exceptions.
+
+    ValueError is used for business logic errors:
+    - Todo not found -> 404
+    - Invalid business rules -> 400
+    """
+    error_message = str(exc)
+    if "not found" in error_message.lower():
+        raise HTTPException(status_code=404, detail=error_message)
+    raise HTTPException(status_code=400, detail=error_message)
+
+
+@app.exception_handler(RuntimeError)
+async def runtime_error_handler(request: Request, exc: RuntimeError) -> HTTPException:
+    """Handle RuntimeError exceptions.
+
+    RuntimeError is used for unexpected system errors -> 500
+    """
+    raise HTTPException(status_code=500, detail=f"Internal server error: {str(exc)}")
+
 
 app.include_router(todos.router)
 

@@ -164,9 +164,101 @@ app/
 - **本番**: PostgreSQL対応可能な設計
 
 ### エラーハンドリング戦略
-- **Domain Exception**: ビジネスルール違反
-- **Repository Exception**: データアクセスエラー
-- **API Exception**: HTTP レスポンス用
+
+本プロジェクトでは、層別責任に基づく統一的なエラーハンドリング戦略を採用し、保守性と一貫性を確保する。
+
+#### エラー種別と層別責任
+
+**1. Domain Entity層 (domain/entities/)**
+- **ValueError**: ビジネスルール違反時に発生
+- 例: 完了済みTodoの再完了、キャンセル済みTodoの進行中変更
+- 純粋なビジネスロジック検証のみを実装
+
+**2. Service層 (services/)**
+- **ValueError**: ドメインレベルのビジネスエラー
+  - 例: `Todo with id {id} not found` (リソース未発見)
+  - 例: ページネーション制限違反
+- **RuntimeError**: 想定外のシステムエラー
+  - 例: `Failed to create todo: {reason}` (作成処理失敗)
+  - Repository層からの例外をラップして発生
+
+**3. Repository層 (infrastructure/repositories/)**
+- SQLAlchemy例外を適切にハンドリング
+- Service層へは統一された例外で伝播
+- データベース固有のエラーを隠蔽
+
+**4. API層 (api/endpoints/)**
+- FastAPI Exception Handlerで統一的に処理
+- ドメイン例外を適切なHTTPステータスコードに変換
+- エンドポイント内でのtry-catchは不要
+
+#### FastAPI Exception Handler実装
+
+**main.py でのグローバル例外ハンドラー**
+
+```python
+@app.exception_handler(ValueError)
+async def value_error_handler(request: Request, exc: ValueError):
+    """ビジネスエラーのハンドリング
+    
+    - "not found" を含む場合: 404 NOT FOUND
+    - その他: 400 BAD REQUEST
+    """
+    error_message = str(exc)
+    if "not found" in error_message.lower():
+        raise HTTPException(status_code=404, detail=error_message)
+    raise HTTPException(status_code=400, detail=error_message)
+
+@app.exception_handler(RuntimeError)
+async def runtime_error_handler(request: Request, exc: RuntimeError):
+    """システムエラーのハンドリング"""
+    raise HTTPException(
+        status_code=500, 
+        detail=f"Internal server error: {str(exc)}"
+    )
+```
+
+#### エラーハンドリングの利点
+
+**1. コード重複の削除**
+- エンドポイント毎のtry-catchブロックを排除
+- エラーハンドリングロジックの一元化
+
+**2. 一貫性の確保**
+- 統一されたエラーレスポンス形式
+- HTTPステータスコードの一貫した使用
+
+**3. 保守性の向上**
+- エラーハンドリング変更時の単一更新箇所
+- 新しいエラー種別の追加が容易
+
+**4. テストの簡素化**
+- エンドポイントテストでエラーハンドリングロジックのテストが不要
+- Exception Handlerの単体テストで十分
+
+#### エラーメッセージ戦略
+
+**Domain Entity**
+```python
+# ビジネスルール違反の明確な表現
+raise ValueError("Todo is already completed")
+raise ValueError("Cannot complete a canceled todo")
+```
+
+**Service層**
+```python
+# リソース特定とエラー理由の明確化
+raise ValueError(f"Todo with id {todo_id} not found")
+raise RuntimeError(f"Failed to create todo: {str(e)}")
+```
+
+**API層**
+```python
+# Exception Handlerが自動的に適切なHTTPレスポンスに変換
+# エンドポイント内では例外処理を記述せず、ビジネスロジックに集中
+```
+
+この戦略により、各層の責任が明確化され、エラーハンドリング関連のコードが大幅に削減される。
 
 ## パフォーマンス考慮事項
 
