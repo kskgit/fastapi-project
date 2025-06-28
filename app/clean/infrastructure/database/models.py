@@ -2,8 +2,8 @@ from sqlalchemy import DateTime, Enum, Integer, String
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import func
 
-from app.clean.todo.domain.entities.todo import TodoPriority, TodoStatus
-from app.clean.todo.infrastructure.database.connection import Base
+from app.clean.domain.entities.todo import TodoPriority, TodoStatus
+from app.clean.infrastructure.database.connection import Base
 
 
 class TodoModel(Base):

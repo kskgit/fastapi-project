@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.clean.todo.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.clean.domain.entities.todo import Todo, TodoPriority, TodoStatus
 
 
 class TodoRepository(ABC):

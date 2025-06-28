@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from app.clean.todo.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.clean.todo.domain.repositories.todo_repository import TodoRepository
+from app.clean.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.clean.domain.repositories.todo_repository import TodoRepository
 
 
 class TodoService:

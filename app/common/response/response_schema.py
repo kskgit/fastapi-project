@@ -2,7 +2,7 @@ from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
-from common.response.response_code import CustomResponseCode
+from app.common.response.response_code import CustomResponseCode
 
 SchemaT = TypeVar("SchemaT")
 

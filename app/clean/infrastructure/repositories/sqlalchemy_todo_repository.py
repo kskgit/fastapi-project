@@ -4,9 +4,9 @@ from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.clean.todo.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.clean.todo.domain.repositories.todo_repository import TodoRepository
-from app.clean.todo.infrastructure.database.models import TodoModel
+from app.clean.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.clean.domain.repositories.todo_repository import TodoRepository
+from app.clean.infrastructure.database.models import TodoModel
 
 
 class SQLAlchemyTodoRepository(TodoRepository):
