@@ -158,6 +158,7 @@ dependencies = [
 dev = [
     { name = "import-linter" },
     { name = "mypy" },
+    { name = "pytest" },
     { name = "ruff" },
 ]
 test = [
@@ -181,6 +182,7 @@ requires-dist = [
 dev = [
     { name = "import-linter", specifier = ">=2.0" },
     { name = "mypy", specifier = ">=1.16.0" },
+    { name = "pytest", specifier = ">=8.0.0" },
     { name = "ruff", specifier = ">=0.11.13" },
 ]
 test = [
