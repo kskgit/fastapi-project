@@ -9,7 +9,7 @@ from app.tier.todo.schemas.todo import Todo, TodoPriority, TodoStatus
 from app.tier.todo.service.todo_service import TodoService
 
 
-class TestOldTodoService:
+class TestTierTodoService:
     """Unit tests for old architecture TodoService (app/todo/service/todo_service.py).
 
     This demonstrates the testability challenges of directly depending on SQLAlchemy
