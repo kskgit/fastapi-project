@@ -10,6 +10,9 @@ pre-commit:
       run: uv run mypy {staged_files}
       glob: "*.py"
       exclude: "alembic/versions/"
+    import-linter:
+      run: uv run lint-imports
+      glob: "*.py"
 
 pre-push:
   commands:
@@ -19,3 +22,5 @@ pre-push:
       run: uv run ruff format --check .
     mypy-all:
       run: uv run mypy .
+    import-linter-all:
+      run: uv run lint-imports

@@ -18,6 +18,7 @@ dependencies = [
 dev = [
     "mypy>=1.16.0",
     "ruff>=0.11.13",
+    "import-linter>=2.0",
 ]
 test = [
     "pytest>=8.0.0",
@@ -32,18 +33,31 @@ exclude = ["alembic/versions/*.py"]
 
 [tool.ruff.lint]
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "C4", # flake8-comprehensions
-    "UP", # pyupgrade
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "TID",  # flake8-tidy-imports
 ]
 ignore = [
     "B008",  # FastAPI uses function calls in defaults for dependency injection
     "B904",  # Within `except` clause, raise exceptions with `raise ... from err`
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"app/clean/todo/infrastructure/**" = ["TID251"]  # Allow SQLAlchemy in infrastructure layer
+"alembic/**" = ["TID251"]  # Allow SQLAlchemy in database migrations
+"app/clean/todo/core/**" = ["TID251"]  # Allow SQLAlchemy in core database setup
+"app/tier/**" = ["TID251"]  # Allow SQLAlchemy in tier-based implementation (for comparison)
+"core/**" = ["TID251"]  # Allow SQLAlchemy in old core setup
+"main.py" = ["TID251"]  # Allow infrastructure imports in main.py for dependency injection setup
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"sqlalchemy" = { msg = "Use repository interfaces, not SQLAlchemy directly in service layer" }
+"app.clean.todo.infrastructure" = { msg = "Use dependency injection, not direct infrastructure imports" }
 
 [tool.ruff.format]
 quote-style = "double"

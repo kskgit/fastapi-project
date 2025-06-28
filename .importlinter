@@ -1,0 +1,41 @@
+[importlinter]
+root_package = app
+include_external_packages = true
+
+[importlinter:contract:service-layer-purity]
+name = Service layer cannot import SQLAlchemy or infrastructure details
+type = forbidden
+source_modules = 
+    app.clean.todo.services
+forbidden_modules =
+    app.clean.todo.infrastructure
+    sqlalchemy
+    sqlalchemy.*
+
+[importlinter:contract:domain-layer-external-purity]
+name = Domain layer cannot import external frameworks (except pydantic for validation)
+type = forbidden
+source_modules =
+    app.clean.todo.domain.entities
+    app.clean.todo.domain.repositories
+forbidden_modules =
+    fastapi
+    fastapi.*
+    sqlalchemy
+    sqlalchemy.*
+    uvicorn
+    uvicorn.*
+    requests
+    requests.*
+    httpx
+    httpx.*
+
+[importlinter:contract:api-layer-restrictions]
+name = API layer cannot directly import infrastructure repositories
+type = forbidden
+source_modules =
+    app.clean.todo.api
+forbidden_modules =
+    app.clean.todo.infrastructure.repositories
+    sqlalchemy
+    sqlalchemy.*
