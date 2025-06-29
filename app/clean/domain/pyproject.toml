@@ -1,0 +1,20 @@
+# =============================================================================
+# Domain Layer Configuration
+# =============================================================================
+# Inherits common settings from root pyproject.toml
+# Only layer-specific configurations are defined here
+
+[project]
+name = "domain"
+version = "0.1.0"
+description = "Domain layer - Core business logic and entities"
+requires-python = ">=3.12"
+dependencies = [
+    # Domain layer has NO external dependencies
+    # Only standard library is allowed
+]
+
+# Domain layer mypy restrictions - NO external imports allowed
+[[tool.mypy.overrides]]
+module = "app.clean.domain.*"
+disallow_any_unimported = true

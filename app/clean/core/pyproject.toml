@@ -1,0 +1,25 @@
+# =============================================================================
+# Core Layer Configuration
+# =============================================================================
+# Inherits common settings from root pyproject.toml
+# Only layer-specific configurations are defined here
+
+[project]
+name = "core"
+version = "0.1.0"
+description = "Core layer - Configuration, settings, common utilities"
+requires-python = ">=3.12"
+dependencies = [
+    # Core provides common utilities - can be used by all layers
+    # NO dependencies on other internal layers
+    
+    # Configuration and settings
+    "pydantic-settings>=2.9.1",
+    "sqlalchemy>=2.0.41",  # For database configuration
+]
+
+# Core layer mypy restrictions
+[[tool.mypy.overrides]]
+module = "app.clean.core.*"
+# Core is shared utilities - NO dependencies on other app layers
+disallow_any_unimported = true

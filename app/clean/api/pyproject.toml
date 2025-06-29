@@ -1,0 +1,28 @@
+# =============================================================================
+# API Layer Configuration
+# =============================================================================
+# Inherits common settings from root pyproject.toml
+# Only layer-specific configurations are defined here
+
+[project]
+name = "api"
+version = "0.1.0"
+description = "API layer - HTTP endpoints, DTOs, web framework concerns"
+requires-python = ">=3.12"
+dependencies = [
+    # API can depend on Domain and Services layers
+    "domain @ file://../../domain",
+    "services @ file://../../services",
+    
+    # Web framework dependencies
+    "fastapi>=0.115.12",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.9.1",
+    "uvicorn>=0.34.3",
+]
+
+# API layer mypy restrictions
+[[tool.mypy.overrides]]
+module = "app.clean.api.*"
+# API can import from domain and services, but NOT infrastructure directly
+disallow_any_unimported = true

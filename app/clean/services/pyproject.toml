@@ -1,0 +1,23 @@
+# =============================================================================
+# Services Layer Configuration
+# =============================================================================
+# Inherits common settings from root pyproject.toml
+# Only layer-specific configurations are defined here
+
+[project]
+name = "services"
+version = "0.1.0"
+description = "Services layer - Application business logic and use cases"
+requires-python = ">=3.12"
+dependencies = [
+    # Services can ONLY depend on Domain layer
+    "domain @ file://../../domain",
+    
+    # NO other dependencies allowed - pure business logic
+]
+
+# Services layer mypy restrictions - CRITICAL for Clean Architecture
+[[tool.mypy.overrides]]
+module = "app.clean.services.*"
+# Services can ONLY import from domain layer - NO infrastructure imports
+disallow_any_unimported = true

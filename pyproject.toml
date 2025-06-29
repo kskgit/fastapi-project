@@ -1,10 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "fastapi-project"
 version = "0.1.0"
-description = "Add your description here"
+description = "FastAPI Todo Management with Clean Architecture"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    # Root level dependencies
     "alembic>=1.16.1",
     "asyncpg>=0.30.0",
     "fastapi>=0.115.12",
@@ -13,6 +18,10 @@ dependencies = [
     "sqlalchemy>=2.0.41",
     "uvicorn>=0.34.3",
 ]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["tests*"]
 
 [dependency-groups]
 dev = [
@@ -50,6 +59,23 @@ quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
+
+# =============================================================================
+# 共通設定 - 全レイヤーで継承される設定
+# =============================================================================
+
+[tool.mypy]
+# 基本設定 - 全レイヤー共通
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+# 各レイヤーは以下のoverridesパターンを使用:
+# [[tool.mypy.overrides]]
+# module = "app.clean.{layer}.*"
+# disallow_any_unimported = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
