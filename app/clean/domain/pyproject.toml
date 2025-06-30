@@ -14,7 +14,5 @@ dependencies = [
     # Only standard library is allowed
 ]
 
-# Domain layer mypy restrictions - NO external imports allowed
-[[tool.mypy.overrides]]
-module = "app.clean.domain.*"
-disallow_any_unimported = true
+# Domain layer mypy restrictions are configured in root pyproject.toml
+# This layer has the strictest settings to ensure business logic quality

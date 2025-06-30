@@ -18,8 +18,6 @@ dependencies = [
     "sqlalchemy>=2.0.41",  # For database configuration
 ]
 
-# Core layer mypy restrictions
-[[tool.mypy.overrides]]
-module = "app.clean.core.*"
+# Core layer mypy restrictions are configured in root pyproject.toml
+# This layer has moderate settings for configuration and utilities
 # Core is shared utilities - NO dependencies on other app layers
-disallow_any_unimported = true

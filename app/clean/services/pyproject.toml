@@ -16,8 +16,6 @@ dependencies = [
     # NO other dependencies allowed - pure business logic
 ]
 
-# Services layer mypy restrictions - CRITICAL for Clean Architecture
-[[tool.mypy.overrides]]
-module = "app.clean.services.*"
+# Services layer mypy restrictions are configured in root pyproject.toml
+# This layer has the strictest settings - CRITICAL for Clean Architecture
 # Services can ONLY import from domain layer - NO infrastructure imports
-disallow_any_unimported = true

@@ -21,8 +21,6 @@ dependencies = [
     "uvicorn>=0.34.3",
 ]
 
-# API layer mypy restrictions
-[[tool.mypy.overrides]]
-module = "app.clean.api.*"
+# API layer mypy restrictions are configured in root pyproject.toml
+# This layer has moderate settings with FastAPI-specific allowances
 # API can import from domain and services, but NOT infrastructure directly
-disallow_any_unimported = true

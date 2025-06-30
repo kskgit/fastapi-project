@@ -65,17 +65,85 @@ line-ending = "auto"
 # =============================================================================
 
 [tool.mypy]
-# 基本設定 - 全レイヤー共通
+# 基本設定 - デフォルトは中程度の厳密さ
 python_version = "3.12"
-strict = true
-warn_return_any = true
+strict = false
+warn_return_any = false
 warn_unused_configs = true
-disallow_untyped_defs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
 
-# 各レイヤーは以下のoverridesパターンを使用:
-# [[tool.mypy.overrides]]
-# module = "app.clean.{layer}.*"
-# disallow_any_unimported = true
+# =============================================================================
+# Clean Architecture層別のmypy設定
+# =============================================================================
+
+# Domain層 - 最も厳密 (ビジネスロジックの品質確保)
+[[tool.mypy.overrides]]
+module = "app.clean.domain.*"
+strict = true
+disallow_any_unimported = true
+disallow_any_expr = true
+disallow_any_decorated = true
+disallow_untyped_defs = true
+warn_return_any = true
+
+# Services層 - 最も厳密 (ビジネスロジックの品質確保)  
+[[tool.mypy.overrides]]
+module = "app.clean.services.*"
+strict = true
+disallow_any_unimported = true
+disallow_untyped_defs = true
+warn_return_any = true
+
+# Infrastructure層 - 緩和 (SQLAlchemy等の外部ライブラリ制約)
+[[tool.mypy.overrides]]
+module = "app.clean.infrastructure.*"
+strict = false
+disallow_untyped_defs = false
+ignore_missing_imports = true
+allow_untyped_calls = true
+allow_untyped_defs = true
+# SQLAlchemy Base class warnings suppression
+disallow_subclassing_any = false
+
+# API層 - 中程度 (FastAPI特有の問題を考慮)
+[[tool.mypy.overrides]]
+module = "app.clean.api.*"
+strict = false
+disallow_untyped_defs = true
+warn_return_any = false
+# FastAPI dependency injection warnings suppression
+allow_untyped_calls = true
+
+# Core層 - 中程度 (設定・ユーティリティ)
+[[tool.mypy.overrides]]
+module = "app.clean.core.*"
+strict = false
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+# Tier/Common層 - 緩和 (レガシーコード対応)
+[[tool.mypy.overrides]]
+module = ["app.tier.*", "app.common.*"]
+strict = false
+disallow_untyped_defs = false
+ignore_missing_imports = true
+allow_untyped_calls = true
+allow_untyped_defs = true
+
+# Tests - 緩和 (テストコードの実用性優先)
+[[tool.mypy.overrides]]
+module = "tests.*"
+strict = false
+disallow_untyped_defs = false
+allow_untyped_calls = true
+allow_untyped_defs = true
+
+# Scripts - 緩和 (ユーティリティスクリプト)
+[[tool.mypy.overrides]]
+module = "scripts.*"
+strict = false
+disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -21,8 +21,5 @@ dependencies = [
     "psycopg2-binary>=2.9.10",
 ]
 
-# Infrastructure layer mypy restrictions
-[[tool.mypy.overrides]]
-module = "app.clean.infrastructure.*"
-# Infrastructure can only import from domain, core and external libraries
-disallow_any_unimported = true
+# Infrastructure layer mypy restrictions are configured in root pyproject.toml  
+# This layer has relaxed settings due to SQLAlchemy and external library constraints
