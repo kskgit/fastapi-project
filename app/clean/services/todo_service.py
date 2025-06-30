@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from fastapi import WebSocketException as ex
+
 from app.clean.domain.entities.todo import Todo, TodoPriority, TodoStatus
 from app.clean.domain.repositories.todo_repository import TodoRepository
 
@@ -30,6 +32,7 @@ class TodoService:
         Note: Basic validation (title length, etc.) is handled by API DTOs.
         This method focuses on business logic only.
         """
+        print(ex)
         try:
             todo = Todo.create(
                 title=title,
