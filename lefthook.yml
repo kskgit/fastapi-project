@@ -19,6 +19,9 @@ pre-commit:
     clean-arch-infrastructure:
       run: uv run ruff check --config app/clean/infrastructure/pyproject.toml {staged_files}
       glob: "app/clean/infrastructure/**/*.py"
+    clean-arch-core:
+      run: uv run ruff check --config app/clean/core/pyproject.toml {staged_files}
+      glob: "app/clean/core/**/*.py"
     mypy:
       run: uv run mypy {staged_files}
       glob: "*.py"
@@ -36,6 +39,7 @@ pre-push:
         uv run ruff check --config app/clean/api/pyproject.toml app/clean/api/ && \
         uv run ruff check --config app/clean/services/pyproject.toml app/clean/services/ && \
         uv run ruff check --config app/clean/domain/pyproject.toml app/clean/domain/ && \
-        uv run ruff check --config app/clean/infrastructure/pyproject.toml app/clean/infrastructure/
+        uv run ruff check --config app/clean/infrastructure/pyproject.toml app/clean/infrastructure/ && \
+        uv run ruff check --config app/clean/core/pyproject.toml app/clean/core/
     mypy-all:
-      run: uv run mypy .
+      run: uv run mypy app/clean

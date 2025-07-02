@@ -185,7 +185,7 @@ async def bulk_update_status(
 @router.delete("/bulk/completed", status_code=http_status.HTTP_200_OK)
 async def bulk_delete_completed(
     service: TodoService = Depends(get_todo_service),
-) -> dict:
+) -> dict[str, int]:
     """Delete all completed todos."""
     deleted_count = service.bulk_delete_completed_todos()
     return {"deleted_count": deleted_count}
