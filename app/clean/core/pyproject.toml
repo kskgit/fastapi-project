@@ -21,3 +21,23 @@ dependencies = [
 # Core layer mypy restrictions are configured in root pyproject.toml
 # This layer has moderate settings for configuration and utilities
 # Core is shared utilities - NO dependencies on other app layers
+
+# =============================================================================
+# Core Layer Clean Architecture Enforcement
+# =============================================================================
+# Core layer provides utilities and configuration for all layers
+# Must NOT depend on any business logic layers
+
+# Enable TID251 rule for this layer
+[tool.ruff.lint]
+select = ["TID251"]  # banned-api (Clean Architecture enforcement)
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+# Layer dependencies - Core cannot depend on business layers
+"app.clean.domain" = { msg = "❌ Core cannot depend on Domain layer. Core provides utilities only." }
+"app.clean.services" = { msg = "❌ Core cannot depend on Services layer. Core provides utilities only." }
+"app.clean.infrastructure" = { msg = "❌ Core cannot depend on Infrastructure layer. Core provides utilities only." }
+"app.clean.api" = { msg = "❌ Core cannot depend on API layer. Core provides utilities only." }
+
+# Web frameworks - Core should remain framework-agnostic for configuration
+"fastapi" = { msg = "❌ FastAPI not allowed in core layer. Core should provide framework-agnostic configuration." }

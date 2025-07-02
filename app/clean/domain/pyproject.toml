@@ -16,3 +16,38 @@ dependencies = [
 
 # Domain layer mypy restrictions are configured in root pyproject.toml
 # This layer has the strictest settings to ensure business logic quality
+
+# =============================================================================
+# Domain Layer Clean Architecture Enforcement
+# =============================================================================
+# Domain layer must remain pure - ALL external dependencies are prohibited
+# Only Python standard library is allowed
+
+# Enable TID251 rule for this layer
+[tool.ruff.lint]
+select = ["TID251"]  # banned-api (Clean Architecture enforcement)
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+# Layer dependencies - Domain cannot depend on other layers
+"app.clean.services" = { msg = "❌ Domain cannot depend on Services layer. Dependency direction violated." }
+"app.clean.infrastructure" = { msg = "❌ Domain cannot depend on Infrastructure layer. Dependency direction violated." }
+"app.clean.api" = { msg = "❌ Domain cannot depend on API layer. Dependency direction violated." }
+"app.clean.core" = { msg = "❌ Domain cannot depend on Core layer. Domain must be pure." }
+
+# Web frameworks - NEVER allowed in Domain layer
+"fastapi" = { msg = "❌ FastAPI not allowed in domain layer. Domain must remain framework-agnostic." }
+
+# Database/ORM - NEVER allowed in Domain layer  
+"sqlalchemy" = { msg = "❌ SQLAlchemy not allowed in domain layer. Use repository interfaces instead." }
+"alembic" = { msg = "❌ Database migration tools not allowed in domain layer." }
+"asyncpg" = { msg = "❌ Database drivers not allowed in domain layer." }
+"psycopg2" = { msg = "❌ Database drivers not allowed in domain layer." }
+
+# Data validation - Domain should use pure Python types
+"pydantic" = { msg = "❌ Pydantic not allowed in domain layer. Use pure Python types for business entities." }
+"pydantic-settings" = { msg = "❌ Pydantic settings not allowed in domain layer." }
+
+# HTTP clients - NEVER allowed in Domain layer
+"httpx" = { msg = "❌ HTTP clients not allowed in domain layer." }
+"requests" = { msg = "❌ HTTP clients not allowed in domain layer." }
+

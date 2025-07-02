@@ -19,6 +19,7 @@ dependencies = [
     "uvicorn>=0.34.3",
 ]
 
+
 [tool.setuptools.packages.find]
 include = ["app*"]
 exclude = ["tests*"]
@@ -53,6 +54,7 @@ ignore = [
     "B008",  # FastAPI uses function calls in defaults for dependency injection
     "B904",  # Within `except` clause, raise exceptions with `raise ... from err`
 ]
+
 
 [tool.ruff.format]
 quote-style = "double"
@@ -144,6 +146,7 @@ allow_untyped_defs = true
 module = "scripts.*"
 strict = false
 disallow_untyped_defs = false
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

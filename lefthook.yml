@@ -6,6 +6,19 @@ pre-commit:
     ruff-format-check:
       run: uv run ruff format --check {staged_files}
       glob: "*.py"
+    # Clean Architecture import restrictions per layer
+    clean-arch-api:
+      run: uv run ruff check --config app/clean/api/pyproject.toml {staged_files}
+      glob: "app/clean/api/**/*.py"
+    clean-arch-services:
+      run: uv run ruff check --config app/clean/services/pyproject.toml {staged_files}
+      glob: "app/clean/services/**/*.py"
+    clean-arch-domain:
+      run: uv run ruff check --config app/clean/domain/pyproject.toml {staged_files}
+      glob: "app/clean/domain/**/*.py"
+    clean-arch-infrastructure:
+      run: uv run ruff check --config app/clean/infrastructure/pyproject.toml {staged_files}
+      glob: "app/clean/infrastructure/**/*.py"
     mypy:
       run: uv run mypy {staged_files}
       glob: "*.py"
@@ -17,5 +30,12 @@ pre-push:
       run: uv run ruff check .
     ruff-format-check-all:
       run: uv run ruff format --check .
+    # Clean Architecture validation for all layers
+    clean-arch-all:
+      run: |
+        uv run ruff check --config app/clean/api/pyproject.toml app/clean/api/ && \
+        uv run ruff check --config app/clean/services/pyproject.toml app/clean/services/ && \
+        uv run ruff check --config app/clean/domain/pyproject.toml app/clean/domain/ && \
+        uv run ruff check --config app/clean/infrastructure/pyproject.toml app/clean/infrastructure/
     mypy-all:
       run: uv run mypy .

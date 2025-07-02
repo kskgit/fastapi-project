@@ -19,3 +19,40 @@ dependencies = [
 # Services layer mypy restrictions are configured in root pyproject.toml
 # This layer has the strictest settings - CRITICAL for Clean Architecture
 # Services can ONLY import from domain layer - NO infrastructure imports
+
+# =============================================================================
+# Services Layer Clean Architecture Enforcement  
+# =============================================================================
+# Services layer can ONLY depend on Domain layer
+# All external dependencies and framework imports are prohibited
+
+# Enable TID251 rule for this layer
+[tool.ruff.lint]
+select = ["TID251"]  # banned-api (Clean Architecture enforcement)
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+# Layer dependencies - Services can only depend on Domain layer
+"app.clean.infrastructure" = { msg = "❌ Services cannot depend on Infrastructure layer. Use repository interfaces instead." }
+"app.clean.api" = { msg = "❌ Services cannot depend on API layer. Dependency direction violated." }
+"app.clean.core" = { msg = "❌ Services cannot depend on Core layer. Services should be pure business logic." }
+
+# Web frameworks - NEVER allowed in Services layer
+"fastapi" = { msg = "❌ FastAPI not allowed in services layer. Services should only depend on domain." }
+"fastapi.HTTPException" = { msg = "❌ FastAPI exceptions not allowed in services layer. Use domain exceptions." }
+"fastapi.Depends" = { msg = "❌ FastAPI dependency injection not allowed in services layer." }
+
+# Database/ORM - NEVER allowed in Services layer
+"sqlalchemy" = { msg = "❌ SQLAlchemy not allowed in services layer. Use repository interfaces instead." }
+"sqlalchemy.orm" = { msg = "❌ SQLAlchemy ORM not allowed in services layer. Use repository interfaces." }
+"sqlalchemy.ext" = { msg = "❌ SQLAlchemy extensions not allowed in services layer. Use repository interfaces." }
+"alembic" = { msg = "❌ Database migration tools not allowed in services layer." }
+"asyncpg" = { msg = "❌ Database drivers not allowed in services layer." }
+"psycopg2" = { msg = "❌ Database drivers not allowed in services layer." }
+
+# Data validation frameworks - Services should use domain entities
+"pydantic" = { msg = "❌ Pydantic not allowed in services layer. Use domain entities instead." }
+"pydantic-settings" = { msg = "❌ Pydantic settings not allowed in services layer." }
+
+# HTTP clients - NEVER allowed in Services layer
+"httpx" = { msg = "❌ HTTP clients not allowed in services layer." }
+"requests" = { msg = "❌ HTTP clients not allowed in services layer." }
