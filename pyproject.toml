@@ -28,6 +28,7 @@ exclude = ["tests*"]
 dev = [
     "mypy>=1.16.0",
     "ruff>=0.11.13",
+    "import-linter>=2.0.0",
 ]
 test = [
     "pytest>=8.0.0",
@@ -62,92 +63,6 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
-# =============================================================================
-# 共通設定 - 全レイヤーで継承される設定
-# =============================================================================
-
-[tool.mypy]
-# 基本設定 - デフォルトは中程度の厳密さ
-python_version = "3.12"
-strict = false
-warn_return_any = false
-warn_unused_configs = true
-disallow_untyped_defs = false
-check_untyped_defs = true
-
-# =============================================================================
-# Clean Architecture層別のmypy設定
-# =============================================================================
-
-# Domain層 - 最も厳密 (ビジネスロジックの品質確保)
-[[tool.mypy.overrides]]
-module = "app.clean.domain.*"
-strict = true
-disallow_any_unimported = true
-disallow_any_expr = true
-disallow_any_decorated = true
-disallow_untyped_defs = true
-warn_return_any = true
-
-# Services層 - 最も厳密 (ビジネスロジックの品質確保)  
-[[tool.mypy.overrides]]
-module = "app.clean.services.*"
-strict = true
-disallow_any_unimported = true
-disallow_untyped_defs = true
-warn_return_any = true
-
-# Infrastructure層 - 緩和 (SQLAlchemy等の外部ライブラリ制約)
-[[tool.mypy.overrides]]
-module = "app.clean.infrastructure.*"
-strict = false
-disallow_untyped_defs = false
-ignore_missing_imports = true
-allow_untyped_calls = true
-allow_untyped_defs = true
-# SQLAlchemy Base class warnings suppression
-disallow_subclassing_any = false
-
-# API層 - 中程度 (FastAPI特有の問題を考慮)
-[[tool.mypy.overrides]]
-module = "app.clean.api.*"
-strict = false
-disallow_untyped_defs = true
-warn_return_any = false
-# FastAPI dependency injection warnings suppression
-allow_untyped_calls = true
-
-# Core層 - 中程度 (設定・ユーティリティ)
-[[tool.mypy.overrides]]
-module = "app.clean.core.*"
-strict = false
-disallow_untyped_defs = true
-ignore_missing_imports = true
-
-# Tier/Common層 - 緩和 (レガシーコード対応)
-[[tool.mypy.overrides]]
-module = ["app.tier.*", "app.common.*"]
-strict = false
-disallow_untyped_defs = false
-ignore_missing_imports = true
-allow_untyped_calls = true
-allow_untyped_defs = true
-
-# Tests - 緩和 (テストコードの実用性優先)
-[[tool.mypy.overrides]]
-module = "tests.*"
-strict = false
-disallow_untyped_defs = false
-allow_untyped_calls = true
-allow_untyped_defs = true
-
-# Scripts - 緩和 (ユーティリティスクリプト)
-[[tool.mypy.overrides]]
-module = "scripts.*"
-strict = false
-disallow_untyped_defs = false
-
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -161,4 +76,70 @@ addopts = [
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
+]
+
+# =============================================================================
+# Clean Architecture Import Restrictions
+# =============================================================================
+# Enforce layered architecture boundaries using import-linter
+
+[tool.importlinter]
+root_packages = ["app"]
+include_external_packages = true
+
+# API layer restrictions
+[[tool.importlinter.contracts]]
+name = "API Layer Restrictions"
+type = "forbidden"
+source_modules = ["app.clean.api"]
+forbidden_modules = [
+    "sqlalchemy",
+    "alembic", 
+    "asyncpg",
+    "psycopg2",
+    "app.clean.infrastructure",  # No direct infrastructure access
+]
+
+# Services layer restrictions
+[[tool.importlinter.contracts]]
+name = "Services Layer Restrictions" 
+type = "forbidden"
+source_modules = ["app.clean.services"]
+forbidden_modules = [
+    "fastapi",
+    "sqlalchemy",
+    "alembic",
+    "asyncpg", 
+    "psycopg2",
+    "app.clean.infrastructure",  # Use repository interfaces only
+    "app.clean.api",            # No upward dependencies
+]
+
+# Domain layer restrictions (most restrictive)
+[[tool.importlinter.contracts]]
+name = "Domain Layer Purity"
+type = "forbidden"
+source_modules = ["app.clean.domain"]
+forbidden_modules = [
+    "fastapi",
+    "pydantic",
+    "sqlalchemy",
+    "alembic",
+    "asyncpg",
+    "psycopg2", 
+    "httpx",
+    "requests",
+    "app.clean.api",
+    "app.clean.services", 
+    "app.clean.infrastructure",
+]
+
+# Infrastructure layer restrictions
+[[tool.importlinter.contracts]]
+name = "Infrastructure Layer Restrictions"
+type = "forbidden"
+source_modules = ["app.clean.infrastructure"]
+forbidden_modules = [
+    "fastapi",               # No web framework knowledge
+    "app.clean.api",         # No upward dependencies
 ]
