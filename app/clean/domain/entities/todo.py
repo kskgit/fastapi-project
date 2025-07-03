@@ -1,7 +1,6 @@
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from dataclasses import dataclass
-from typing import Optional
 
 
 class TodoPriority(str, Enum):
@@ -26,13 +25,13 @@ class Todo:
     """
 
     title: str
-    description: Optional[str] = None
-    due_date: Optional[datetime] = None
+    description: str | None = None
+    due_date: datetime | None = None
     status: TodoStatus = TodoStatus.pending
     priority: TodoPriority = TodoPriority.medium
-    id: Optional[int] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    id: int | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     @classmethod
     def create(
