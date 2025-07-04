@@ -2,7 +2,7 @@ from sqlalchemy import DateTime, Enum, Integer, String
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.sql import func
 
-from app.clean.todo.core.database import Base
+from app.clean.core.database_clean import Base
 from app.tier.todo.schemas.todo import TodoPriority, TodoStatus
 
 

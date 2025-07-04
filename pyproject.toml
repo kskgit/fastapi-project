@@ -1,10 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "fastapi-project"
 version = "0.1.0"
-description = "Add your description here"
+description = "FastAPI Todo Management with Clean Architecture"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    # Root level dependencies
     "alembic>=1.16.1",
     "asyncpg>=0.30.0",
     "fastapi>=0.115.12",
@@ -14,10 +19,16 @@ dependencies = [
     "uvicorn>=0.34.3",
 ]
 
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["tests*"]
+
 [dependency-groups]
 dev = [
     "mypy>=1.16.0",
     "ruff>=0.11.13",
+    "import-linter>=2.0.0",
 ]
 test = [
     "pytest>=8.0.0",
@@ -45,6 +56,7 @@ ignore = [
     "B904",  # Within `except` clause, raise exceptions with `raise ... from err`
 ]
 
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
@@ -64,4 +76,70 @@ addopts = [
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
+]
+
+# =============================================================================
+# Clean Architecture Import Restrictions
+# =============================================================================
+# Enforce layered architecture boundaries using import-linter
+
+[tool.importlinter]
+root_packages = ["app"]
+include_external_packages = true
+
+# API layer restrictions
+[[tool.importlinter.contracts]]
+name = "API Layer Restrictions"
+type = "forbidden"
+source_modules = ["app.clean.api"]
+forbidden_modules = [
+    "sqlalchemy",
+    "alembic", 
+    "asyncpg",
+    "psycopg2",
+    "app.clean.infrastructure",  # No direct infrastructure access
+]
+
+# Services layer restrictions
+[[tool.importlinter.contracts]]
+name = "Services Layer Restrictions" 
+type = "forbidden"
+source_modules = ["app.clean.services"]
+forbidden_modules = [
+    "fastapi",
+    "sqlalchemy",
+    "alembic",
+    "asyncpg", 
+    "psycopg2",
+    "app.clean.infrastructure",  # Use repository interfaces only
+    "app.clean.api",            # No upward dependencies
+]
+
+# Domain layer restrictions (most restrictive)
+[[tool.importlinter.contracts]]
+name = "Domain Layer Purity"
+type = "forbidden"
+source_modules = ["app.clean.domain"]
+forbidden_modules = [
+    "fastapi",
+    "pydantic",
+    "sqlalchemy",
+    "alembic",
+    "asyncpg",
+    "psycopg2", 
+    "httpx",
+    "requests",
+    "app.clean.api",
+    "app.clean.services", 
+    "app.clean.infrastructure",
+]
+
+# Infrastructure layer restrictions
+[[tool.importlinter.contracts]]
+name = "Infrastructure Layer Restrictions"
+type = "forbidden"
+source_modules = ["app.clean.infrastructure"]
+forbidden_modules = [
+    "fastapi",               # No web framework knowledge
+    "app.clean.api",         # No upward dependencies
 ]

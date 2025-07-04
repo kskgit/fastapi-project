@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from app.clean.todo.core.database import get_db
+from app.clean.core.database_clean import get_db
 from app.tier.todo.models.todo import Todo as TodoModel
 from app.tier.todo.schemas.todo import Todo as TodoDTO
 from app.tier.todo.schemas.todo import TodoCreate, TodoPriority, TodoStatus, TodoUpdate

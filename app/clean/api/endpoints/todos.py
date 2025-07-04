@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi import status as http_status
 
-from app.clean.todo.api.dtos.todo_dto import (
+from app.clean.api.dtos.todo_dto import (
     BulkUpdateDTO,
     TodoCreateDTO,
     TodoResponseDTO,
     TodoSummaryDTO,
     TodoUpdateDTO,
 )
-from app.clean.todo.domain.entities.todo import TodoPriority, TodoStatus
-from app.clean.todo.services.todo_service import TodoService
+from app.clean.domain.entities.todo import TodoPriority, TodoStatus
+from app.clean.services.todo_service import TodoService
 
 
 def get_todo_service() -> TodoService:
@@ -185,7 +185,7 @@ async def bulk_update_status(
 @router.delete("/bulk/completed", status_code=http_status.HTTP_200_OK)
 async def bulk_delete_completed(
     service: TodoService = Depends(get_todo_service),
-) -> dict:
+) -> dict[str, int]:
     """Delete all completed todos."""
     deleted_count = service.bulk_delete_completed_todos()
     return {"deleted_count": deleted_count}

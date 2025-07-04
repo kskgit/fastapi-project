@@ -1,7 +1,6 @@
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-
-from pydantic import BaseModel
 
 
 class TodoPriority(str, Enum):
@@ -17,19 +16,20 @@ class TodoStatus(str, Enum):
     canceled = "canceled"
 
 
-class Todo(BaseModel):
+@dataclass
+class Todo:
     """Domain Entity for Todo - Pure business logic, no database dependencies.
 
     Note: Basic field validation (length, format) is handled by API DTOs.
     This entity focuses on business logic and state management.
     """
 
-    id: int | None = None
     title: str
     description: str | None = None
     due_date: datetime | None = None
     status: TodoStatus = TodoStatus.pending
     priority: TodoPriority = TodoPriority.medium
+    id: int | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

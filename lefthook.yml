@@ -6,6 +6,8 @@ pre-commit:
     ruff-format-check:
       run: uv run ruff format --check {staged_files}
       glob: "*.py"
+    import-linter:
+      run: uv run lint-imports
     mypy:
       run: uv run mypy {staged_files}
       glob: "*.py"
@@ -17,5 +19,7 @@ pre-push:
       run: uv run ruff check .
     ruff-format-check-all:
       run: uv run ruff format --check .
+    import-linter-all:
+      run: uv run lint-imports
     mypy-all:
-      run: uv run mypy .
+      run: uv run mypy app/clean
