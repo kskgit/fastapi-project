@@ -10,10 +10,19 @@ from app.clean.api.dtos.todo_dto import (
 )
 from app.clean.domain.entities.todo import TodoPriority, TodoStatus
 from app.clean.services.todo_service import TodoService
+from app.clean.usecases.create_todo_usecase import CreateTodoUseCase
 
 
 def get_todo_service() -> TodoService:
     """Dependency to get TodoService instance.
+
+    This will be overridden by dependency injection in main.py.
+    """
+    raise NotImplementedError("Dependency injection not configured")
+
+
+def get_create_todo_usecase() -> CreateTodoUseCase:
+    """Dependency to get CreateTodoUseCase instance.
 
     This will be overridden by dependency injection in main.py.
     """
@@ -41,10 +50,10 @@ async def get_todos(
 )
 async def create_todo(
     todo_data: TodoCreateDTO,
-    service: TodoService = Depends(get_todo_service),
+    usecase: CreateTodoUseCase = Depends(get_create_todo_usecase),
 ) -> TodoResponseDTO:
     """Create a new todo."""
-    todo = service.create_todo(
+    todo = usecase.execute(
         title=todo_data.title,
         description=todo_data.description,
         due_date=todo_data.due_date,
