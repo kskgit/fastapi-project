@@ -143,3 +143,19 @@ forbidden_modules = [
     "fastapi",               # No web framework knowledge
     "app.clean.api",         # No upward dependencies
 ]
+
+# UseCases layer restrictions
+[[tool.importlinter.contracts]]
+name = "UseCases Layer Restrictions"
+type = "forbidden"
+source_modules = ["app.clean.usecases"]
+forbidden_modules = [
+    "fastapi",
+    "sqlalchemy",
+    "alembic",
+    "asyncpg", 
+    "psycopg2",
+    "app.clean.infrastructure",  # Use repository interfaces only
+    "app.clean.api",            # No upward dependencies
+    "app.clean.services",       # Independent from services
+]
