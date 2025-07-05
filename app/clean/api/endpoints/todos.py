@@ -32,7 +32,11 @@ async def get_todos(
     service: TodoService = Depends(get_todo_service),
 ) -> list[TodoResponseDTO]:
     """Get all todos with optional filtering."""
-    todos = service.get_todos(skip=skip, limit=limit, status=status, priority=priority)
+    # TODO: Replace with actual user_id from authentication
+    user_id = 1
+    todos = service.get_todos(
+        user_id=user_id, skip=skip, limit=limit, status=status, priority=priority
+    )
     return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
 
 
@@ -44,8 +48,11 @@ async def create_todo(
     service: TodoService = Depends(get_todo_service),
 ) -> TodoResponseDTO:
     """Create a new todo."""
+    # TODO: Replace with actual user_id from authentication
+    user_id = 1
     todo = service.create_todo(
         title=todo_data.title,
+        user_id=user_id,
         description=todo_data.description,
         due_date=todo_data.due_date,
         priority=todo_data.priority,
@@ -131,7 +138,9 @@ async def get_todos_by_status(
     service: TodoService = Depends(get_todo_service),
 ) -> list[TodoResponseDTO]:
     """Get todos by status."""
-    todos = service.get_todos_by_status(status)
+    # TODO: Replace with actual user_id from authentication
+    user_id = 1
+    todos = service.get_todos_by_status(status, user_id)
     return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
 
 
@@ -141,7 +150,9 @@ async def get_todos_by_priority(
     service: TodoService = Depends(get_todo_service),
 ) -> list[TodoResponseDTO]:
     """Get todos by priority."""
-    todos = service.get_todos_by_priority(priority)
+    # TODO: Replace with actual user_id from authentication
+    user_id = 1
+    todos = service.get_todos_by_priority(priority, user_id)
     return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
 
 
@@ -150,7 +161,9 @@ async def get_todo_summary(
     service: TodoService = Depends(get_todo_service),
 ) -> TodoSummaryDTO:
     """Get todo statistics summary."""
-    summary = service.get_user_todo_summary()
+    # TODO: Replace with actual user_id from authentication
+    user_id = 1
+    summary = service.get_user_todo_summary(user_id)
     return TodoSummaryDTO(**summary)
 
 
@@ -159,7 +172,9 @@ async def get_overdue_todos(
     service: TodoService = Depends(get_todo_service),
 ) -> list[TodoResponseDTO]:
     """Get overdue todos."""
-    todos = service.get_overdue_todos()
+    # TODO: Replace with actual user_id from authentication
+    user_id = 1
+    todos = service.get_overdue_todos(user_id)
     return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
 
 
@@ -168,7 +183,9 @@ async def get_active_todos(
     service: TodoService = Depends(get_todo_service),
 ) -> list[TodoResponseDTO]:
     """Get active todos (pending or in progress)."""
-    todos = service.get_active_todos()
+    # TODO: Replace with actual user_id from authentication
+    user_id = 1
+    todos = service.get_active_todos(user_id)
     return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
 
 
@@ -187,5 +204,7 @@ async def bulk_delete_completed(
     service: TodoService = Depends(get_todo_service),
 ) -> dict[str, int]:
     """Delete all completed todos."""
-    deleted_count = service.bulk_delete_completed_todos()
+    # TODO: Replace with actual user_id from authentication
+    user_id = 1
+    deleted_count = service.bulk_delete_completed_todos(user_id)
     return {"deleted_count": deleted_count}

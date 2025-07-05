@@ -39,7 +39,7 @@ class TodoRepository(ABC):
         """Find all todos for a specific user.
 
         Args:
-            user_id: ID of the user
+            user_id: ID of the user (required)
 
         Returns:
             List of todo domain entities
@@ -59,14 +59,12 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_status(
-        self, status: TodoStatus, user_id: int | None = None
-    ) -> list[Todo]:
-        """Find todos by status.
+    def find_by_status(self, status: TodoStatus, user_id: int) -> list[Todo]:
+        """Find todos by status for a specific user.
 
         Args:
             status: Status to filter by
-            user_id: Optional user ID to filter by
+            user_id: User ID to filter by (required)
 
         Returns:
             List of todo domain entities matching the status
@@ -74,14 +72,12 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_priority(
-        self, priority: TodoPriority, user_id: int | None = None
-    ) -> list[Todo]:
-        """Find todos by priority.
+    def find_by_priority(self, priority: TodoPriority, user_id: int) -> list[Todo]:
+        """Find todos by priority for a specific user.
 
         Args:
             priority: Priority to filter by
-            user_id: Optional user ID to filter by
+            user_id: User ID to filter by (required)
 
         Returns:
             List of todo domain entities matching the priority
@@ -89,11 +85,11 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_overdue_todos(self, user_id: int | None = None) -> list[Todo]:
-        """Find overdue todos.
+    def find_overdue_todos(self, user_id: int) -> list[Todo]:
+        """Find overdue todos for a specific user.
 
         Args:
-            user_id: Optional user ID to filter by
+            user_id: User ID to filter by (required)
 
         Returns:
             List of overdue todo domain entities
@@ -103,20 +99,20 @@ class TodoRepository(ABC):
     @abstractmethod
     def find_with_pagination(
         self,
+        user_id: int,
         skip: int = 0,
         limit: int = 100,
         status: TodoStatus | None = None,
         priority: TodoPriority | None = None,
-        user_id: int | None = None,
     ) -> list[Todo]:
-        """Find todos with pagination and optional filters.
+        """Find todos with pagination and optional filters for a specific user.
 
         Args:
+            user_id: User ID to filter by (required)
             skip: Number of records to skip
             limit: Maximum number of records to return
             status: Optional status filter
             priority: Optional priority filter
-            user_id: Optional user ID filter
 
         Returns:
             List of todo domain entities
@@ -136,12 +132,12 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def count_by_status(self, status: TodoStatus, user_id: int | None = None) -> int:
-        """Count todos by status.
+    def count_by_status(self, status: TodoStatus, user_id: int) -> int:
+        """Count todos by status for a specific user.
 
         Args:
             status: Status to count
-            user_id: Optional user ID to filter by
+            user_id: User ID to filter by (required)
 
         Returns:
             Number of todos with the specified status
@@ -149,14 +145,14 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def count_total(self, user_id: int | None = None) -> int:
-        """Count total todos.
+    def count_total(self, user_id: int) -> int:
+        """Count total todos for a specific user.
 
         Args:
-            user_id: Optional user ID to filter by
+            user_id: User ID to filter by (required)
 
         Returns:
-            Total number of todos
+            Total number of todos for the user
         """
         pass
 
@@ -169,5 +165,18 @@ class TodoRepository(ABC):
 
         Returns:
             True if todo exists, False otherwise
+        """
+        pass
+
+    @abstractmethod
+    def find_by_id_and_user_id(self, todo_id: int, user_id: int) -> Todo | None:
+        """Find todo by ID and verify ownership.
+
+        Args:
+            todo_id: ID of the todo to find
+            user_id: ID of the user who should own the todo
+
+        Returns:
+            Todo domain entity if found and owned by user, None otherwise
         """
         pass

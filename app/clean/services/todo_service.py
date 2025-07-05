@@ -20,10 +20,10 @@ class TodoService:
     def create_todo(
         self,
         title: str,
+        user_id: int,
         description: str | None = None,
         due_date: datetime | None = None,
         priority: TodoPriority = TodoPriority.medium,
-        user_id: int | None = None,
     ) -> Todo:
         """Create new todo.
 
@@ -33,6 +33,7 @@ class TodoService:
         try:
             todo = Todo.create(
                 title=title,
+                user_id=user_id,
                 description=description,
                 due_date=due_date,
                 priority=priority,
@@ -50,11 +51,11 @@ class TodoService:
 
     def get_todos(
         self,
+        user_id: int,
         skip: int = 0,
         limit: int = 100,
         status: TodoStatus | None = None,
         priority: TodoPriority | None = None,
-        user_id: int | None = None,
     ) -> list[Todo]:
         """Get multiple todos with validation."""
         if limit > 1000:
@@ -64,11 +65,11 @@ class TodoService:
             raise ValueError("Skip cannot be negative")
 
         return self.repository.find_with_pagination(
+            user_id=user_id,
             skip=skip,
             limit=limit,
             status=status,
             priority=priority,
-            user_id=user_id,
         )
 
     def update_todo(
@@ -131,22 +132,20 @@ class TodoService:
         todo.cancel()
         return self.repository.save(todo)
 
-    def get_todos_by_status(
-        self, status: TodoStatus, user_id: int | None = None
-    ) -> list[Todo]:
+    def get_todos_by_status(self, status: TodoStatus, user_id: int) -> list[Todo]:
         """Get todos by status."""
         return self.repository.find_by_status(status, user_id)
 
-    def get_active_todos(self, user_id: int | None = None) -> list[Todo]:
+    def get_active_todos(self, user_id: int) -> list[Todo]:
         """Get active todos (pending or in_progress)."""
         return self.repository.find_active_todos(user_id or 0)
 
-    def get_overdue_todos(self, user_id: int | None = None) -> list[Todo]:
+    def get_overdue_todos(self, user_id: int) -> list[Todo]:
         """Get overdue todos."""
         overdue_todos = self.repository.find_overdue_todos(user_id)
         return [todo for todo in overdue_todos if todo.is_overdue()]
 
-    def get_user_todo_summary(self, user_id: int | None = None) -> dict[str, int]:
+    def get_user_todo_summary(self, user_id: int) -> dict[str, int]:
         """Get comprehensive todo statistics for a user."""
         total = self.repository.count_total(user_id)
         pending = self.repository.count_by_status(TodoStatus.pending, user_id)
@@ -166,13 +165,11 @@ class TodoService:
             "active": pending + in_progress,
         }
 
-    def get_todos_by_priority(
-        self, priority: TodoPriority, user_id: int | None = None
-    ) -> list[Todo]:
+    def get_todos_by_priority(self, priority: TodoPriority, user_id: int) -> list[Todo]:
         """Get todos by priority."""
         return self.repository.find_by_priority(priority, user_id)
 
-    def get_high_priority_todos(self, user_id: int | None = None) -> list[Todo]:
+    def get_high_priority_todos(self, user_id: int) -> list[Todo]:
         """Get high priority todos that are active."""
         high_priority_todos = self.repository.find_by_priority(
             TodoPriority.high, user_id
@@ -201,7 +198,7 @@ class TodoService:
 
         return updated_todos
 
-    def bulk_delete_completed_todos(self, user_id: int | None = None) -> int:
+    def bulk_delete_completed_todos(self, user_id: int) -> int:
         """Delete all completed todos for a user."""
         completed_todos = self.repository.find_by_status(TodoStatus.completed, user_id)
         deleted_count = 0

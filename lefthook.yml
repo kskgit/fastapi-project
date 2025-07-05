@@ -3,9 +3,11 @@ pre-commit:
     ruff-check:
       run: uv run ruff check {staged_files}
       glob: "*.py"
+      exclude: "alembic/versions/"
     ruff-format-check:
       run: uv run ruff format --check {staged_files}
       glob: "*.py"
+      exclude: "alembic/versions/"
     import-linter:
       run: uv run lint-imports
     mypy:

@@ -58,3 +58,11 @@ tasks:
   migrate-create:
     desc: Create empty migration file
     cmd: uv run alembic revision
+
+  db-rest:
+    desc: Reset database and create fresh migration
+    cmds:
+      - uv run alembic downgrade base
+      - uv run alembic revision --autogenerate -m "Reset User and Todo models"
+      - uv run alembic upgrade head
+      - echo "Database reset complete!"

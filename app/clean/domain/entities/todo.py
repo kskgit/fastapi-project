@@ -25,6 +25,7 @@ class Todo:
     """
 
     title: str
+    user_id: int
     description: str | None = None
     due_date: datetime | None = None
     status: TodoStatus = TodoStatus.pending
@@ -37,17 +38,30 @@ class Todo:
     def create(
         cls,
         title: str,
+        user_id: int,
         description: str | None = None,
         due_date: datetime | None = None,
         priority: TodoPriority = TodoPriority.medium,
     ) -> "Todo":
         """Create a new Todo.
 
-        Note: Basic validation (title length, description length) is handled by DTOs.
-        This method focuses on domain-specific business logic only.
+        Args:
+            title: Todo title
+            user_id: ID of the user who owns this todo
+            description: Optional todo description
+            due_date: Optional due date
+            priority: Todo priority (defaults to medium)
+
+        Returns:
+            Todo: New todo entity with pending status
+
+        Note:
+            Basic validation (title length, description length) is handled by DTOs.
+            This method focuses on domain-specific business logic only.
         """
         return cls(
             title=title,  # DTOで既にtrimされている
+            user_id=user_id,
             description=description,
             due_date=due_date,
             priority=priority,
@@ -132,6 +146,17 @@ class Todo:
             return False
 
         return True
+
+    def is_owned_by(self, user_id: int) -> bool:
+        """Check if this todo is owned by the specified user.
+
+        Args:
+            user_id: User ID to check ownership against
+
+        Returns:
+            bool: True if the todo is owned by the user, False otherwise
+        """
+        return self.user_id == user_id
 
     class Config:
         use_enum_values = True
