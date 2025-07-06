@@ -17,31 +17,6 @@ class TodoService:
     def __init__(self, repository: TodoRepository):
         self.repository = repository
 
-    def create_todo(
-        self,
-        title: str,
-        user_id: int,
-        description: str | None = None,
-        due_date: datetime | None = None,
-        priority: TodoPriority = TodoPriority.medium,
-    ) -> Todo:
-        """Create new todo.
-
-        Note: Basic validation (title length, etc.) is handled by API DTOs.
-        This method focuses on business logic only.
-        """
-        try:
-            todo = Todo.create(
-                title=title,
-                user_id=user_id,
-                description=description,
-                due_date=due_date,
-                priority=priority,
-            )
-            return self.repository.save(todo)
-        except Exception as e:
-            raise RuntimeError(f"Failed to create todo: {str(e)}") from e
-
     def get_todo(self, todo_id: int) -> Todo:
         """Get todo by ID with error handling."""
         todo = self.repository.find_by_id(todo_id)
