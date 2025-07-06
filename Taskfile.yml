@@ -21,11 +21,13 @@ tasks:
     desc: Run ruff linter and fix issues
     cmd: uv run ruff check --fix .
 
-  check:
+  check-all:
     desc: Run all checks (lint and format check)
     cmds:
       - uv run ruff check .
       - uv run ruff format --check .
+      - uv run lint-imports
+      - uv run mypy app/clean
 
   test:
     desc: Run unit tests
