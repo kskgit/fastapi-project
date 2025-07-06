@@ -62,7 +62,8 @@ tasks:
   db-rest:
     desc: Reset database and create fresh migration
     cmds:
-      - uv run alembic downgrade base
-      - uv run alembic revision --autogenerate -m "Reset User and Todo models"
+      - docker exec fastapi-postgres psql -U fastapi_user -d fastapi_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+      - rm -f alembic/versions/*.py
+      - uv run alembic revision --autogenerate -m "Initial migration User and Todo models"
       - uv run alembic upgrade head
       - echo "Database reset complete!"
