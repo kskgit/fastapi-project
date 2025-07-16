@@ -1,29 +1,14 @@
-from fastapi import Depends, FastAPI, HTTPException, Request
-from sqlalchemy.orm import Session
+from fastapi import FastAPI, HTTPException, Request
 
-from app.clean.api.endpoints import todos
-from app.clean.core.database_clean import get_db
-from app.clean.infrastructure.repositories.sqlalchemy_todo_repository import (
-    SQLAlchemyTodoRepository,
-)
-from app.clean.services.todo_service import TodoService
+from app.clean.api.endpoints import todo as todo_routes
+
+# Service layer has been removed - now using UseCase pattern
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 
 
-def get_todo_repository(db: Session = Depends(get_db)) -> SQLAlchemyTodoRepository:
-    """Dependency injection for TodoRepository."""
-    return SQLAlchemyTodoRepository(db)
-
-
-def get_todo_service(
-    repository: SQLAlchemyTodoRepository = Depends(get_todo_repository),
-) -> TodoService:
-    """Dependency injection for TodoService."""
-    return TodoService(repository)
-
-
-todos.get_todo_service = get_todo_service
+# Service layer dependencies removed - now using UseCase pattern with
+# dependency injection
 
 
 @app.exception_handler(ValueError)
@@ -49,7 +34,7 @@ async def runtime_error_handler(request: Request, exc: RuntimeError) -> HTTPExce
     raise HTTPException(status_code=500, detail=f"Internal server error: {str(exc)}")
 
 
-app.include_router(todos.router)
+app.include_router(todo_routes.router)
 
 
 @app.get("/")

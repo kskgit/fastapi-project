@@ -2,6 +2,7 @@ from datetime import datetime
 
 from app.clean.domain.entities.todo import Todo, TodoPriority
 from app.clean.domain.repositories.todo_repository import TodoRepository
+from app.clean.domain.repositories.user_repository import UserRepository
 
 
 class CreateTodoUseCase:
@@ -11,17 +12,21 @@ class CreateTodoUseCase:
     business logic validation and error handling.
 
     Dependencies:
-    - Only depends on Domain layer (TodoRepository interface)
+    - Only depends on Domain layer (TodoRepository and UserRepository interfaces)
     - No dependencies on API, Services, or Infrastructure layers
     """
 
-    def __init__(self, repository: TodoRepository):
-        """Initialize with TodoRepository dependency.
+    def __init__(
+        self, todo_repository: TodoRepository, user_repository: UserRepository
+    ):
+        """Initialize with repository dependencies.
 
         Args:
-            repository: TodoRepository interface implementation
+            todo_repository: TodoRepository interface implementation
+            user_repository: UserRepository interface implementation
         """
-        self.repository = repository
+        self.todo_repository = todo_repository
+        self.user_repository = user_repository
 
     def execute(
         self,
@@ -51,6 +56,10 @@ class CreateTodoUseCase:
             This method focuses on business logic only.
         """
         try:
+            # Validate that user exists
+            if not self.user_repository.exists(user_id):
+                raise ValueError(f"User with id {user_id} not found")
+
             todo = Todo.create(
                 user_id=user_id,
                 title=title,
@@ -58,6 +67,9 @@ class CreateTodoUseCase:
                 due_date=due_date,
                 priority=priority,
             )
-            return self.repository.save(todo)
+            return self.todo_repository.save(todo)
+        except ValueError:
+            # Re-raise ValueError as-is for proper API error handling
+            raise
         except Exception as e:
             raise RuntimeError(f"Failed to create todo: {str(e)}") from e

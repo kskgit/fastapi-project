@@ -11,6 +11,8 @@ class User:
 
     username: str
     email: str
+    full_name: str | None = None
+    is_active: bool = True
     id: int | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
@@ -20,6 +22,7 @@ class User:
         cls,
         username: str,
         email: str,
+        full_name: str | None = None,
     ) -> "User":
         """Create a new User.
 
@@ -36,6 +39,7 @@ class User:
         return cls(
             username=username,
             email=email,
+            full_name=full_name,
         )
 
     def update_username(self, username: str) -> None:

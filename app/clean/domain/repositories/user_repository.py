@@ -72,6 +72,19 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
+    def find_with_pagination(self, skip: int = 0, limit: int = 100) -> list[User]:
+        """Find users with pagination.
+
+        Args:
+            skip: Number of records to skip
+            limit: Maximum number of records to return
+
+        Returns:
+            List of user domain entities
+        """
+        pass
+
+    @abstractmethod
     def delete(self, user_id: int) -> bool:
         """Delete user by ID.
 

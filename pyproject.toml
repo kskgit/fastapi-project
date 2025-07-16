@@ -93,27 +93,13 @@ name = "API Layer Restrictions"
 type = "forbidden"
 source_modules = ["app.clean.api"]
 forbidden_modules = [
-    "sqlalchemy",
+    "sqlalchemy",              # No direct database access
     "alembic", 
     "asyncpg",
     "psycopg2",
     "app.clean.infrastructure",  # No direct infrastructure access
 ]
-
-# Services layer restrictions
-[[tool.importlinter.contracts]]
-name = "Services Layer Restrictions" 
-type = "forbidden"
-source_modules = ["app.clean.services"]
-forbidden_modules = [
-    "fastapi",
-    "sqlalchemy",
-    "alembic",
-    "asyncpg", 
-    "psycopg2",
-    "app.clean.infrastructure",  # Use repository interfaces only
-    "app.clean.api",            # No upward dependencies
-]
+# Note: FastAPI is allowed in API layer as it's the web framework interface
 
 # Domain layer restrictions (most restrictive)
 [[tool.importlinter.contracts]]
@@ -130,7 +116,7 @@ forbidden_modules = [
     "httpx",
     "requests",
     "app.clean.api",
-    "app.clean.services", 
+    "app.clean.usecases", 
     "app.clean.infrastructure",
 ]
 
@@ -142,20 +128,20 @@ source_modules = ["app.clean.infrastructure"]
 forbidden_modules = [
     "fastapi",               # No web framework knowledge
     "app.clean.api",         # No upward dependencies
+    "app.clean.usecases",    # No upward dependencies
 ]
 
-# UseCases layer restrictions
+# UseCases layer restrictions - strictest layer for business logic
 [[tool.importlinter.contracts]]
 name = "UseCases Layer Restrictions"
 type = "forbidden"
 source_modules = ["app.clean.usecases"]
 forbidden_modules = [
-    "fastapi",
-    "sqlalchemy",
+    "fastapi",                  # Pure business logic - no web framework
+    "sqlalchemy",               # Use repository interfaces only
     "alembic",
     "asyncpg", 
     "psycopg2",
     "app.clean.infrastructure",  # Use repository interfaces only
     "app.clean.api",            # No upward dependencies
-    "app.clean.services",       # Independent from services
 ]

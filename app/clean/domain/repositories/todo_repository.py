@@ -167,16 +167,3 @@ class TodoRepository(ABC):
             True if todo exists, False otherwise
         """
         pass
-
-    @abstractmethod
-    def find_by_id_and_user_id(self, todo_id: int, user_id: int) -> Todo | None:
-        """Find todo by ID and verify ownership.
-
-        Args:
-            todo_id: ID of the todo to find
-            user_id: ID of the user who should own the todo
-
-        Returns:
-            Todo domain entity if found and owned by user, None otherwise
-        """
-        pass
