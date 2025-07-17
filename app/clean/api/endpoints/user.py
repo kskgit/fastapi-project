@@ -11,15 +11,15 @@ from app.clean.api.dtos.user_dto import (
     UserResponseDTO,
     UserUpdateDTO,
 )
-from app.clean.usecases.user.create_user_usecase import CreateUserUseCase
-from app.clean.usecases.user.delete_user_usecase import DeleteUserUseCase
-from app.clean.usecases.user.di import (
+from app.clean.composition.di import (
     get_create_user_usecase,
     get_delete_user_usecase,
     get_get_user_by_id_usecase,
     get_get_users_usecase,
     get_update_user_usecase,
 )
+from app.clean.usecases.user.create_user_usecase import CreateUserUseCase
+from app.clean.usecases.user.delete_user_usecase import DeleteUserUseCase
 from app.clean.usecases.user.get_user_by_id_usecase import GetUserByIdUseCase
 from app.clean.usecases.user.get_users_usecase import GetUsersUseCase
 from app.clean.usecases.user.update_user_usecase import UpdateUserUseCase

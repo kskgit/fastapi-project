@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 
 from app.clean.api.endpoints import todo as todo_routes
+from app.clean.api.endpoints import user as user_routes
 
 # Service layer has been removed - now using UseCase pattern
 
@@ -35,6 +36,7 @@ async def runtime_error_handler(request: Request, exc: RuntimeError) -> HTTPExce
 
 
 app.include_router(todo_routes.router)
+app.include_router(user_routes.router)
 
 
 @app.get("/")

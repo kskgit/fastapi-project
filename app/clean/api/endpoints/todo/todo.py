@@ -11,16 +11,16 @@ from app.clean.api.dtos.todo_dto import (
     TodoResponseDTO,
     TodoUpdateDTO,
 )
-from app.clean.domain.entities.todo import TodoPriority, TodoStatus
-from app.clean.usecases.todo.create_todo_usecase import CreateTodoUseCase
-from app.clean.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
-from app.clean.usecases.todo.di import (
+from app.clean.composition.di import (
     get_create_todo_usecase,
     get_delete_todo_usecase,
     get_get_todo_by_id_usecase,
     get_get_todos_usecase,
     get_update_todo_usecase,
 )
+from app.clean.domain.entities.todo import TodoPriority, TodoStatus
+from app.clean.usecases.todo.create_todo_usecase import CreateTodoUseCase
+from app.clean.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
 from app.clean.usecases.todo.get_todo_by_id_usecase import GetTodoByIdUseCase
 from app.clean.usecases.todo.get_todos_usecase import GetTodosUseCase
 from app.clean.usecases.todo.update_todo_usecase import UpdateTodoUseCase

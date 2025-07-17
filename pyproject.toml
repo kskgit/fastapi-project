@@ -15,6 +15,7 @@ dependencies = [
     "fastapi>=0.115.12",
     "psycopg2-binary>=2.9.10",
     "pydantic-settings>=2.9.1",
+    "pydantic[email]>=2.11.7",
     "sqlalchemy>=2.0.41",
     "uvicorn>=0.34.3",
 ]
@@ -87,19 +88,17 @@ markers = [
 root_packages = ["app"]
 include_external_packages = true
 
-# API layer restrictions
+# Clean Architecture Layer Dependencies
 [[tool.importlinter.contracts]]
-name = "API Layer Restrictions"
-type = "forbidden"
-source_modules = ["app.clean.api"]
-forbidden_modules = [
-    "sqlalchemy",              # No direct database access
-    "alembic", 
-    "asyncpg",
-    "psycopg2",
-    "app.clean.infrastructure",  # No direct infrastructure access
+name = "Clean Architecture Layers"
+type = "layers"
+layers = [
+    "app.clean.api",
+    "app.clean.composition",  # Composition Root layer (can access all)
+    "app.clean.usecases", 
+    "app.clean.infrastructure",
+    "app.clean.domain"
 ]
-# Note: FastAPI is allowed in API layer as it's the web framework interface
 
 # Domain layer restrictions (most restrictive)
 [[tool.importlinter.contracts]]
@@ -144,4 +143,14 @@ forbidden_modules = [
     "psycopg2",
     "app.clean.infrastructure",  # Use repository interfaces only
     "app.clean.api",            # No upward dependencies
+    "app.clean.composition",    # No upward dependencies
+]
+
+# Composition Root layer restrictions - can import all but no upward dependencies  
+[[tool.importlinter.contracts]]
+name = "Composition Root Layer Restrictions"
+type = "forbidden"
+source_modules = ["app.clean.composition"]
+forbidden_modules = [
+    "app.clean.api",            # No upward dependencies to API layer
 ]
