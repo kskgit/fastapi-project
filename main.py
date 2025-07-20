@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 
-from app.clean.api.endpoints import todo as todo_routes
-from app.clean.api.endpoints import user as user_routes
+from app.api.endpoints import todo as todo_routes
+from app.api.endpoints import user as user_routes
 
 # Service layer has been removed - now using UseCase pattern
 

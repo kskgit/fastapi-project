@@ -93,18 +93,18 @@ include_external_packages = true
 name = "Clean Architecture Layers"
 type = "layers"
 layers = [
-    "app.clean.api",
-    "app.clean.composition",  # Composition Root layer (can access all)
-    "app.clean.usecases", 
-    "app.clean.infrastructure",
-    "app.clean.domain"
+    "app.api",
+    "app.composition",  # Composition Root layer (can access all)
+    "app.usecases", 
+    "app.infrastructure",
+    "app.domain"
 ]
 
 # Domain layer restrictions (most restrictive)
 [[tool.importlinter.contracts]]
 name = "Domain Layer Purity"
 type = "forbidden"
-source_modules = ["app.clean.domain"]
+source_modules = ["app.domain"]
 forbidden_modules = [
     "fastapi",
     "pydantic",
@@ -114,43 +114,43 @@ forbidden_modules = [
     "psycopg2", 
     "httpx",
     "requests",
-    "app.clean.api",
-    "app.clean.usecases", 
-    "app.clean.infrastructure",
+    "app.api",
+    "app.usecases", 
+    "app.infrastructure",
 ]
 
 # Infrastructure layer restrictions
 [[tool.importlinter.contracts]]
 name = "Infrastructure Layer Restrictions"
 type = "forbidden"
-source_modules = ["app.clean.infrastructure"]
+source_modules = ["app.infrastructure"]
 forbidden_modules = [
     "fastapi",               # No web framework knowledge
-    "app.clean.api",         # No upward dependencies
-    "app.clean.usecases",    # No upward dependencies
+    "app.api",         # No upward dependencies
+    "app.usecases",    # No upward dependencies
 ]
 
 # UseCases layer restrictions - strictest layer for business logic
 [[tool.importlinter.contracts]]
 name = "UseCases Layer Restrictions"
 type = "forbidden"
-source_modules = ["app.clean.usecases"]
+source_modules = ["app.usecases"]
 forbidden_modules = [
     "fastapi",                  # Pure business logic - no web framework
     "sqlalchemy",               # Use repository interfaces only
     "alembic",
     "asyncpg", 
     "psycopg2",
-    "app.clean.infrastructure",  # Use repository interfaces only
-    "app.clean.api",            # No upward dependencies
-    "app.clean.composition",    # No upward dependencies
+    "app.infrastructure",  # Use repository interfaces only
+    "app.api",            # No upward dependencies
+    "app.composition",    # No upward dependencies
 ]
 
 # Composition Root layer restrictions - can import all but no upward dependencies  
 [[tool.importlinter.contracts]]
 name = "Composition Root Layer Restrictions"
 type = "forbidden"
-source_modules = ["app.clean.composition"]
+source_modules = ["app.composition"]
 forbidden_modules = [
-    "app.clean.api",            # No upward dependencies to API layer
+    "app.api",            # No upward dependencies to API layer
 ]

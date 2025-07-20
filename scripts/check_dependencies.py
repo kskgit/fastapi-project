@@ -49,15 +49,15 @@ class DependencyChecker:
 
     def get_layer_from_import(self, import_name: str) -> str | None:
         """importからレイヤーを特定"""
-        if import_name.startswith("app.clean."):
+        if import_name.startswith("app.") and not import_name.startswith("app.clean."):
             parts = import_name.split(".")
-            if len(parts) >= 3:
-                return parts[2]  # app.clean.{layer}
+            if len(parts) >= 2:
+                return parts[1]  # app.{layer}
         return None
 
     def check_layer_dependencies(self, layer: str) -> None:
         """指定されたレイヤーの依存関係をチェック"""
-        layer_path = self.project_root / "app" / "clean" / layer
+        layer_path = self.project_root / "app" / layer
 
         if not layer_path.exists():
             return
