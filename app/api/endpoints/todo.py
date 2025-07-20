@@ -3,7 +3,7 @@
 This module contains all Todo-related API endpoints.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi import status as http_status
 
 from app.api.dtos.todo_dto import (
@@ -112,10 +112,9 @@ async def delete_todo(
     user_id = 1
     deleted = usecase.execute(todo_id=todo_id, user_id=user_id)
     if not deleted:
-        raise HTTPException(
-            status_code=http_status.HTTP_404_NOT_FOUND,
-            detail=f"Todo with id {todo_id} not found",
-        )
+        from app.domain.exceptions import TodoNotFoundException
+
+        raise TodoNotFoundException(todo_id)
 
 
 @router.patch("/{todo_id}/complete", response_model=TodoResponseDTO)

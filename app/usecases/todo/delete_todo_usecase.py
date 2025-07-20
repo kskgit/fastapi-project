@@ -1,3 +1,4 @@
+from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 
@@ -36,29 +37,23 @@ class DeleteTodoUseCase:
             bool: True if deleted successfully, False if not found
 
         Raises:
-            ValueError: If user not found or ownership validation fails
-            RuntimeError: If todo deletion fails
+            UserNotFoundException: If user not found
 
         Note:
             Only the todo owner can delete their todos.
+            Exceptions are handled by FastAPI exception handlers in main.py.
         """
-        try:
-            # Validate that user exists
-            if not self.user_repository.exists(user_id):
-                raise ValueError(f"User with id {user_id} not found")
+        # Validate that user exists
+        if not self.user_repository.exists(user_id):
+            raise UserNotFoundException(user_id)
 
-            # Get the existing todo to validate ownership
-            todo = self.todo_repository.find_by_id(todo_id)
-            if not todo:
-                return False  # Todo doesn't exist
+        # Get the existing todo to validate ownership
+        todo = self.todo_repository.find_by_id(todo_id)
+        if not todo:
+            return False  # Todo doesn't exist
 
-            # Validate ownership
-            if todo.user_id != user_id:
-                return False  # Don't reveal existence of other users' todos
+        # Validate ownership
+        if todo.user_id != user_id:
+            return False  # Don't reveal existence of other users' todos
 
-            return self.todo_repository.delete(todo_id)
-        except ValueError:
-            # Re-raise ValueError as-is for proper API error handling
-            raise
-        except Exception as e:
-            raise RuntimeError(f"Failed to delete todo: {str(e)}") from e
+        return self.todo_repository.delete(todo_id)

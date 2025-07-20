@@ -1,6 +1,7 @@
 """Get User by ID UseCase implementation."""
 
 from app.domain.entities.user import User
+from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.user_repository import UserRepository
 
 
@@ -33,17 +34,13 @@ class GetUserByIdUseCase:
             User: The requested user entity
 
         Raises:
-            ValueError: If user not found
-            RuntimeError: If user retrieval fails
-        """
-        try:
-            user = self.user_repository.find_by_id(user_id)
-            if not user:
-                raise ValueError(f"User with id {user_id} not found")
+            UserNotFoundException: If user not found
 
-            return user
-        except ValueError:
-            # Re-raise ValueError as-is for proper API error handling
-            raise
-        except Exception as e:
-            raise RuntimeError(f"Failed to get user: {str(e)}") from e
+        Note:
+            Exceptions are handled by FastAPI exception handlers in main.py.
+        """
+        user = self.user_repository.find_by_id(user_id)
+        if not user:
+            raise UserNotFoundException(user_id)
+
+        return user

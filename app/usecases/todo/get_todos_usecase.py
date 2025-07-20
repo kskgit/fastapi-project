@@ -1,4 +1,5 @@
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 
@@ -47,32 +48,27 @@ class GetTodosUseCase:
             list[Todo]: List of todos matching the criteria
 
         Raises:
-            ValueError: If user not found or invalid pagination parameters
-            RuntimeError: If todo retrieval fails
+            UserNotFoundException: If user not found
+            ValueError: If invalid pagination parameters
 
         Note:
             Pagination validation is handled here as business logic.
+            Exceptions are handled by FastAPI exception handlers in main.py.
         """
-        try:
-            # Validate that user exists
-            if not self.user_repository.exists(user_id):
-                raise ValueError(f"User with id {user_id} not found")
+        # Validate that user exists
+        if not self.user_repository.exists(user_id):
+            raise UserNotFoundException(user_id)
 
-            # Validate pagination parameters
-            if limit > 1000:
-                raise ValueError("Limit cannot exceed 1000")
-            if skip < 0:
-                raise ValueError("Skip cannot be negative")
+        # Validate pagination parameters
+        if limit > 1000:
+            raise ValueError("Limit cannot exceed 1000")
+        if skip < 0:
+            raise ValueError("Skip cannot be negative")
 
-            return self.todo_repository.find_with_pagination(
-                user_id=user_id,
-                skip=skip,
-                limit=limit,
-                status=status,
-                priority=priority,
-            )
-        except ValueError:
-            # Re-raise ValueError as-is for proper API error handling
-            raise
-        except Exception as e:
-            raise RuntimeError(f"Failed to get todos: {str(e)}") from e
+        return self.todo_repository.find_with_pagination(
+            user_id=user_id,
+            skip=skip,
+            limit=limit,
+            status=status,
+            priority=priority,
+        )

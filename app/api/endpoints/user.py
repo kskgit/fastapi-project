@@ -3,7 +3,7 @@
 This module contains all User-related API endpoints.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi import status as http_status
 
 from app.api.dtos.user_dto import (
@@ -88,7 +88,6 @@ async def delete_user(
     """Delete a specific user."""
     deleted = usecase.execute(user_id=user_id)
     if not deleted:
-        raise HTTPException(
-            status_code=http_status.HTTP_404_NOT_FOUND,
-            detail=f"User with id {user_id} not found",
-        )
+        from app.domain.exceptions import UserNotFoundException
+
+        raise UserNotFoundException(user_id)

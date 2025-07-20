@@ -2,6 +2,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.domain.entities.user import User
+from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.database.models import UserModel
 
@@ -53,7 +54,7 @@ class SQLAlchemyUserRepository(UserRepository):
                     self.db.query(UserModel).filter(UserModel.id == user.id).first()
                 )
                 if not existing_model:
-                    raise ValueError(f"User with id {user.id} not found")
+                    raise UserNotFoundException(user.id)
 
                 existing_model.username = user.username
                 existing_model.email = user.email

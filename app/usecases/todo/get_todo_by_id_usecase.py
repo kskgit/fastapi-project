@@ -1,4 +1,5 @@
 from app.domain.entities.todo import Todo
+from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 
@@ -37,33 +38,26 @@ class GetTodoByIdUseCase:
             Todo: The requested todo entity
 
         Raises:
-            ValueError: If todo not found or user doesn't own the todo
-            RuntimeError: If todo retrieval fails
+            TodoNotFoundException: If todo not found or user doesn't own the todo
+            UserNotFoundException: If user not found
 
         Note:
             If user_id is provided, ownership validation is performed.
             If user_id is None, returns todo regardless of ownership (admin access).
+            Exceptions are handled by FastAPI exception handlers in main.py.
         """
-        try:
-            todo = self.todo_repository.find_by_id(todo_id)
-            if not todo:
-                raise ValueError(f"Todo with id {todo_id} not found")
+        todo = self.todo_repository.find_by_id(todo_id)
+        if not todo:
+            raise TodoNotFoundException(todo_id)
 
-            # If user_id is provided, validate ownership
-            if user_id is not None:
-                # Validate that user exists
-                if not self.user_repository.exists(user_id):
-                    raise ValueError(f"User with id {user_id} not found")
+        # If user_id is provided, validate ownership
+        if user_id is not None:
+            # Validate that user exists
+            if not self.user_repository.exists(user_id):
+                raise UserNotFoundException(user_id)
 
-                # Validate todo ownership
-                if todo.user_id != user_id:
-                    raise ValueError(
-                        f"Todo with id {todo_id} not found"
-                    )  # Don't reveal existence
+            # Validate todo ownership
+            if todo.user_id != user_id:
+                raise TodoNotFoundException(todo_id)  # Don't reveal existence
 
-            return todo
-        except ValueError:
-            # Re-raise ValueError as-is for proper API error handling
-            raise
-        except Exception as e:
-            raise RuntimeError(f"Failed to get todo: {str(e)}") from e
+        return todo

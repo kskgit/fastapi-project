@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.domain.exceptions import TodoNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.infrastructure.database.models import TodoModel
 
@@ -68,7 +69,7 @@ class SQLAlchemyTodoRepository(TodoRepository):
                     self.db.query(TodoModel).filter(TodoModel.id == todo.id).first()
                 )
                 if not existing_model:
-                    raise ValueError(f"Todo with id {todo.id} not found")
+                    raise TodoNotFoundException(todo.id)
 
                 existing_model.title = todo.title
                 existing_model.user_id = todo.user_id

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from app.domain.entities.todo import Todo, TodoPriority
+from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 
@@ -49,27 +50,22 @@ class CreateTodoUseCase:
             Todo: Created todo entity
 
         Raises:
-            RuntimeError: If todo creation fails
+            UserNotFoundException: If user does not exist
+            RuntimeError: If todo creation fails (handled by exception handler)
 
         Note:
             Basic validation (title length, etc.) is handled by API DTOs.
             This method focuses on business logic only.
         """
-        try:
-            # Validate that user exists
-            if not self.user_repository.exists(user_id):
-                raise ValueError(f"User with id {user_id} not found")
+        # Validate that user exists
+        if not self.user_repository.exists(user_id):
+            raise UserNotFoundException(user_id)
 
-            todo = Todo.create(
-                user_id=user_id,
-                title=title,
-                description=description,
-                due_date=due_date,
-                priority=priority,
-            )
-            return self.todo_repository.save(todo)
-        except ValueError:
-            # Re-raise ValueError as-is for proper API error handling
-            raise
-        except Exception as e:
-            raise RuntimeError(f"Failed to create todo: {str(e)}") from e
+        todo = Todo.create(
+            user_id=user_id,
+            title=title,
+            description=description,
+            due_date=due_date,
+            priority=priority,
+        )
+        return self.todo_repository.save(todo)
