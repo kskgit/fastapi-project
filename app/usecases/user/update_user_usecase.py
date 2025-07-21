@@ -3,6 +3,7 @@
 from app.domain.entities.user import User
 from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.user_domain_service import UserDomainService
 
 
 class UpdateUserUseCase:
@@ -23,6 +24,7 @@ class UpdateUserUseCase:
             user_repository: UserRepository interface implementation
         """
         self.user_repository = user_repository
+        self.user_domain_service = UserDomainService()
 
     def execute(
         self,
@@ -51,32 +53,35 @@ class UpdateUserUseCase:
             At least one field must be provided for update.
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
-        # Get the existing user
+        user = self._validate_user_exists(user_id)
+        self._validate_update_fields(username, email, full_name)
+        self.user_domain_service.validate_user_update_uniqueness(
+            user_id, user, username, email, self.user_repository
+        )
+        self._update_user_fields(user, username, email, full_name)
+        return self.user_repository.save(user)
+
+    def _validate_user_exists(self, user_id: int) -> User:
+        """Validate that the user exists."""
         user = self.user_repository.find_by_id(user_id)
         if not user:
             raise UserNotFoundException(user_id)
+        return user
 
-        # Check that at least one field is being updated
+    def _validate_update_fields(
+        self, username: str | None, email: str | None, full_name: str | None
+    ) -> None:
+        """Validate that at least one field is provided for update."""
         if all(param is None for param in [username, email, full_name]):
             raise ValueError("At least one field must be provided for update")
 
-        # Check uniqueness constraints if username or email are being updated
-        if username is not None and username != user.username:
-            existing_user = self.user_repository.find_by_username(username)
-            if existing_user and existing_user.id != user_id:
-                raise ValueError(f"Username '{username}' already exists")
-
-        if email is not None and email != user.email:
-            existing_user = self.user_repository.find_by_email(email)
-            if existing_user and existing_user.id != user_id:
-                raise ValueError(f"Email '{email}' already exists")
-
-        # Update fields if provided
+    def _update_user_fields(
+        self, user: User, username: str | None, email: str | None, full_name: str | None
+    ) -> None:
+        """Update user fields if provided."""
         if username is not None:
             user.username = username
         if email is not None:
             user.email = email
         if full_name is not None:
             user.full_name = full_name
-
-        return self.user_repository.save(user)

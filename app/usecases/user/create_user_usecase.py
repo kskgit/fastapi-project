@@ -2,6 +2,7 @@
 
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.user_domain_service import UserDomainService
 
 
 class CreateUserUseCase:
@@ -22,6 +23,7 @@ class CreateUserUseCase:
             user_repository: UserRepository interface implementation
         """
         self.user_repository = user_repository
+        self.user_domain_service = UserDomainService()
 
     def execute(self, username: str, email: str, full_name: str | None = None) -> User:
         """Execute the create user use case.
@@ -36,23 +38,13 @@ class CreateUserUseCase:
 
         Raises:
             ValueError: If username or email already exists
-            RuntimeError: If user creation fails
         """
-        try:
-            # Check if username already exists
-            if self.user_repository.find_by_username(username):
-                raise ValueError(f"Username '{username}' already exists")
+        # Validate uniqueness constraints
+        self.user_domain_service.validate_user_creation_uniqueness(
+            username, email, self.user_repository
+        )
 
-            # Check if email already exists
-            if self.user_repository.find_by_email(email):
-                raise ValueError(f"Email '{email}' already exists")
+        # Create new user
+        user = User.create(username=username, email=email, full_name=full_name)
 
-            # Create new user
-            user = User.create(username=username, email=email, full_name=full_name)
-
-            return self.user_repository.save(user)
-        except ValueError:
-            # Re-raise ValueError as-is for proper API error handling
-            raise
-        except Exception as e:
-            raise RuntimeError(f"Failed to create user: {str(e)}") from e
+        return self.user_repository.save(user)

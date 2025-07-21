@@ -28,6 +28,7 @@ tasks:
       - uv run ruff format --check .
       - uv run lint-imports
       - uv run mypy app/clean
+      - uv run lizard --CCN 10 app/
 
   test:
     desc: Run unit tests
@@ -60,6 +61,10 @@ tasks:
   migrate-create:
     desc: Create empty migration file
     cmd: uv run alembic revision
+
+  lizard-complexity:
+    desc: Check code complexity with lizard
+    cmd: uv run lizard --CCN 10 app/
 
   db-rest:
     desc: Reset database and create fresh migration

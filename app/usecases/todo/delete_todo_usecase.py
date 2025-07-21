@@ -1,6 +1,6 @@
-from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.todo_domain_service import TodoDomainService
 
 
 class DeleteTodoUseCase:
@@ -25,6 +25,7 @@ class DeleteTodoUseCase:
         """
         self.todo_repository = todo_repository
         self.user_repository = user_repository
+        self.todo_domain_service = TodoDomainService()
 
     def execute(self, todo_id: int, user_id: int) -> bool:
         """Execute the delete todo use case.
@@ -44,8 +45,9 @@ class DeleteTodoUseCase:
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
         # Validate that user exists
-        if not self.user_repository.exists(user_id):
-            raise UserNotFoundException(user_id)
+        self.todo_domain_service.validate_user_exists_for_todo_operation(
+            user_id, self.user_repository
+        )
 
         # Get the existing todo to validate ownership
         todo = self.todo_repository.find_by_id(todo_id)
@@ -53,7 +55,6 @@ class DeleteTodoUseCase:
             return False  # Todo doesn't exist
 
         # Validate ownership
-        if todo.user_id != user_id:
-            return False  # Don't reveal existence of other users' todos
+        self.todo_domain_service.validate_todo_ownership(todo, user_id)
 
         return self.todo_repository.delete(todo_id)

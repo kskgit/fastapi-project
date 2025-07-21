@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
+from app.domain.exceptions import TodoNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.todo_domain_service import TodoDomainService
 
 
 class UpdateTodoUseCase:
@@ -28,6 +29,7 @@ class UpdateTodoUseCase:
         """
         self.todo_repository = todo_repository
         self.user_repository = user_repository
+        self.todo_domain_service = TodoDomainService()
 
     def execute(
         self,
@@ -63,26 +65,37 @@ class UpdateTodoUseCase:
             At least one field must be provided for update.
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
-        # Validate that user exists
-        if not self.user_repository.exists(user_id):
-            raise UserNotFoundException(user_id)
+        todo = self._validate_preconditions(todo_id, user_id)
+        self.todo_domain_service.validate_update_fields_provided(
+            title, description, due_date, status, priority
+        )
+        self._update_todo_fields(todo, title, description, due_date, status, priority)
+        return self.todo_repository.save(todo)
 
-        # Get the existing todo
+    def _validate_preconditions(self, todo_id: int, user_id: int) -> Todo:
+        """Validate user exists, todo exists, and ownership."""
+        self.todo_domain_service.validate_user_exists_for_todo_operation(
+            user_id, self.user_repository
+        )
+
         todo = self.todo_repository.find_by_id(todo_id)
         if not todo:
             raise TodoNotFoundException(todo_id)
 
-        # Validate ownership
-        if todo.user_id != user_id:
-            raise TodoNotFoundException(todo_id)  # Don't reveal existence
+        self.todo_domain_service.validate_todo_ownership(todo, user_id)
 
-        # Check that at least one field is being updated
-        if all(
-            param is None for param in [title, description, due_date, status, priority]
-        ):
-            raise ValueError("At least one field must be provided for update")
+        return todo
 
-        # Update fields if provided
+    def _update_todo_fields(
+        self,
+        todo: Todo,
+        title: str | None,
+        description: str | None,
+        due_date: datetime | None,
+        status: TodoStatus | None,
+        priority: TodoPriority | None,
+    ) -> None:
+        """Update todo fields if provided."""
         if title is not None:
             todo.title = title
         if description is not None:
@@ -93,5 +106,3 @@ class UpdateTodoUseCase:
             todo.status = status
         if priority is not None:
             todo.priority = priority
-
-        return self.todo_repository.save(todo)

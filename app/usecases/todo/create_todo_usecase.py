@@ -1,9 +1,9 @@
 from datetime import datetime
 
 from app.domain.entities.todo import Todo, TodoPriority
-from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.todo_domain_service import TodoDomainService
 
 
 class CreateTodoUseCase:
@@ -28,6 +28,7 @@ class CreateTodoUseCase:
         """
         self.todo_repository = todo_repository
         self.user_repository = user_repository
+        self.todo_domain_service = TodoDomainService()
 
     def execute(
         self,
@@ -58,8 +59,9 @@ class CreateTodoUseCase:
             This method focuses on business logic only.
         """
         # Validate that user exists
-        if not self.user_repository.exists(user_id):
-            raise UserNotFoundException(user_id)
+        self.todo_domain_service.validate_user_exists_for_todo_operation(
+            user_id, self.user_repository
+        )
 
         todo = Todo.create(
             user_id=user_id,

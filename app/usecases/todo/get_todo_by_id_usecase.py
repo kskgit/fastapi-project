@@ -1,7 +1,8 @@
 from app.domain.entities.todo import Todo
-from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
+from app.domain.exceptions import TodoNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.todo_domain_service import TodoDomainService
 
 
 class GetTodoByIdUseCase:
@@ -26,6 +27,7 @@ class GetTodoByIdUseCase:
         """
         self.todo_repository = todo_repository
         self.user_repository = user_repository
+        self.todo_domain_service = TodoDomainService()
 
     def execute(self, todo_id: int, user_id: int | None = None) -> Todo:
         """Execute the get todo by ID use case.
@@ -53,11 +55,11 @@ class GetTodoByIdUseCase:
         # If user_id is provided, validate ownership
         if user_id is not None:
             # Validate that user exists
-            if not self.user_repository.exists(user_id):
-                raise UserNotFoundException(user_id)
+            self.todo_domain_service.validate_user_exists_for_todo_operation(
+                user_id, self.user_repository
+            )
 
             # Validate todo ownership
-            if todo.user_id != user_id:
-                raise TodoNotFoundException(todo_id)  # Don't reveal existence
+            self.todo_domain_service.validate_todo_ownership(todo, user_id)
 
         return todo

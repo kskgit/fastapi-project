@@ -1,7 +1,7 @@
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.todo_domain_service import TodoDomainService
 
 
 class GetTodosUseCase:
@@ -26,6 +26,7 @@ class GetTodosUseCase:
         """
         self.todo_repository = todo_repository
         self.user_repository = user_repository
+        self.todo_domain_service = TodoDomainService()
 
     def execute(
         self,
@@ -56,14 +57,12 @@ class GetTodosUseCase:
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
         # Validate that user exists
-        if not self.user_repository.exists(user_id):
-            raise UserNotFoundException(user_id)
+        self.todo_domain_service.validate_user_exists_for_todo_operation(
+            user_id, self.user_repository
+        )
 
         # Validate pagination parameters
-        if limit > 1000:
-            raise ValueError("Limit cannot exceed 1000")
-        if skip < 0:
-            raise ValueError("Skip cannot be negative")
+        self.todo_domain_service.validate_pagination_parameters(skip, limit)
 
         return self.todo_repository.find_with_pagination(
             user_id=user_id,

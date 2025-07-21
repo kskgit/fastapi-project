@@ -14,6 +14,8 @@ pre-commit:
       run: uv run mypy {staged_files}
       glob: "*.py"
       exclude: "alembic/versions/"
+    lizard-complexity:
+      run: uv run lizard --CCN 10 app/
 
 pre-push:
   commands:
@@ -25,3 +27,5 @@ pre-push:
       run: uv run lint-imports
     mypy-all:
       run: uv run mypy app/clean
+    lizard-complexity-all:
+      run: uv run lizard --CCN 10 app/

@@ -13,4 +13,17 @@
   "mypy-type-checker.path": ["./.venv/bin/mypy"],
   "python.testing.pytestEnabled": true,
   "python.testing.autoTestDiscoverOnSaveEnabled": true,
+  "python.testing.pytestPath": "./.venv/bin/pytest",
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "-v",
+    "--tb=short"
+  ],
+  "python.terminal.activateEnvironment": true,
+  "python.envFile": "${workspaceFolder}/.env",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}"
+  ],
+  "python.analysis.autoSearchPaths": true,
+  "python.analysis.autoImportCompletions": true
 }

@@ -180,6 +180,7 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "import-linter" },
+    { name = "lizard" },
     { name = "mypy" },
     { name = "ruff" },
 ]
@@ -204,6 +205,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "import-linter", specifier = ">=2.0.0" },
+    { name = "lizard", specifier = ">=1.17.10" },
     { name = "mypy", specifier = ">=1.16.0" },
     { name = "ruff", specifier = ">=0.11.13" },
 ]
@@ -342,6 +344,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/dc/fe/0f5a938c54105553436dbff7a61dc4fed4b1b2c98852f8833beaf4d5968f/joblib-1.5.1.tar.gz", hash = "sha256:f4f86e351f39fe3d0d32a9f2c3d8af1ee4cec285aafcb27003dda5205576b444", size = 330475, upload-time = "2025-05-23T12:04:37.097Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7d/4f/1195bbac8e0c2acc5f740661631d8d750dc38d4a32b23ee5df3cde6f4e0d/joblib-1.5.1-py3-none-any.whl", hash = "sha256:4719a31f054c7d766948dcd83e9613686b27114f190f717cec7eaa2084f8a74a", size = 307746, upload-time = "2025-05-23T12:04:35.124Z" },
+]
+
+[[package]]
+name = "lizard"
+version = "1.17.31"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pathspec" },
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0b/c9/ef0a3a8df311938df2f15d3861073d3861bb2e32f43be85c3cf8f7f81ba8/lizard-1.17.31.tar.gz", hash = "sha256:af6b35d06bcc9718ff3db1ad7ce1f7645f2d8e07c2348e8873817f61d6592888", size = 75271, upload-time = "2025-05-25T09:21:43.13Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b6/25/f3b7a347aae3c1f36ef86b5dfc3f05af8ec44e096725f675280c83073b57/lizard-1.17.31-py2.py3-none-any.whl", hash = "sha256:e2a87b0a6be04c2db41a0708fc81ac7ef50694c92360233b7b81088a9695076f", size = 82126, upload-time = "2025-05-25T09:21:40.347Z" },
 ]
 
 [[package]]
