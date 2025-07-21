@@ -2,7 +2,11 @@ from fastapi import FastAPI, HTTPException, Request
 
 from app.api.endpoints import todo as todo_routes
 from app.api.endpoints import user as user_routes
-from app.domain.exceptions import DomainException, ResourceNotFoundException
+from app.domain.exceptions import (
+    DomainException,
+    InfrastructureException,
+    ResourceNotFoundException,
+)
 
 # Service layer has been removed - now using UseCase pattern
 
@@ -48,6 +52,24 @@ async def value_error_handler(request: Request, exc: ValueError) -> HTTPExceptio
     Note: Resource not found errors now use specific domain exceptions.
     """
     raise HTTPException(status_code=400, detail=str(exc))
+
+
+@app.exception_handler(InfrastructureException)
+async def infrastructure_error_handler(
+    request: Request, exc: InfrastructureException
+) -> HTTPException:
+    """Handle InfrastructureException exceptions.
+
+    InfrastructureException is used for infrastructure layer failures:
+    - ConnectionException (data persistence failures) -> 503
+    - Other infrastructure errors -> 503
+
+    HTTP 503 indicates service temporarily unavailable, suggesting retry.
+    """
+    raise HTTPException(
+        status_code=503,
+        detail="Service temporarily unavailable. Please try again later.",
+    )
 
 
 @app.exception_handler(RuntimeError)

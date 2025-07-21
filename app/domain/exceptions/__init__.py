@@ -6,6 +6,10 @@ error handling.
 """
 
 from .base import DomainException
+from .infrastructure import (
+    ConnectionException,
+    InfrastructureException,
+)
 from .resource import (
     ResourceNotFoundException,
     TodoNotFoundException,
@@ -14,6 +18,8 @@ from .resource import (
 
 __all__ = [
     "DomainException",
+    "InfrastructureException",
+    "ConnectionException",
     "ResourceNotFoundException",
     "TodoNotFoundException",
     "UserNotFoundException",
