@@ -4,7 +4,7 @@ from app.api.endpoints import todo as todo_routes
 from app.api.endpoints import user as user_routes
 from app.domain.exceptions import (
     BusinessRuleException,
-    InfrastructureException,
+    SystemException,
 )
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
@@ -46,15 +46,13 @@ async def value_error_handler(request: Request, exc: ValueError) -> HTTPExceptio
     raise HTTPException(status_code=400, detail=str(exc))
 
 
-@app.exception_handler(InfrastructureException)
-async def infrastructure_error_handler(
-    request: Request, exc: InfrastructureException
-) -> HTTPException:
-    """Handle InfrastructureException exceptions.
+@app.exception_handler(SystemException)
+async def system_error_handler(request: Request, exc: SystemException) -> HTTPException:
+    """Handle SystemException exceptions.
 
-    InfrastructureException is used for infrastructure layer failures:
+    SystemException is used for system layer failures:
     - ConnectionException (data persistence failures) -> 503
-    - Other infrastructure errors -> 503
+    - Other system errors -> 503
 
     HTTP 503 indicates service temporarily unavailable, suggesting retry.
     """

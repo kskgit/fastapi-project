@@ -1,6 +1,6 @@
-"""Infrastructure-related domain exceptions.
+"""System-related domain exceptions.
 
-This module contains exceptions related to infrastructure operations
+This module contains exceptions related to system operations
 that affect domain functionality, such as data persistence failures,
 external service connectivity issues, etc.
 
@@ -11,10 +11,10 @@ while preserving the essential error information for domain operations.
 from typing import Any
 
 
-class InfrastructureException(Exception):
-    """Base exception for infrastructure-related errors affecting domain operations.
+class SystemException(Exception):
+    """Base exception for system-related errors affecting domain operations.
 
-    This exception is raised when infrastructure layer problems prevent
+    This exception is raised when system layer problems prevent
     domain operations from completing successfully. It abstracts away
     technical implementation details while providing meaningful error
     information to the domain layer.
@@ -40,11 +40,11 @@ class InfrastructureException(Exception):
             details: Additional context information about the infrastructure failure
         """
         super().__init__(message)
-        self.error_code = error_code or "infrastructure_error"
+        self.error_code = error_code or "system_error"
         self.details = details
 
 
-class ConnectionException(InfrastructureException):
+class ConnectionException(SystemException):
     """Exception raised when data persistence connection fails.
 
     This exception is raised when the application cannot establish or maintain

@@ -16,7 +16,7 @@ from .business import (
 )
 from .infrastructure import (
     ConnectionException,
-    InfrastructureException,
+    SystemException,
 )
 
 __all__ = [
@@ -27,6 +27,6 @@ __all__ = [
     "StateTransitionException",
     "UserNotFoundException",
     "TodoNotFoundException",
-    "InfrastructureException",
+    "SystemException",
     "ConnectionException",
 ]
