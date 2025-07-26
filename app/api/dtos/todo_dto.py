@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.domain.entities.todo import Todo as TodoEntity
 from app.domain.entities.todo import TodoPriority, TodoStatus
+from app.domain.exceptions import ValidationException
 
 
 class TodoCreateDTO(BaseModel):
@@ -21,11 +22,11 @@ class TodoCreateDTO(BaseModel):
     def validate_title(cls, v: str) -> str:
         """Validate title - must not be None and at least 3 characters after strip."""
         if not v:
-            raise ValueError("Title cannot be None or empty")
+            raise ValidationException("Title cannot be None or empty")
 
         stripped = v.strip()
         if len(stripped) < 3:
-            raise ValueError(
+            raise ValidationException(
                 "Title must be at least 3 characters long after removing whitespace"
             )
 
@@ -53,11 +54,11 @@ class TodoUpdateDTO(BaseModel):
             return None
 
         if not v:
-            raise ValueError("Title cannot be empty")
+            raise ValidationException("Title cannot be empty")
 
         stripped = v.strip()
         if len(stripped) < 3:
-            raise ValueError(
+            raise ValidationException(
                 "Title must be at least 3 characters long after removing whitespace"
             )
 
@@ -80,11 +81,13 @@ class TodoResponseDTO(BaseModel):
     def from_domain_entity(cls, entity: TodoEntity) -> "TodoResponseDTO":
         """Convert domain entity to response DTO."""
         if entity.id is None:
-            raise ValueError("Cannot create response DTO from entity without ID")
+            raise ValidationException(
+                "Cannot create response DTO from entity without ID"
+            )
         if entity.created_at is None:
-            raise ValueError("Cannot create response DTO without created_at")
+            raise ValidationException("Cannot create response DTO without created_at")
         if entity.updated_at is None:
-            raise ValueError("Cannot create response DTO without updated_at")
+            raise ValidationException("Cannot create response DTO without updated_at")
 
         return cls(
             id=entity.id,

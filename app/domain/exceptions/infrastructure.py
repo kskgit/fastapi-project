@@ -10,10 +10,8 @@ while preserving the essential error information for domain operations.
 
 from typing import Any
 
-from .base import DomainException
 
-
-class InfrastructureException(DomainException):
+class InfrastructureException(Exception):
     """Base exception for infrastructure-related errors affecting domain operations.
 
     This exception is raised when infrastructure layer problems prevent
@@ -41,11 +39,9 @@ class InfrastructureException(DomainException):
             error_code: Unique error code (defaults to class name)
             details: Additional context information about the infrastructure failure
         """
-        super().__init__(
-            message=message,
-            error_code=error_code or "infrastructure_error",
-            details=details,
-        )
+        super().__init__(message)
+        self.error_code = error_code or "infrastructure_error"
+        self.details = details
 
 
 class ConnectionException(InfrastructureException):

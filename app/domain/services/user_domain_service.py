@@ -3,6 +3,8 @@
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
 
+from ..exceptions import UniqueConstraintException
+
 
 class UserDomainService:
     """Domain Service for User business logic.
@@ -29,10 +31,15 @@ class UserDomainService:
             across the system.
         """
         if user_repository.find_by_username(username):
-            raise ValueError(f"Username '{username}' already exists")
+            raise UniqueConstraintException(
+                f"Username '{username}' already exists",
+                constraint_name="username_uniqueness",
+            )
 
         if user_repository.find_by_email(email):
-            raise ValueError(f"Email '{email}' already exists")
+            raise UniqueConstraintException(
+                f"Email '{email}' already exists", constraint_name="email_uniqueness"
+            )
 
     def validate_user_update_uniqueness(
         self,
@@ -70,7 +77,10 @@ class UserDomainService:
         """Validate that username is unique in the system."""
         existing_user = user_repository.find_by_username(username)
         if existing_user and existing_user.id != user_id:
-            raise ValueError(f"Username '{username}' already exists")
+            raise UniqueConstraintException(
+                f"Username '{username}' already exists",
+                constraint_name="username_uniqueness",
+            )
 
     def _validate_email_uniqueness(
         self, user_id: int, email: str, user_repository: UserRepository
@@ -78,4 +88,6 @@ class UserDomainService:
         """Validate that email is unique in the system."""
         existing_user = user_repository.find_by_email(email)
         if existing_user and existing_user.id != user_id:
-            raise ValueError(f"Email '{email}' already exists")
+            raise UniqueConstraintException(
+                f"Email '{email}' already exists", constraint_name="email_uniqueness"
+            )

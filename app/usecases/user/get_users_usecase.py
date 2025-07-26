@@ -1,6 +1,7 @@
 """Get Users UseCase implementation."""
 
 from app.domain.entities.user import User
+from app.domain.exceptions import ValidationException
 from app.domain.repositories.user_repository import UserRepository
 
 
@@ -43,9 +44,11 @@ class GetUsersUseCase:
         try:
             # Validate pagination parameters
             if limit > 1000:
-                raise ValueError("Limit cannot exceed 1000")
+                raise ValidationException(
+                    "Limit cannot exceed 1000", field_name="limit"
+                )
             if skip < 0:
-                raise ValueError("Skip cannot be negative")
+                raise ValidationException("Skip cannot be negative", field_name="skip")
 
             return self.user_repository.find_with_pagination(skip=skip, limit=limit)
         except ValueError:

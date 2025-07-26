@@ -14,7 +14,9 @@ pre-commit:
       run: uv run mypy {staged_files}
       glob: "*.py"
       exclude: "alembic/versions/"
-    lizard-complexity:
+    lizard-complexity-warning:
+      run: uv run lizard --CCN 5 {staged_files} || echo "⚠️  Complexity warnings found (CCN ≥ 5), but commit allowed"
+    lizard-complexity-critical:
       run: uv run lizard --CCN 10 {staged_files}
 
 pre-push:
@@ -27,5 +29,7 @@ pre-push:
       run: uv run lint-imports
     mypy-all:
       run: uv run mypy app/clean
-    lizard-complexity-all:
+    lizard-complexity-warning-all:
+      run: uv run lizard --CCN 5 app/ || echo "⚠️  Complexity warnings found (CCN ≥ 5)"
+    lizard-complexity-critical-all:
       run: uv run lizard --CCN 10 app/

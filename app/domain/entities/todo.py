@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 
+from ..exceptions import StateTransitionException
+
 
 class TodoPriority(str, Enum):
     high = "high"
@@ -71,27 +73,47 @@ class Todo:
     def mark_completed(self) -> None:
         """Mark todo as completed with business validation."""
         if self.status == TodoStatus.completed:
-            raise ValueError("Todo is already completed")
+            raise StateTransitionException(
+                "Todo is already completed",
+                current_state="completed",
+                attempted_state="completed",
+            )
 
         if self.status == TodoStatus.canceled:
-            raise ValueError("Cannot complete a canceled todo")
+            raise StateTransitionException(
+                "Cannot complete a canceled todo",
+                current_state="canceled",
+                attempted_state="completed",
+            )
 
         self.status = TodoStatus.completed
 
     def mark_in_progress(self) -> None:
         """Mark todo as in progress."""
         if self.status == TodoStatus.completed:
-            raise ValueError("Cannot change completed todo to in progress")
+            raise StateTransitionException(
+                "Cannot change completed todo to in progress",
+                current_state="completed",
+                attempted_state="in_progress",
+            )
 
         if self.status == TodoStatus.canceled:
-            raise ValueError("Cannot change canceled todo to in progress")
+            raise StateTransitionException(
+                "Cannot change canceled todo to in progress",
+                current_state="canceled",
+                attempted_state="in_progress",
+            )
 
         self.status = TodoStatus.in_progress
 
     def cancel(self) -> None:
         """Cancel the todo."""
         if self.status == TodoStatus.completed:
-            raise ValueError("Cannot cancel a completed todo")
+            raise StateTransitionException(
+                "Cannot cancel a completed todo",
+                current_state="completed",
+                attempted_state="canceled",
+            )
 
         self.status = TodoStatus.canceled
 

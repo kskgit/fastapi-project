@@ -1,7 +1,7 @@
 """Update User UseCase implementation."""
 
 from app.domain.entities.user import User
-from app.domain.exceptions import UserNotFoundException
+from app.domain.exceptions import UserNotFoundException, ValidationException
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.user_domain_service import UserDomainService
 
@@ -73,7 +73,7 @@ class UpdateUserUseCase:
     ) -> None:
         """Validate that at least one field is provided for update."""
         if all(param is None for param in [username, email, full_name]):
-            raise ValueError("At least one field must be provided for update")
+            raise ValidationException("At least one field must be provided for update")
 
     def _update_user_fields(
         self, user: User, username: str | None, email: str | None, full_name: str | None

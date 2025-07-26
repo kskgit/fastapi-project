@@ -1,7 +1,11 @@
 """Todo Domain Service - Business logic for Todo entity operations."""
 
 from app.domain.entities.todo import Todo
-from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
+from app.domain.exceptions import (
+    TodoNotFoundException,
+    UserNotFoundException,
+    ValidationException,
+)
 from app.domain.repositories.user_repository import UserRepository
 
 
@@ -62,9 +66,9 @@ class TodoDomainService:
             This is a domain rule: System pagination limits for performance.
         """
         if limit > 1000:
-            raise ValueError("Limit cannot exceed 1000")
+            raise ValidationException("Limit cannot exceed 1000", field_name="limit")
         if skip < 0:
-            raise ValueError("Skip cannot be negative")
+            raise ValidationException("Skip cannot be negative", field_name="skip")
 
     def validate_update_fields_provided(self, *fields) -> None:
         """Validate that at least one field is provided for update.
@@ -79,4 +83,4 @@ class TodoDomainService:
             This is a domain rule: Update operations must modify at least one field.
         """
         if all(field is None for field in fields):
-            raise ValueError("At least one field must be provided for update")
+            raise ValidationException("At least one field must be provided for update")

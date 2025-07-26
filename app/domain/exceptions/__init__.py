@@ -5,22 +5,28 @@ All exceptions are defined here to maintain consistency and enable centralized
 error handling.
 """
 
-from .base import DomainException
+from .business import (
+    BusinessRuleException,
+    ResourceNotFoundException,
+    StateTransitionException,
+    TodoNotFoundException,
+    UniqueConstraintException,
+    UserNotFoundException,
+    ValidationException,
+)
 from .infrastructure import (
     ConnectionException,
     InfrastructureException,
 )
-from .resource import (
-    ResourceNotFoundException,
-    TodoNotFoundException,
-    UserNotFoundException,
-)
 
 __all__ = [
-    "DomainException",
+    "BusinessRuleException",
+    "ValidationException",
+    "ResourceNotFoundException",
+    "UniqueConstraintException",
+    "StateTransitionException",
+    "UserNotFoundException",
+    "TodoNotFoundException",
     "InfrastructureException",
     "ConnectionException",
-    "ResourceNotFoundException",
-    "TodoNotFoundException",
-    "UserNotFoundException",
 ]

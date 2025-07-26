@@ -3,53 +3,45 @@ from fastapi import FastAPI, HTTPException, Request
 from app.api.endpoints import todo as todo_routes
 from app.api.endpoints import user as user_routes
 from app.domain.exceptions import (
-    DomainException,
+    BusinessRuleException,
     InfrastructureException,
-    ResourceNotFoundException,
 )
-
-# Service layer has been removed - now using UseCase pattern
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 
 
-# Service layer dependencies removed - now using UseCase pattern with
-# dependency injection
-
-
-@app.exception_handler(ResourceNotFoundException)
-async def resource_not_found_handler(
-    request: Request, exc: ResourceNotFoundException
+@app.exception_handler(BusinessRuleException)
+async def business_rule_error_handler(
+    request: Request, exc: BusinessRuleException
 ) -> HTTPException:
-    """Handle ResourceNotFoundException exceptions.
+    """Handle BusinessRuleException and its subclasses.
 
-    ResourceNotFoundException (and its subclasses) are used for resource
-    not found errors:
-    - UserNotFoundException -> 404
-    - TodoNotFoundException -> 404
+    This handler provides unified logging and monitoring for all business
+    rule violations while allowing each exception to define its specific
+    HTTP status code.
+
+    Business rule violations are logged at WARNING level and do not
+    trigger operational alerts as they are user-caused errors.
     """
-    raise HTTPException(status_code=404, detail=str(exc))
+    import logging
 
+    # Log business rule violations at WARNING level
+    logger = logging.getLogger(__name__)
+    logger.log(
+        level=getattr(logging, exc.get_log_level()),
+        msg=f"Business rule violation: {exc} | Category: {exc.get_error_category()}",
+    )
 
-@app.exception_handler(DomainException)
-async def domain_exception_handler(
-    request: Request, exc: DomainException
-) -> HTTPException:
-    """Handle general DomainException exceptions.
-
-    DomainException is used for business logic errors -> 400
-    """
-    raise HTTPException(status_code=400, detail=str(exc))
+    # Use the specific HTTP status code from the exception
+    raise HTTPException(status_code=exc.get_http_status_code(), detail=str(exc))
 
 
 @app.exception_handler(ValueError)
 async def value_error_handler(request: Request, exc: ValueError) -> HTTPException:
-    """Handle ValueError exceptions.
+    """Handle ValueError exceptions (legacy support).
 
-    ValueError is used for remaining business logic errors:
-    - Invalid business rules -> 400
-
-    Note: Resource not found errors now use specific domain exceptions.
+    ValueError is kept for backward compatibility and unexpected cases.
+    New code should use ValidationException or BusinessRuleException.
     """
     raise HTTPException(status_code=400, detail=str(exc))
 

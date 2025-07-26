@@ -28,6 +28,7 @@ tasks:
       - uv run ruff format --check .
       - uv run lint-imports
       - uv run mypy app/clean
+      - uv run lizard --CCN 5 app/ || echo "⚠️  Complexity warnings found (CCN ≥ 5)"
       - uv run lizard --CCN 10 app/
 
   test:
