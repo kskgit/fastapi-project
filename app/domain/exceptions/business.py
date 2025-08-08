@@ -5,10 +5,21 @@ providing unified logging and monitoring capabilities while allowing
 specific HTTP response codes for different types of business rules.
 """
 
+from abc import ABC
+from enum import Enum
 from typing import Any
 
 
-class BusinessRuleException(Exception):
+class BusinessRuleExceptionStatusCode(Enum):
+    # 処理実行前にリクエスト内容の不備で処理が実行できない
+    VALIDATION_ERR = 400
+    # 処理対象のリソースが見つからない
+    NOT_FOUND = 404
+    # ビジネスロジックの制約で処理が実行出来ない
+    UNPROCESSABLE_ENTITY = 422
+
+
+class BusinessRuleException(Exception, ABC):
     """Base exception for all business rule violations.
 
     This exception provides unified handling for all types of business logic
@@ -59,16 +70,17 @@ class BusinessRuleException(Exception):
         """
         return "business_rule_violation"
 
-    def get_http_status_code(self) -> int:
+    @property
+    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
         """Get HTTP status code for API response.
 
         Returns:
-            int: HTTP status code
+            BusinessRuleExceptionStatusCode: HTTP status code
 
-        Raises:
-            NotImplementedError: Must be implemented by subclasses
+        Note:
+            Must be implemented by subclasses
         """
-        raise NotImplementedError("Subclasses must implement get_http_status_code()")
+        raise NotImplementedError("Subclasses must implement http_status_code property")
 
 
 class ValidationException(BusinessRuleException):
@@ -113,13 +125,14 @@ class ValidationException(BusinessRuleException):
         super().__init__(message=message, details=exception_details)
         self.field_name = field_name
 
-    def get_http_status_code(self) -> int:
+    @property
+    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
         """Get HTTP status code for validation errors.
 
         Returns:
-            int: 400 Bad Request for validation errors
+            BusinessRuleExceptionStatusCode: 400 Bad Request for validation errors
         """
-        return 400
+        return BusinessRuleExceptionStatusCode.VALIDATION_ERR
 
 
 class UniqueConstraintException(BusinessRuleException):
@@ -149,13 +162,9 @@ class UniqueConstraintException(BusinessRuleException):
         super().__init__(message=message, details=exception_details)
         self.constraint_name = constraint_name
 
-    def get_http_status_code(self) -> int:
-        """Get HTTP status code for uniqueness violations.
-
-        Returns:
-            int: 422 Unprocessable Entity for business constraint violations
-        """
-        return 422
+    @property
+    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
+        return BusinessRuleExceptionStatusCode.UNPROCESSABLE_ENTITY
 
 
 class StateTransitionException(BusinessRuleException):
@@ -190,13 +199,15 @@ class StateTransitionException(BusinessRuleException):
         self.current_state = current_state
         self.attempted_state = attempted_state
 
-    def get_http_status_code(self) -> int:
+    @property
+    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
         """Get HTTP status code for state transition violations.
 
         Returns:
-            int: 422 Unprocessable Entity for business logic violations
+            BusinessRuleExceptionStatusCode: 422 Unprocessable
+            Entity for business logic violations
         """
-        return 422
+        return BusinessRuleExceptionStatusCode.UNPROCESSABLE_ENTITY
 
 
 class ResourceNotFoundException(BusinessRuleException):
@@ -234,13 +245,14 @@ class ResourceNotFoundException(BusinessRuleException):
         self.resource_type = resource_type
         self.resource_id = resource_id
 
-    def get_http_status_code(self) -> int:
+    @property
+    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
         """Get HTTP status code for resource not found errors.
 
         Returns:
-            int: 404 Not Found for missing resources
+            BusinessRuleExceptionStatusCode: 404 Not Found for missing resources
         """
-        return 404
+        return BusinessRuleExceptionStatusCode.NOT_FOUND
 
 
 class UserNotFoundException(ResourceNotFoundException):

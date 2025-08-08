@@ -33,17 +33,7 @@ async def business_rule_error_handler(
     )
 
     # Use the specific HTTP status code from the exception
-    raise HTTPException(status_code=exc.get_http_status_code(), detail=str(exc))
-
-
-@app.exception_handler(ValueError)
-async def value_error_handler(request: Request, exc: ValueError) -> HTTPException:
-    """Handle ValueError exceptions (legacy support).
-
-    ValueError is kept for backward compatibility and unexpected cases.
-    New code should use ValidationException or BusinessRuleException.
-    """
-    raise HTTPException(status_code=400, detail=str(exc))
+    raise HTTPException(status_code=exc.http_status_code.value, detail=str(exc))
 
 
 @app.exception_handler(SystemException)
