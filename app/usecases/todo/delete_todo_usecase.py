@@ -27,7 +27,7 @@ class DeleteTodoUseCase:
         self.user_repository = user_repository
         self.todo_domain_service = TodoDomainService()
 
-    def execute(self, todo_id: int, user_id: int) -> bool:
+    async def execute(self, todo_id: int, user_id: int) -> bool:
         """Execute the delete todo use case.
 
         Args:
@@ -45,16 +45,16 @@ class DeleteTodoUseCase:
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
         # Validate that user exists
-        self.todo_domain_service.validate_user_exists_for_todo_operation(
+        await self.todo_domain_service.validate_user_exists_for_todo_operation(
             user_id, self.user_repository
         )
 
         # Get the existing todo to validate ownership
-        todo = self.todo_repository.find_by_id(todo_id)
+        todo = await self.todo_repository.find_by_id(todo_id)
         if not todo:
             return False  # Todo doesn't exist
 
         # Validate ownership
         self.todo_domain_service.validate_todo_ownership(todo, user_id)
 
-        return self.todo_repository.delete(todo_id)
+        return await self.todo_repository.delete(todo_id)

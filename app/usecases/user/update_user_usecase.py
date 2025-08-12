@@ -26,7 +26,7 @@ class UpdateUserUseCase:
         self.user_repository = user_repository
         self.user_domain_service = UserDomainService()
 
-    def execute(
+    async def execute(
         self,
         user_id: int,
         username: str | None = None,
@@ -53,17 +53,17 @@ class UpdateUserUseCase:
             At least one field must be provided for update.
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
-        user = self._validate_user_exists(user_id)
+        user = await self._validate_user_exists(user_id)
         self._validate_update_fields(username, email, full_name)
-        self.user_domain_service.validate_user_update_uniqueness(
+        await self.user_domain_service.validate_user_update_uniqueness(
             user_id, user, username, email, self.user_repository
         )
         self._update_user_fields(user, username, email, full_name)
-        return self.user_repository.save(user)
+        return await self.user_repository.save(user)
 
-    def _validate_user_exists(self, user_id: int) -> User:
+    async def _validate_user_exists(self, user_id: int) -> User:
         """Validate that the user exists."""
-        user = self.user_repository.find_by_id(user_id)
+        user = await self.user_repository.find_by_id(user_id)
         if not user:
             raise UserNotFoundException(user_id)
         return user

@@ -34,7 +34,7 @@ async def get_users(
     usecase: GetUsersUseCase = Depends(get_get_users_usecase),
 ) -> list[UserResponseDTO]:
     """Get all users with optional pagination."""
-    users = usecase.execute(skip=skip, limit=limit)
+    users = await usecase.execute(skip=skip, limit=limit)
     return [UserResponseDTO.from_domain_entity(user) for user in users]
 
 
@@ -46,7 +46,7 @@ async def create_user(
     usecase: CreateUserUseCase = Depends(get_create_user_usecase),
 ) -> UserResponseDTO:
     """Create a new user."""
-    user = usecase.execute(
+    user = await usecase.execute(
         username=user_data.username,
         email=user_data.email,
         full_name=user_data.full_name,
@@ -60,7 +60,7 @@ async def get_user(
     usecase: GetUserByIdUseCase = Depends(get_get_user_by_id_usecase),
 ) -> UserResponseDTO:
     """Get a specific user by ID."""
-    user = usecase.execute(user_id=user_id)
+    user = await usecase.execute(user_id=user_id)
     return UserResponseDTO.from_domain_entity(user)
 
 
@@ -71,7 +71,7 @@ async def update_user(
     usecase: UpdateUserUseCase = Depends(get_update_user_usecase),
 ) -> UserResponseDTO:
     """Update a specific user."""
-    user = usecase.execute(
+    user = await usecase.execute(
         user_id=user_id,
         username=user_data.username,
         email=user_data.email,

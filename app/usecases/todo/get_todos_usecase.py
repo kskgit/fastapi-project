@@ -28,7 +28,7 @@ class GetTodosUseCase:
         self.user_repository = user_repository
         self.todo_domain_service = TodoDomainService()
 
-    def execute(
+    async def execute(
         self,
         user_id: int,
         skip: int = 0,
@@ -57,14 +57,14 @@ class GetTodosUseCase:
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
         # Validate that user exists
-        self.todo_domain_service.validate_user_exists_for_todo_operation(
+        await self.todo_domain_service.validate_user_exists_for_todo_operation(
             user_id, self.user_repository
         )
 
         # Validate pagination parameters
         self.todo_domain_service.validate_pagination_parameters(skip, limit)
 
-        return self.todo_repository.find_with_pagination(
+        return await self.todo_repository.find_with_pagination(
             user_id=user_id,
             skip=skip,
             limit=limit,

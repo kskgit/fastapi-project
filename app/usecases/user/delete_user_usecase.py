@@ -22,7 +22,7 @@ class DeleteUserUseCase:
         """
         self.user_repository = user_repository
 
-    def execute(self, user_id: int) -> bool:
+    async def execute(self, user_id: int) -> bool:
         """Execute the delete user use case.
 
         Args:
@@ -40,10 +40,10 @@ class DeleteUserUseCase:
         """
         try:
             # Check if user exists
-            user = self.user_repository.find_by_id(user_id)
+            user = await self.user_repository.find_by_id(user_id)
             if not user:
                 return False  # User doesn't exist
 
-            return self.user_repository.delete(user_id)
+            return await self.user_repository.delete(user_id)
         except Exception as e:
             raise RuntimeError(f"Failed to delete user: {str(e)}") from e

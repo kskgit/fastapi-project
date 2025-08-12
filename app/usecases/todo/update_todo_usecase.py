@@ -31,7 +31,7 @@ class UpdateTodoUseCase:
         self.user_repository = user_repository
         self.todo_domain_service = TodoDomainService()
 
-    def execute(
+    async def execute(
         self,
         todo_id: int,
         user_id: int,
@@ -65,20 +65,20 @@ class UpdateTodoUseCase:
             At least one field must be provided for update.
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
-        todo = self._validate_preconditions(todo_id, user_id)
+        todo = await self._validate_preconditions(todo_id, user_id)
         self.todo_domain_service.validate_update_fields_provided(
             title, description, due_date, status, priority
         )
         self._update_todo_fields(todo, title, description, due_date, status, priority)
-        return self.todo_repository.save(todo)
+        return await self.todo_repository.save(todo)
 
-    def _validate_preconditions(self, todo_id: int, user_id: int) -> Todo:
+    async def _validate_preconditions(self, todo_id: int, user_id: int) -> Todo:
         """Validate user exists, todo exists, and ownership."""
-        self.todo_domain_service.validate_user_exists_for_todo_operation(
+        await self.todo_domain_service.validate_user_exists_for_todo_operation(
             user_id, self.user_repository
         )
 
-        todo = self.todo_repository.find_by_id(todo_id)
+        todo = await self.todo_repository.find_by_id(todo_id)
         if not todo:
             raise TodoNotFoundException(todo_id)
 

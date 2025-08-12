@@ -25,7 +25,9 @@ class CreateUserUseCase:
         self.user_repository = user_repository
         self.user_domain_service = UserDomainService()
 
-    def execute(self, username: str, email: str, full_name: str | None = None) -> User:
+    async def execute(
+        self, username: str, email: str, full_name: str | None = None
+    ) -> User:
         """Execute the create user use case.
 
         Args:
@@ -40,11 +42,11 @@ class CreateUserUseCase:
             ValueError: If username or email already exists
         """
         # Validate uniqueness constraints
-        self.user_domain_service.validate_user_creation_uniqueness(
+        await self.user_domain_service.validate_user_creation_uniqueness(
             username, email, self.user_repository
         )
 
         # Create new user
         user = User.create(username=username, email=email, full_name=full_name)
 
-        return self.user_repository.save(user)
+        return await self.user_repository.save(user)

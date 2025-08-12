@@ -29,7 +29,7 @@ from app.usecases.todo.update_todo_usecase import UpdateTodoUseCase
 # All service-based endpoints will be migrated to UseCase pattern
 
 
-router = APIRouter(prefix="/api/v1/todos", tags=["todos"])
+router = APIRouter(prefix="/todos", tags=["todos"])
 
 
 @router.get("/", response_model=list[TodoResponseDTO])
@@ -43,7 +43,7 @@ async def get_todos(
     """Get all todos with optional filtering."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todos = usecase.execute(
+    todos = await usecase.execute(
         user_id=user_id, skip=skip, limit=limit, status=status, priority=priority
     )
     return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
@@ -59,13 +59,15 @@ async def create_todo(
     """Create a new todo."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todo = usecase.execute(
+
+    todo = await usecase.execute(
         title=todo_data.title,
         user_id=user_id,
         description=todo_data.description,
         due_date=todo_data.due_date,
-        priority=todo_data.priority,
+        priority=todo_data.priority or TodoPriority.medium,
     )
+
     return TodoResponseDTO.from_domain_entity(todo)
 
 
@@ -77,7 +79,7 @@ async def get_todo(
     """Get a specific todo by ID."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todo = usecase.execute(todo_id=todo_id, user_id=user_id)
+    todo = await usecase.execute(todo_id=todo_id, user_id=user_id)
     return TodoResponseDTO.from_domain_entity(todo)
 
 
@@ -90,7 +92,7 @@ async def update_todo(
     """Update a specific todo."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todo = usecase.execute(
+    todo = await usecase.execute(
         todo_id=todo_id,
         user_id=user_id,
         title=todo_data.title,
@@ -110,7 +112,7 @@ async def delete_todo(
     """Delete a specific todo."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    deleted = usecase.execute(todo_id=todo_id, user_id=user_id)
+    deleted = await usecase.execute(todo_id=todo_id, user_id=user_id)
     if not deleted:
         from app.domain.exceptions import TodoNotFoundException
 
@@ -125,7 +127,7 @@ async def complete_todo(
     """Mark a todo as completed."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todo = usecase.execute(
+    todo = await usecase.execute(
         todo_id=todo_id, user_id=user_id, status=TodoStatus.completed
     )
     return TodoResponseDTO.from_domain_entity(todo)
@@ -139,7 +141,7 @@ async def start_todo(
     """Mark a todo as in progress."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todo = usecase.execute(
+    todo = await usecase.execute(
         todo_id=todo_id, user_id=user_id, status=TodoStatus.in_progress
     )
     return TodoResponseDTO.from_domain_entity(todo)
@@ -153,7 +155,9 @@ async def cancel_todo(
     """Cancel a todo."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todo = usecase.execute(todo_id=todo_id, user_id=user_id, status=TodoStatus.canceled)
+    todo = await usecase.execute(
+        todo_id=todo_id, user_id=user_id, status=TodoStatus.canceled
+    )
     return TodoResponseDTO.from_domain_entity(todo)
 
 
@@ -165,7 +169,7 @@ async def get_todos_by_status(
     """Get todos by status."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todos = usecase.execute(user_id=user_id, status=status)
+    todos = await usecase.execute(user_id=user_id, status=status)
     return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
 
 
@@ -177,7 +181,7 @@ async def get_todos_by_priority(
     """Get todos by priority."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todos = usecase.execute(user_id=user_id, priority=priority)
+    todos = await usecase.execute(user_id=user_id, priority=priority)
     return [TodoResponseDTO.from_domain_entity(todo) for todo in todos]
 
 

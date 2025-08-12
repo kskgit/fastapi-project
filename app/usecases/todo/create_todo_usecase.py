@@ -10,7 +10,7 @@ class CreateTodoUseCase:
     """UseCase for creating a new Todo.
 
     Single Responsibility: Handle the creation of a new Todo with proper
-    business logic validation and error handling.
+    business logic validation and error handling using async/await.
 
     Dependencies:
     - Only depends on Domain layer (TodoRepository and UserRepository interfaces)
@@ -30,7 +30,7 @@ class CreateTodoUseCase:
         self.user_repository = user_repository
         self.todo_domain_service = TodoDomainService()
 
-    def execute(
+    async def execute(
         self,
         title: str,
         user_id: int,
@@ -38,7 +38,7 @@ class CreateTodoUseCase:
         due_date: datetime | None = None,
         priority: TodoPriority = TodoPriority.medium,
     ) -> Todo:
-        """Execute the create todo use case.
+        """Execute the create todo use case asynchronously.
 
         Args:
             title: Todo title (required)
@@ -58,10 +58,8 @@ class CreateTodoUseCase:
             Basic validation (title length, etc.) is handled by API DTOs.
             This method focuses on business logic only.
         """
-        # Validate that user exists
-        self.todo_domain_service.validate_user_exists_for_todo_operation(
-            user_id, self.user_repository
-        )
+        # Validate that user exists (async version)
+        await self._validate_user_exists_async(user_id)
 
         todo = Todo.create(
             user_id=user_id,
@@ -70,4 +68,18 @@ class CreateTodoUseCase:
             due_date=due_date,
             priority=priority,
         )
-        return self.todo_repository.save(todo)
+        return await self.todo_repository.save(todo)
+
+    async def _validate_user_exists_async(self, user_id: int) -> None:
+        """Validate that user exists for todo operations (async version).
+
+        Args:
+            user_id: User ID to validate
+
+        Raises:
+            UserNotFoundException: If user does not exist
+        """
+        if not await self.user_repository.exists(user_id):
+            from app.domain.exceptions.business import UserNotFoundException
+
+            raise UserNotFoundException(user_id)

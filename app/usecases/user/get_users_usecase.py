@@ -24,7 +24,7 @@ class GetUsersUseCase:
         """
         self.user_repository = user_repository
 
-    def execute(self, skip: int = 0, limit: int = 100) -> list[User]:
+    async def execute(self, skip: int = 0, limit: int = 100) -> list[User]:
         """Execute the get users use case.
 
         Args:
@@ -50,7 +50,9 @@ class GetUsersUseCase:
             if skip < 0:
                 raise ValidationException("Skip cannot be negative", field_name="skip")
 
-            return self.user_repository.find_with_pagination(skip=skip, limit=limit)
+            all_users = await self.user_repository.find_all()
+            # Apply pagination manually
+            return all_users[skip : skip + limit]
         except ValueError:
             # Re-raise ValueError as-is for proper API error handling
             raise

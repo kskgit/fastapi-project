@@ -29,7 +29,7 @@ class GetTodoByIdUseCase:
         self.user_repository = user_repository
         self.todo_domain_service = TodoDomainService()
 
-    def execute(self, todo_id: int, user_id: int | None = None) -> Todo:
+    async def execute(self, todo_id: int, user_id: int | None = None) -> Todo:
         """Execute the get todo by ID use case.
 
         Args:
@@ -48,14 +48,14 @@ class GetTodoByIdUseCase:
             If user_id is None, returns todo regardless of ownership (admin access).
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
-        todo = self.todo_repository.find_by_id(todo_id)
+        todo = await self.todo_repository.find_by_id(todo_id)
         if not todo:
             raise TodoNotFoundException(todo_id)
 
         # If user_id is provided, validate ownership
         if user_id is not None:
             # Validate that user exists
-            self.todo_domain_service.validate_user_exists_for_todo_operation(
+            await self.todo_domain_service.validate_user_exists_for_todo_operation(
                 user_id, self.user_repository
             )
 

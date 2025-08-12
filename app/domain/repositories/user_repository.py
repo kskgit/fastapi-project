@@ -7,11 +7,11 @@ class UserRepository(ABC):
     """Abstract Repository Interface for User operations.
 
     Service layer depends only on this interface, not on implementation details.
-    This ensures complete separation from database concerns.
+    This ensures complete separation from database concerns with async support.
     """
 
     @abstractmethod
-    def save(self, user: User) -> User:
+    async def save(self, user: User) -> User:
         """Save a user (create or update).
 
         Args:
@@ -23,7 +23,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_id(self, user_id: int) -> User | None:
+    async def find_by_id(self, user_id: int) -> User | None:
         """Find user by ID.
 
         Args:
@@ -35,7 +35,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_username(self, username: str) -> User | None:
+    async def find_by_username(self, username: str) -> User | None:
         """Find user by username.
 
         Args:
@@ -47,11 +47,11 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_email(self, email: str) -> User | None:
-        """Find user by email address.
+    async def find_by_email(self, email: str) -> User | None:
+        """Find user by email.
 
         Args:
-            email: Email address to search for
+            email: Email to search for
 
         Returns:
             User domain entity if found, None otherwise
@@ -59,33 +59,16 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def find_all(self, skip: int = 0, limit: int = 100) -> list[User]:
-        """Find all users with pagination.
-
-        Args:
-            skip: Number of records to skip
-            limit: Maximum number of records to return
+    async def find_all(self) -> list[User]:
+        """Find all users.
 
         Returns:
-            List of user domain entities
+            List of all user domain entities
         """
         pass
 
     @abstractmethod
-    def find_with_pagination(self, skip: int = 0, limit: int = 100) -> list[User]:
-        """Find users with pagination.
-
-        Args:
-            skip: Number of records to skip
-            limit: Maximum number of records to return
-
-        Returns:
-            List of user domain entities
-        """
-        pass
-
-    @abstractmethod
-    def delete(self, user_id: int) -> bool:
+    async def delete(self, user_id: int) -> bool:
         """Delete user by ID.
 
         Args:
@@ -97,7 +80,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def exists(self, user_id: int) -> bool:
+    async def exists(self, user_id: int) -> bool:
         """Check if user exists.
 
         Args:
@@ -109,31 +92,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def exists_by_username(self, username: str) -> bool:
-        """Check if user exists by username.
-
-        Args:
-            username: Username to check
-
-        Returns:
-            True if user exists, False otherwise
-        """
-        pass
-
-    @abstractmethod
-    def exists_by_email(self, email: str) -> bool:
-        """Check if user exists by email.
-
-        Args:
-            email: Email to check
-
-        Returns:
-            True if user exists, False otherwise
-        """
-        pass
-
-    @abstractmethod
-    def count_total(self) -> int:
+    async def count_total(self) -> int:
         """Count total users.
 
         Returns:

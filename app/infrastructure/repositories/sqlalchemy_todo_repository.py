@@ -1,11 +1,13 @@
+"""SQLAlchemy implementation of TodoRepository."""
+
+from collections.abc import Sequence
 from datetime import datetime
 
-from sqlalchemy import and_
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.domain.exceptions import TodoNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.infrastructure.database.models import TodoModel
 
@@ -13,14 +15,16 @@ from app.infrastructure.database.models import TodoModel
 class SQLAlchemyTodoRepository(TodoRepository):
     """SQLAlchemy implementation of TodoRepository.
 
-    Handles all database-specific concerns including:
-    - SQLAlchemy model ↔ Domain entity conversion
-    - Query optimization and lazy loading prevention
-    - Transaction management
-    - Error handling (SQLAlchemy exceptions → domain exceptions)
+    Handles database operations using SQLAlchemy ORM with async/await support.
+    Converts between domain entities and SQLAlchemy models.
     """
 
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
+        """Initialize with database session.
+
+        Args:
+            db: SQLAlchemy async session
+        """
         self.db = db
 
     def _to_domain_entity(self, model: TodoModel) -> Todo:
@@ -51,127 +55,132 @@ class SQLAlchemyTodoRepository(TodoRepository):
             updated_at=entity.updated_at,
         )
 
-    def save(self, todo: Todo) -> Todo:
+    async def save(self, todo: Todo) -> Todo:
         """Save a todo (create or update)."""
         try:
             if todo.id is None:
-                model = TodoModel(
-                    title=todo.title,
-                    user_id=todo.user_id,
-                    description=todo.description,
-                    due_date=todo.due_date,
-                    status=todo.status,
-                    priority=todo.priority,
-                )
+                # Create new todo
+                model = self._to_model(todo)
+                model.created_at = datetime.now()
+                model.updated_at = datetime.now()
                 self.db.add(model)
             else:
-                existing_model = (
-                    self.db.query(TodoModel).filter(TodoModel.id == todo.id).first()
+                # Update existing todo
+                result = await self.db.execute(
+                    select(TodoModel).where(TodoModel.id == todo.id)
                 )
-                if not existing_model:
-                    raise TodoNotFoundException(todo.id)
+                model_or_none = result.scalar_one_or_none()
+                if model_or_none is None:
+                    raise ValueError(f"Todo with id {todo.id} not found")
+                model = model_or_none
 
-                existing_model.title = todo.title
-                existing_model.user_id = todo.user_id
-                existing_model.description = todo.description
-                existing_model.due_date = todo.due_date
-                existing_model.status = todo.status
-                existing_model.priority = todo.priority
-                model = existing_model
+                # Update fields
+                model.title = todo.title
+                model.description = todo.description
+                model.due_date = todo.due_date
+                model.status = todo.status
+                model.priority = todo.priority
+                model.updated_at = datetime.now()
 
-            self.db.commit()
-            self.db.refresh(model)
+            await self.db.commit()
+            await self.db.refresh(model)
             return self._to_domain_entity(model)
 
         except SQLAlchemyError as e:
-            self.db.rollback()
+            await self.db.rollback()
             raise RuntimeError(f"Database error while saving todo: {str(e)}")
 
-    def find_by_id(self, todo_id: int) -> Todo | None:
+    async def find_by_id(self, todo_id: int) -> Todo | None:
         """Find todo by ID."""
         try:
-            model = self.db.query(TodoModel).filter(TodoModel.id == todo_id).first()
+            result = await self.db.execute(
+                select(TodoModel).where(TodoModel.id == todo_id)
+            )
+            model = result.scalar_one_or_none()
             return self._to_domain_entity(model) if model else None
+
         except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding todo: {str(e)}")
+            raise RuntimeError(f"Database error while finding todo by id: {str(e)}")
 
-    def find_all_by_user_id(self, user_id: int) -> list[Todo]:
-        """Find all todos for a specific user.
-
-        Note: Current implementation doesn't include user filtering.
-        This method is prepared for future user-based filtering.
-        """
+    async def find_all_by_user_id(self, user_id: int) -> list[Todo]:
+        """Find all todos for a specific user."""
         try:
-            models = self.db.query(TodoModel).all()
+            result = await self.db.execute(
+                select(TodoModel).where(TodoModel.user_id == user_id)
+            )
+            models: Sequence[TodoModel] = result.scalars().all()
             return [self._to_domain_entity(model) for model in models]
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding todos: {str(e)}")
 
-    def find_active_todos(self, user_id: int) -> list[Todo]:
+        except SQLAlchemyError as e:
+            raise RuntimeError(f"Database error while finding todos by user: {str(e)}")
+
+    async def find_active_todos(self, user_id: int) -> list[Todo]:
         """Find active todos (pending or in_progress) for a user."""
         try:
-            models = (
-                self.db.query(TodoModel)
-                .filter(
-                    TodoModel.status.in_([TodoStatus.pending, TodoStatus.in_progress])
+            result = await self.db.execute(
+                select(TodoModel).where(
+                    TodoModel.user_id == user_id,
+                    TodoModel.status.in_([TodoStatus.pending, TodoStatus.in_progress]),
                 )
-                .all()
             )
+            models: Sequence[TodoModel] = result.scalars().all()
             return [self._to_domain_entity(model) for model in models]
+
         except SQLAlchemyError as e:
             raise RuntimeError(f"Database error while finding active todos: {str(e)}")
 
-    def find_by_status(self, status: TodoStatus, user_id: int) -> list[Todo]:
-        """Find todos by status."""
+    async def find_by_status(self, status: TodoStatus, user_id: int) -> list[Todo]:
+        """Find todos by status for a specific user."""
         try:
-            models = (
-                self.db.query(TodoModel)
-                .filter(and_(TodoModel.status == status, TodoModel.user_id == user_id))
-                .all()
+            result = await self.db.execute(
+                select(TodoModel).where(
+                    TodoModel.user_id == user_id, TodoModel.status == status
+                )
             )
+            models: Sequence[TodoModel] = result.scalars().all()
             return [self._to_domain_entity(model) for model in models]
+
         except SQLAlchemyError as e:
             raise RuntimeError(
                 f"Database error while finding todos by status: {str(e)}"
             )
 
-    def find_by_priority(self, priority: TodoPriority, user_id: int) -> list[Todo]:
-        """Find todos by priority."""
+    async def find_by_priority(
+        self, priority: TodoPriority, user_id: int
+    ) -> list[Todo]:
+        """Find todos by priority for a specific user."""
         try:
-            models = (
-                self.db.query(TodoModel)
-                .filter(
-                    and_(TodoModel.priority == priority, TodoModel.user_id == user_id)
+            result = await self.db.execute(
+                select(TodoModel).where(
+                    TodoModel.user_id == user_id, TodoModel.priority == priority
                 )
-                .all()
             )
+            models: Sequence[TodoModel] = result.scalars().all()
             return [self._to_domain_entity(model) for model in models]
+
         except SQLAlchemyError as e:
             raise RuntimeError(
                 f"Database error while finding todos by priority: {str(e)}"
             )
 
-    def find_overdue_todos(self, user_id: int) -> list[Todo]:
-        """Find overdue todos."""
+    async def find_overdue_todos(self, user_id: int) -> list[Todo]:
+        """Find overdue todos for a specific user."""
         try:
-            current_time = datetime.now()
-            models = (
-                self.db.query(TodoModel)
-                .filter(
-                    and_(
-                        TodoModel.due_date < current_time,
-                        TodoModel.status.in_(
-                            [TodoStatus.pending, TodoStatus.in_progress]
-                        ),
-                    )
+            now = datetime.now()
+            result = await self.db.execute(
+                select(TodoModel).where(
+                    TodoModel.user_id == user_id,
+                    TodoModel.due_date < now,
+                    TodoModel.status != TodoStatus.completed,
                 )
-                .all()
             )
+            models: Sequence[TodoModel] = result.scalars().all()
             return [self._to_domain_entity(model) for model in models]
+
         except SQLAlchemyError as e:
             raise RuntimeError(f"Database error while finding overdue todos: {str(e)}")
 
-    def find_with_pagination(
+    async def find_with_pagination(
         self,
         user_id: int,
         skip: int = 0,
@@ -179,66 +188,83 @@ class SQLAlchemyTodoRepository(TodoRepository):
         status: TodoStatus | None = None,
         priority: TodoPriority | None = None,
     ) -> list[Todo]:
-        """Find todos with pagination and optional filters."""
+        """Find todos with pagination and optional filters for a specific user."""
         try:
-            query = self.db.query(TodoModel)
+            query = select(TodoModel).where(TodoModel.user_id == user_id)
 
-            filters = [TodoModel.user_id == user_id]
             if status:
-                filters.append(TodoModel.status == status)
+                query = query.where(TodoModel.status == status)
             if priority:
-                filters.append(TodoModel.priority == priority)
+                query = query.where(TodoModel.priority == priority)
 
-            query = query.filter(and_(*filters))
+            query = query.offset(skip).limit(limit)
 
-            models = query.offset(skip).limit(limit).all()
+            result = await self.db.execute(query)
+            models: Sequence[TodoModel] = result.scalars().all()
             return [self._to_domain_entity(model) for model in models]
+
         except SQLAlchemyError as e:
             raise RuntimeError(
                 f"Database error while finding todos with pagination: {str(e)}"
             )
 
-    def delete(self, todo_id: int) -> bool:
+    async def delete(self, todo_id: int) -> bool:
         """Delete todo by ID."""
         try:
-            model = self.db.query(TodoModel).filter(TodoModel.id == todo_id).first()
-            if not model:
+            result = await self.db.execute(
+                select(TodoModel).where(TodoModel.id == todo_id)
+            )
+            model = result.scalar_one_or_none()
+
+            if model is None:
                 return False
 
-            self.db.delete(model)
-            self.db.commit()
+            await self.db.delete(model)
+            await self.db.commit()
             return True
+
         except SQLAlchemyError as e:
-            self.db.rollback()
+            await self.db.rollback()
             raise RuntimeError(f"Database error while deleting todo: {str(e)}")
 
-    def count_by_status(self, status: TodoStatus, user_id: int) -> int:
-        """Count todos by status."""
+    async def count_by_status(self, status: TodoStatus, user_id: int) -> int:
+        """Count todos by status for a specific user."""
         try:
-            return (
-                self.db.query(TodoModel)
-                .filter(and_(TodoModel.status == status, TodoModel.user_id == user_id))
-                .count()
+            from sqlalchemy import func
+
+            result = await self.db.execute(
+                select(func.count(TodoModel.id)).where(
+                    TodoModel.user_id == user_id, TodoModel.status == status
+                )
             )
+            return result.scalar() or 0
+
         except SQLAlchemyError as e:
             raise RuntimeError(
                 f"Database error while counting todos by status: {str(e)}"
             )
 
-    def count_total(self, user_id: int) -> int:
-        """Count total todos."""
+    async def count_total(self, user_id: int) -> int:
+        """Count total todos for a specific user."""
         try:
-            return self.db.query(TodoModel).filter(TodoModel.user_id == user_id).count()
+            from sqlalchemy import func
+
+            result = await self.db.execute(
+                select(func.count(TodoModel.id)).where(TodoModel.user_id == user_id)
+            )
+            return result.scalar() or 0
+
         except SQLAlchemyError as e:
             raise RuntimeError(f"Database error while counting total todos: {str(e)}")
 
-    def exists(self, todo_id: int) -> bool:
+    async def exists(self, todo_id: int) -> bool:
         """Check if todo exists."""
         try:
-            return (
-                self.db.query(TodoModel.id).filter(TodoModel.id == todo_id).first()
-                is not None
+            result = await self.db.execute(
+                select(TodoModel.id).where(TodoModel.id == todo_id)
             )
+            return result.scalar_one_or_none() is not None
+
         except SQLAlchemyError as e:
             raise RuntimeError(
                 f"Database error while checking todo existence: {str(e)}"

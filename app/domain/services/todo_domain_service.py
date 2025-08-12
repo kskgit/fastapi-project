@@ -16,7 +16,7 @@ class TodoDomainService:
     or require repository interactions while keeping the Entity pure.
     """
 
-    def validate_user_exists_for_todo_operation(
+    async def validate_user_exists_for_todo_operation(
         self, user_id: int, user_repository: UserRepository
     ) -> None:
         """Validate that user exists for todo operations.
@@ -31,7 +31,7 @@ class TodoDomainService:
         Note:
             This is a domain rule: Todo operations require valid users.
         """
-        if not user_repository.exists(user_id):
+        if not await user_repository.exists(user_id):
             raise UserNotFoundException(user_id)
 
     def validate_todo_ownership(self, todo: Todo, user_id: int) -> None:

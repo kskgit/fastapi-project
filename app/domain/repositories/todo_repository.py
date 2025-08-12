@@ -7,11 +7,11 @@ class TodoRepository(ABC):
     """Abstract Repository Interface for Todo operations.
 
     Service layer depends only on this interface, not on implementation details.
-    This ensures complete separation from database concerns.
+    This ensures complete separation from database concerns with async support.
     """
 
     @abstractmethod
-    def save(self, todo: Todo) -> Todo:
+    async def save(self, todo: Todo) -> Todo:
         """Save a todo (create or update).
 
         Args:
@@ -23,7 +23,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_id(self, todo_id: int) -> Todo | None:
+    async def find_by_id(self, todo_id: int) -> Todo | None:
         """Find todo by ID.
 
         Args:
@@ -35,7 +35,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_all_by_user_id(self, user_id: int) -> list[Todo]:
+    async def find_all_by_user_id(self, user_id: int) -> list[Todo]:
         """Find all todos for a specific user.
 
         Args:
@@ -47,7 +47,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_active_todos(self, user_id: int) -> list[Todo]:
+    async def find_active_todos(self, user_id: int) -> list[Todo]:
         """Find active todos (pending or in_progress) for a user.
 
         Args:
@@ -59,7 +59,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_status(self, status: TodoStatus, user_id: int) -> list[Todo]:
+    async def find_by_status(self, status: TodoStatus, user_id: int) -> list[Todo]:
         """Find todos by status for a specific user.
 
         Args:
@@ -72,7 +72,9 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_priority(self, priority: TodoPriority, user_id: int) -> list[Todo]:
+    async def find_by_priority(
+        self, priority: TodoPriority, user_id: int
+    ) -> list[Todo]:
         """Find todos by priority for a specific user.
 
         Args:
@@ -85,7 +87,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_overdue_todos(self, user_id: int) -> list[Todo]:
+    async def find_overdue_todos(self, user_id: int) -> list[Todo]:
         """Find overdue todos for a specific user.
 
         Args:
@@ -97,7 +99,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def find_with_pagination(
+    async def find_with_pagination(
         self,
         user_id: int,
         skip: int = 0,
@@ -120,7 +122,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def delete(self, todo_id: int) -> bool:
+    async def delete(self, todo_id: int) -> bool:
         """Delete todo by ID.
 
         Args:
@@ -132,7 +134,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def count_by_status(self, status: TodoStatus, user_id: int) -> int:
+    async def count_by_status(self, status: TodoStatus, user_id: int) -> int:
         """Count todos by status for a specific user.
 
         Args:
@@ -145,7 +147,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def count_total(self, user_id: int) -> int:
+    async def count_total(self, user_id: int) -> int:
         """Count total todos for a specific user.
 
         Args:
@@ -157,7 +159,7 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    def exists(self, todo_id: int) -> bool:
+    async def exists(self, todo_id: int) -> bool:
         """Check if todo exists.
 
         Args:

@@ -5,11 +5,11 @@ It assembles concrete implementations and provides factory functions for FastAPI
 """
 
 from fastapi import Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database_clean import get_db
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
+from app.infrastructure.database.connection import get_db
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
 )
@@ -32,7 +32,7 @@ from app.usecases.user.update_user_usecase import UpdateUserUseCase
 # =============================================================================
 
 
-def get_todo_repository(db: Session = Depends(get_db)) -> TodoRepository:
+def get_todo_repository(db: AsyncSession = Depends(get_db)) -> TodoRepository:
     """Factory function for TodoRepository.
 
     Args:
@@ -44,7 +44,7 @@ def get_todo_repository(db: Session = Depends(get_db)) -> TodoRepository:
     return SQLAlchemyTodoRepository(db)
 
 
-def get_user_repository(db: Session = Depends(get_db)) -> UserRepository:
+def get_user_repository(db: AsyncSession = Depends(get_db)) -> UserRepository:
     """Factory function for UserRepository.
 
     Args:

@@ -24,7 +24,7 @@ class GetUserByIdUseCase:
         """
         self.user_repository = user_repository
 
-    def execute(self, user_id: int) -> User:
+    async def execute(self, user_id: int) -> User:
         """Execute the get user by ID use case.
 
         Args:
@@ -39,7 +39,7 @@ class GetUserByIdUseCase:
         Note:
             Exceptions are handled by FastAPI exception handlers in main.py.
         """
-        user = self.user_repository.find_by_id(user_id)
+        user = await self.user_repository.find_by_id(user_id)
         if not user:
             raise UserNotFoundException(user_id)
 
