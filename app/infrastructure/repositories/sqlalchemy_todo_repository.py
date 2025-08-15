@@ -56,7 +56,11 @@ class SQLAlchemyTodoRepository(TodoRepository):
         )
 
     async def save(self, todo: Todo) -> Todo:
-        """Save a todo (create or update)."""
+        """Save a todo (create or update).
+
+        Note: Transaction management is handled by the UseCase layer.
+        Always flushes to ensure ID is available for return value.
+        """
         try:
             if todo.id is None:
                 # Create new todo
@@ -64,6 +68,8 @@ class SQLAlchemyTodoRepository(TodoRepository):
                 model.created_at = datetime.now()
                 model.updated_at = datetime.now()
                 self.db.add(model)
+                await self.db.flush()
+                await self.db.refresh(model)
             else:
                 # Update existing todo
                 result = await self.db.execute(
@@ -81,13 +87,12 @@ class SQLAlchemyTodoRepository(TodoRepository):
                 model.status = todo.status
                 model.priority = todo.priority
                 model.updated_at = datetime.now()
+                await self.db.flush()
+                await self.db.refresh(model)
 
-            await self.db.commit()
-            await self.db.refresh(model)
             return self._to_domain_entity(model)
 
         except SQLAlchemyError as e:
-            await self.db.rollback()
             raise RuntimeError(f"Database error while saving todo: {str(e)}")
 
     async def find_by_id(self, todo_id: int) -> Todo | None:
@@ -209,7 +214,10 @@ class SQLAlchemyTodoRepository(TodoRepository):
             )
 
     async def delete(self, todo_id: int) -> bool:
-        """Delete todo by ID."""
+        """Delete todo by ID.
+
+        Note: Transaction management is handled by the UseCase layer.
+        """
         try:
             result = await self.db.execute(
                 select(TodoModel).where(TodoModel.id == todo_id)
@@ -220,11 +228,9 @@ class SQLAlchemyTodoRepository(TodoRepository):
                 return False
 
             await self.db.delete(model)
-            await self.db.commit()
             return True
 
         except SQLAlchemyError as e:
-            await self.db.rollback()
             raise RuntimeError(f"Database error while deleting todo: {str(e)}")
 
     async def count_by_status(self, status: TodoStatus, user_id: int) -> int:

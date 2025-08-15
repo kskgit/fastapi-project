@@ -3,7 +3,7 @@
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
 
-from ..exceptions import UniqueConstraintException
+from ..exceptions import UniqueConstraintException, ValidationException
 
 
 class UserDomainService:
@@ -93,3 +93,22 @@ class UserDomainService:
             raise UniqueConstraintException(
                 f"Email '{email}' already exists", constraint_name="email_uniqueness"
             )
+
+    def validate_pagination_parameters(self, skip: int, limit: int) -> None:
+        """Validate pagination parameters for user queries.
+
+        Args:
+            skip: Number of records to skip
+            limit: Maximum number of records to return
+
+        Raises:
+            ValidationException: If pagination parameters are invalid
+
+        Note:
+            This is a domain rule: pagination must be within reasonable bounds
+            to prevent system performance issues.
+        """
+        if limit > 1000:
+            raise ValidationException("Limit cannot exceed 1000", field_name="limit")
+        if skip < 0:
+            raise ValidationException("Skip cannot be negative", field_name="skip")

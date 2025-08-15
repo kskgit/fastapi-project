@@ -16,6 +16,9 @@ from app.infrastructure.repositories.sqlalchemy_todo_repository import (
 from app.infrastructure.repositories.sqlalchemy_user_repository import (
     SQLAlchemyUserRepository,
 )
+from app.infrastructure.services.sqlalchemy_transaction_manager import (
+    SQLAlchemyTransactionManager,
+)
 from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
 from app.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
 from app.usecases.todo.get_todo_by_id_usecase import GetTodoByIdUseCase
@@ -57,24 +60,31 @@ def get_user_repository(db: AsyncSession = Depends(get_db)) -> UserRepository:
 
 
 # =============================================================================
+# Transaction-managed Repository Factory Functions (Deprecated)
+# Note: Transaction management is now handled at UseCase layer
+# =============================================================================
+
+
+# =============================================================================
 # Todo UseCase Factory Functions
 # =============================================================================
 
 
-def get_create_todo_usecase(
-    todo_repository: TodoRepository = Depends(get_todo_repository),
-    user_repository: UserRepository = Depends(get_user_repository),
-) -> CreateTodoUseCase:
+def get_create_todo_usecase(db: AsyncSession = Depends(get_db)) -> CreateTodoUseCase:
     """Factory function for CreateTodoUseCase.
 
+    Transaction management is handled within the UseCase layer.
+
     Args:
-        todo_repository: Todo repository dependency
-        user_repository: User repository dependency
+        db: Database session dependency
 
     Returns:
         CreateTodoUseCase: UseCase instance with injected dependencies
     """
-    return CreateTodoUseCase(todo_repository, user_repository)
+    transaction_manager = SQLAlchemyTransactionManager(db)
+    todo_repository = SQLAlchemyTodoRepository(db)
+    user_repository = SQLAlchemyUserRepository(db)
+    return CreateTodoUseCase(transaction_manager, todo_repository, user_repository)
 
 
 def get_get_todos_usecase(
@@ -109,36 +119,38 @@ def get_get_todo_by_id_usecase(
     return GetTodoByIdUseCase(todo_repository, user_repository)
 
 
-def get_update_todo_usecase(
-    todo_repository: TodoRepository = Depends(get_todo_repository),
-    user_repository: UserRepository = Depends(get_user_repository),
-) -> UpdateTodoUseCase:
+def get_update_todo_usecase(db: AsyncSession = Depends(get_db)) -> UpdateTodoUseCase:
     """Factory function for UpdateTodoUseCase.
 
+    Transaction management is handled within the UseCase layer.
+
     Args:
-        todo_repository: Todo repository dependency
-        user_repository: User repository dependency
+        db: Database session dependency
 
     Returns:
         UpdateTodoUseCase: UseCase instance with injected dependencies
     """
-    return UpdateTodoUseCase(todo_repository, user_repository)
+    transaction_manager = SQLAlchemyTransactionManager(db)
+    todo_repository = SQLAlchemyTodoRepository(db)
+    user_repository = SQLAlchemyUserRepository(db)
+    return UpdateTodoUseCase(transaction_manager, todo_repository, user_repository)
 
 
-def get_delete_todo_usecase(
-    todo_repository: TodoRepository = Depends(get_todo_repository),
-    user_repository: UserRepository = Depends(get_user_repository),
-) -> DeleteTodoUseCase:
+def get_delete_todo_usecase(db: AsyncSession = Depends(get_db)) -> DeleteTodoUseCase:
     """Factory function for DeleteTodoUseCase.
 
+    Transaction management is handled within the UseCase layer.
+
     Args:
-        todo_repository: Todo repository dependency
-        user_repository: User repository dependency
+        db: Database session dependency
 
     Returns:
         DeleteTodoUseCase: UseCase instance with injected dependencies
     """
-    return DeleteTodoUseCase(todo_repository, user_repository)
+    transaction_manager = SQLAlchemyTransactionManager(db)
+    todo_repository = SQLAlchemyTodoRepository(db)
+    user_repository = SQLAlchemyUserRepository(db)
+    return DeleteTodoUseCase(transaction_manager, todo_repository, user_repository)
 
 
 # =============================================================================
@@ -146,18 +158,20 @@ def get_delete_todo_usecase(
 # =============================================================================
 
 
-def get_create_user_usecase(
-    user_repository: UserRepository = Depends(get_user_repository),
-) -> CreateUserUseCase:
+def get_create_user_usecase(db: AsyncSession = Depends(get_db)) -> CreateUserUseCase:
     """Factory function for CreateUserUseCase.
 
+    Transaction management is handled within the UseCase layer.
+
     Args:
-        user_repository: User repository dependency
+        db: Database session dependency
 
     Returns:
         CreateUserUseCase: UseCase instance with injected dependencies
     """
-    return CreateUserUseCase(user_repository)
+    transaction_manager = SQLAlchemyTransactionManager(db)
+    user_repository = SQLAlchemyUserRepository(db)
+    return CreateUserUseCase(transaction_manager, user_repository)
 
 
 def get_get_users_usecase(
@@ -188,29 +202,33 @@ def get_get_user_by_id_usecase(
     return GetUserByIdUseCase(user_repository)
 
 
-def get_update_user_usecase(
-    user_repository: UserRepository = Depends(get_user_repository),
-) -> UpdateUserUseCase:
+def get_update_user_usecase(db: AsyncSession = Depends(get_db)) -> UpdateUserUseCase:
     """Factory function for UpdateUserUseCase.
 
+    Transaction management is handled within the UseCase layer.
+
     Args:
-        user_repository: User repository dependency
+        db: Database session dependency
 
     Returns:
         UpdateUserUseCase: UseCase instance with injected dependencies
     """
-    return UpdateUserUseCase(user_repository)
+    transaction_manager = SQLAlchemyTransactionManager(db)
+    user_repository = SQLAlchemyUserRepository(db)
+    return UpdateUserUseCase(transaction_manager, user_repository)
 
 
-def get_delete_user_usecase(
-    user_repository: UserRepository = Depends(get_user_repository),
-) -> DeleteUserUseCase:
+def get_delete_user_usecase(db: AsyncSession = Depends(get_db)) -> DeleteUserUseCase:
     """Factory function for DeleteUserUseCase.
 
+    Transaction management is handled within the UseCase layer.
+
     Args:
-        user_repository: User repository dependency
+        db: Database session dependency
 
     Returns:
         DeleteUserUseCase: UseCase instance with injected dependencies
     """
-    return DeleteUserUseCase(user_repository)
+    transaction_manager = SQLAlchemyTransactionManager(db)
+    user_repository = SQLAlchemyUserRepository(db)
+    return DeleteUserUseCase(transaction_manager, user_repository)

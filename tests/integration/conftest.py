@@ -38,14 +38,16 @@ async def async_test_db_engine():
 
 @pytest.fixture(scope="function")
 async def async_test_db_session(async_test_db_engine):
-    """Create async test database session with transaction rollback."""
+    """Create async test database session without transaction management.
+
+    Transaction management is handled by the UseCase layer.
+    """
     AsyncTestSessionLocal = async_sessionmaker(
         async_test_db_engine, class_=AsyncSession, expire_on_commit=False
     )
 
     async with AsyncTestSessionLocal() as session:
         yield session
-        await session.close()
 
 
 @pytest.fixture(scope="function")

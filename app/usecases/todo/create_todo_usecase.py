@@ -4,6 +4,7 @@ from app.domain.entities.todo import Todo, TodoPriority
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.todo_domain_service import TodoDomainService
+from app.domain.services.transaction_manager import TransactionManager
 
 
 class CreateTodoUseCase:
@@ -18,14 +19,19 @@ class CreateTodoUseCase:
     """
 
     def __init__(
-        self, todo_repository: TodoRepository, user_repository: UserRepository
+        self,
+        transaction_manager: TransactionManager,
+        todo_repository: TodoRepository,
+        user_repository: UserRepository,
     ):
-        """Initialize with repository dependencies.
+        """Initialize with transaction manager and repository dependencies.
 
         Args:
+            transaction_manager: Transaction manager for database operations
             todo_repository: TodoRepository interface implementation
             user_repository: UserRepository interface implementation
         """
+        self.transaction_manager = transaction_manager
         self.todo_repository = todo_repository
         self.user_repository = user_repository
         self.todo_domain_service = TodoDomainService()
@@ -52,23 +58,31 @@ class CreateTodoUseCase:
 
         Raises:
             UserNotFoundException: If user does not exist
-            RuntimeError: If todo creation fails (handled by exception handler)
+            RuntimeError: If todo creation fails
+
+        Note:
+            Domain exceptions are handled by FastAPI exception handlers in main.py.
 
         Note:
             Basic validation (title length, etc.) is handled by API DTOs.
             This method focuses on business logic only.
+            Transaction management is handled by SQLAlchemy autobegin.
         """
-        # Validate that user exists (async version)
-        await self._validate_user_exists_async(user_id)
+        async with (
+            self.transaction_manager.begin_transaction()
+        ):  # Explicit transaction boundary
+            # Validate that user exists (async version)
+            await self._validate_user_exists_async(user_id)
 
-        todo = Todo.create(
-            user_id=user_id,
-            title=title,
-            description=description,
-            due_date=due_date,
-            priority=priority,
-        )
-        return await self.todo_repository.save(todo)
+            todo = Todo.create(
+                user_id=user_id,
+                title=title,
+                description=description,
+                due_date=due_date,
+                priority=priority,
+            )
+            return await self.todo_repository.save(todo)
+        # Transaction automatically commits on success or rolls back on exception
 
     async def _validate_user_exists_async(self, user_id: int) -> None:
         """Validate that user exists for todo operations (async version).

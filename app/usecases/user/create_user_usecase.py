@@ -2,6 +2,7 @@
 
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.transaction_manager import TransactionManager
 from app.domain.services.user_domain_service import UserDomainService
 
 
@@ -16,12 +17,16 @@ class CreateUserUseCase:
     - No dependencies on API, Services, or Infrastructure layers
     """
 
-    def __init__(self, user_repository: UserRepository):
-        """Initialize with repository dependencies.
+    def __init__(
+        self, transaction_manager: TransactionManager, user_repository: UserRepository
+    ):
+        """Initialize with transaction manager and repository dependencies.
 
         Args:
+            transaction_manager: Transaction manager for database operations
             user_repository: UserRepository interface implementation
         """
+        self.transaction_manager = transaction_manager
         self.user_repository = user_repository
         self.user_domain_service = UserDomainService()
 
@@ -40,13 +45,20 @@ class CreateUserUseCase:
 
         Raises:
             ValueError: If username or email already exists
+
+        Note:
+            Transaction management is handled explicitly within this method.
         """
-        # Validate uniqueness constraints
-        await self.user_domain_service.validate_user_creation_uniqueness(
-            username, email, self.user_repository
-        )
+        async with (
+            self.transaction_manager.begin_transaction()
+        ):  # Explicit transaction boundary
+            # Validate uniqueness constraints
+            await self.user_domain_service.validate_user_creation_uniqueness(
+                username, email, self.user_repository
+            )
 
-        # Create new user
-        user = User.create(username=username, email=email, full_name=full_name)
+            # Create new user
+            user = User.create(username=username, email=email, full_name=full_name)
 
-        return await self.user_repository.save(user)
+            return await self.user_repository.save(user)
+        # Transaction automatically commits on success or rolls back on exception

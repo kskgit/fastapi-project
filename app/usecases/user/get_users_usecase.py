@@ -1,8 +1,8 @@
 """Get Users UseCase implementation."""
 
 from app.domain.entities.user import User
-from app.domain.exceptions import ValidationException
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.user_domain_service import UserDomainService
 
 
 class GetUsersUseCase:
@@ -23,6 +23,7 @@ class GetUsersUseCase:
             user_repository: UserRepository interface implementation
         """
         self.user_repository = user_repository
+        self.user_domain_service = UserDomainService()
 
     async def execute(self, skip: int = 0, limit: int = 100) -> list[User]:
         """Execute the get users use case.
@@ -39,22 +40,11 @@ class GetUsersUseCase:
             RuntimeError: If user retrieval fails
 
         Note:
-            Pagination validation is handled here as business logic.
+            Pagination validation is handled by domain service as business logic.
         """
-        try:
-            # Validate pagination parameters
-            if limit > 1000:
-                raise ValidationException(
-                    "Limit cannot exceed 1000", field_name="limit"
-                )
-            if skip < 0:
-                raise ValidationException("Skip cannot be negative", field_name="skip")
+        # Validate pagination parameters using domain service
+        self.user_domain_service.validate_pagination_parameters(skip, limit)
 
-            all_users = await self.user_repository.find_all()
-            # Apply pagination manually
-            return all_users[skip : skip + limit]
-        except ValueError:
-            # Re-raise ValueError as-is for proper API error handling
-            raise
-        except Exception as e:
-            raise RuntimeError(f"Failed to get users: {str(e)}") from e
+        all_users = await self.user_repository.find_all()
+        # Apply pagination manually
+        return all_users[skip : skip + limit]

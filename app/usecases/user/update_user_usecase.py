@@ -3,6 +3,7 @@
 from app.domain.entities.user import User
 from app.domain.exceptions import UserNotFoundException, ValidationException
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.transaction_manager import TransactionManager
 from app.domain.services.user_domain_service import UserDomainService
 
 
@@ -17,12 +18,16 @@ class UpdateUserUseCase:
     - No dependencies on API, Services, or Infrastructure layers
     """
 
-    def __init__(self, user_repository: UserRepository):
-        """Initialize with repository dependencies.
+    def __init__(
+        self, transaction_manager: TransactionManager, user_repository: UserRepository
+    ):
+        """Initialize with transaction manager and repository dependencies.
 
         Args:
+            transaction_manager: Transaction manager for database operations
             user_repository: UserRepository interface implementation
         """
+        self.transaction_manager = transaction_manager
         self.user_repository = user_repository
         self.user_domain_service = UserDomainService()
 
@@ -51,15 +56,20 @@ class UpdateUserUseCase:
 
         Note:
             At least one field must be provided for update.
-            Exceptions are handled by FastAPI exception handlers in main.py.
+            Domain exceptions are handled by FastAPI exception handlers in main.py.
+            Transaction management is handled explicitly within this method.
         """
-        user = await self._validate_user_exists(user_id)
-        self._validate_update_fields(username, email, full_name)
-        await self.user_domain_service.validate_user_update_uniqueness(
-            user_id, user, username, email, self.user_repository
-        )
-        self._update_user_fields(user, username, email, full_name)
-        return await self.user_repository.save(user)
+        async with (
+            self.transaction_manager.begin_transaction()
+        ):  # Explicit transaction boundary
+            user = await self._validate_user_exists(user_id)
+            self._validate_update_fields(username, email, full_name)
+            await self.user_domain_service.validate_user_update_uniqueness(
+                user_id, user, username, email, self.user_repository
+            )
+            self._update_user_fields(user, username, email, full_name)
+            return await self.user_repository.save(user)
+        # Transaction automatically commits on success or rolls back on exception
 
     async def _validate_user_exists(self, user_id: int) -> User:
         """Validate that the user exists."""
@@ -75,6 +85,7 @@ class UpdateUserUseCase:
         if all(param is None for param in [username, email, full_name]):
             raise ValidationException("At least one field must be provided for update")
 
+    # todo userモデル自身の処理に変更する
     def _update_user_fields(
         self, user: User, username: str | None, email: str | None, full_name: str | None
     ) -> None:

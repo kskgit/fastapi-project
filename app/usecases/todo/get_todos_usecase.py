@@ -54,7 +54,7 @@ class GetTodosUseCase:
 
         Note:
             Pagination validation is handled here as business logic.
-            Exceptions are handled by FastAPI exception handlers in main.py.
+            Domain exceptions are handled by FastAPI exception handlers in main.py.
         """
         # Validate that user exists
         await self.todo_domain_service.validate_user_exists_for_todo_operation(

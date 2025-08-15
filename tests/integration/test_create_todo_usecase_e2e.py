@@ -13,6 +13,9 @@ from app.domain.entities.user import User
 from app.domain.exceptions.business import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
+from app.infrastructure.services.sqlalchemy_transaction_manager import (
+    SQLAlchemyTransactionManager,
+)
 from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
 
 
@@ -26,10 +29,14 @@ class TestCreateTodoUseCaseE2E:
         async_todo_repository: TodoRepository,
         async_user_repository: UserRepository,
         async_test_user_id: int,
+        async_test_db_session,
     ):
         """Test successful todo creation with minimal required data."""
         # Arrange
-        usecase = CreateTodoUseCase(async_todo_repository, async_user_repository)
+        transaction_manager = SQLAlchemyTransactionManager(async_test_db_session)
+        usecase = CreateTodoUseCase(
+            transaction_manager, async_todo_repository, async_user_repository
+        )
         title = "Complete project documentation"
 
         # Act
@@ -62,10 +69,14 @@ class TestCreateTodoUseCaseE2E:
         async_todo_repository: TodoRepository,
         async_user_repository: UserRepository,
         async_test_user_id: int,
+        async_test_db_session,
     ):
         """Test successful todo creation with all optional fields."""
         # Arrange
-        usecase = CreateTodoUseCase(async_todo_repository, async_user_repository)
+        transaction_manager = SQLAlchemyTransactionManager(async_test_db_session)
+        usecase = CreateTodoUseCase(
+            transaction_manager, async_todo_repository, async_user_repository
+        )
         title = "Implement new feature"
         description = "Detailed implementation of user authentication system"
         due_date = datetime.now() + timedelta(days=7)
@@ -101,10 +112,14 @@ class TestCreateTodoUseCaseE2E:
         async_todo_repository: TodoRepository,
         async_user_repository: UserRepository,
         async_test_user_id: int,
+        async_test_db_session,
     ):
         """Test creating multiple todos for the same user."""
         # Arrange
-        usecase = CreateTodoUseCase(async_todo_repository, async_user_repository)
+        transaction_manager = SQLAlchemyTransactionManager(async_test_db_session)
+        usecase = CreateTodoUseCase(
+            transaction_manager, async_todo_repository, async_user_repository
+        )
         titles = ["Todo 1", "Todo 2", "Todo 3"]
 
         # Act
@@ -128,10 +143,14 @@ class TestCreateTodoUseCaseE2E:
         self,
         async_todo_repository: TodoRepository,
         async_user_repository: UserRepository,
+        async_test_db_session,
     ):
         """Test todo creation failure when user does not exist."""
         # Arrange
-        usecase = CreateTodoUseCase(async_todo_repository, async_user_repository)
+        transaction_manager = SQLAlchemyTransactionManager(async_test_db_session)
+        usecase = CreateTodoUseCase(
+            transaction_manager, async_todo_repository, async_user_repository
+        )
         non_existent_user_id = 9999
         title = "This should fail"
 
@@ -153,10 +172,14 @@ class TestCreateTodoUseCaseE2E:
         async_todo_repository: TodoRepository,
         async_user_repository: UserRepository,
         async_test_user_id: int,
+        async_test_db_session,
     ):
         """Test creating todo with past due date (should be allowed)."""
         # Arrange
-        usecase = CreateTodoUseCase(async_todo_repository, async_user_repository)
+        transaction_manager = SQLAlchemyTransactionManager(async_test_db_session)
+        usecase = CreateTodoUseCase(
+            transaction_manager, async_todo_repository, async_user_repository
+        )
         title = "Overdue task"
         past_due_date = datetime.now() - timedelta(days=1)
 
@@ -182,10 +205,14 @@ class TestCreateTodoUseCaseE2E:
         async_todo_repository: TodoRepository,
         async_user_repository: UserRepository,
         async_test_user_id: int,
+        async_test_db_session,
     ):
         """Test creating todos with different priority levels."""
         # Arrange
-        usecase = CreateTodoUseCase(async_todo_repository, async_user_repository)
+        transaction_manager = SQLAlchemyTransactionManager(async_test_db_session)
+        usecase = CreateTodoUseCase(
+            transaction_manager, async_todo_repository, async_user_repository
+        )
         priorities = [TodoPriority.low, TodoPriority.medium, TodoPriority.high]
 
         # Act & Assert
@@ -210,10 +237,14 @@ class TestCreateTodoUseCaseE2E:
         async_todo_repository: TodoRepository,
         async_user_repository: UserRepository,
         async_test_user_id: int,
+        async_test_db_session,
     ):
         """Test that todo creation maintains database transaction integrity."""
         # Arrange
-        usecase = CreateTodoUseCase(async_todo_repository, async_user_repository)
+        transaction_manager = SQLAlchemyTransactionManager(async_test_db_session)
+        usecase = CreateTodoUseCase(
+            transaction_manager, async_todo_repository, async_user_repository
+        )
 
         # Get initial count
         initial_todos = await async_todo_repository.find_all_by_user_id(
@@ -254,7 +285,10 @@ class TestCreateTodoUseCaseE2E:
         )
         saved_user2 = await async_user_repository.save(user2)
 
-        usecase = CreateTodoUseCase(async_todo_repository, async_user_repository)
+        transaction_manager = SQLAlchemyTransactionManager(async_test_db_session)
+        usecase = CreateTodoUseCase(
+            transaction_manager, async_todo_repository, async_user_repository
+        )
 
         # Act - Create todos for different users
         todo1 = await usecase.execute(title="User 1 todo", user_id=async_test_user_id)

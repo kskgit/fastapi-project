@@ -52,7 +52,11 @@ class SQLAlchemyUserRepository(UserRepository):
         )
 
     async def save(self, user: User) -> User:
-        """Save a user (create or update)."""
+        """Save a user (create or update).
+
+        Note: Transaction management is handled by the UseCase layer.
+        Always flushes to ensure ID is available for return value.
+        """
         try:
             if user.id is None:
                 # Create new user
@@ -60,6 +64,8 @@ class SQLAlchemyUserRepository(UserRepository):
                 model.created_at = datetime.now()
                 model.updated_at = datetime.now()
                 self.db.add(model)
+                await self.db.flush()
+                await self.db.refresh(model)
             else:
                 # Update existing user
                 result = await self.db.execute(
@@ -76,13 +82,12 @@ class SQLAlchemyUserRepository(UserRepository):
                 model.full_name = user.full_name
                 model.is_active = user.is_active
                 model.updated_at = datetime.now()
+                await self.db.flush()
+                await self.db.refresh(model)
 
-            await self.db.commit()
-            await self.db.refresh(model)
             return self._to_domain_entity(model)
 
         except SQLAlchemyError as e:
-            await self.db.rollback()
             raise RuntimeError(f"Database error while saving user: {str(e)}")
 
     async def find_by_id(self, user_id: int) -> User | None:
@@ -145,11 +150,9 @@ class SQLAlchemyUserRepository(UserRepository):
                 return False
 
             await self.db.delete(model)
-            await self.db.commit()
             return True
 
         except SQLAlchemyError as e:
-            await self.db.rollback()
             raise RuntimeError(f"Database error while deleting user: {str(e)}")
 
     async def exists(self, user_id: int) -> bool:

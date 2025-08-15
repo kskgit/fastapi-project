@@ -46,7 +46,7 @@ class GetTodoByIdUseCase:
         Note:
             If user_id is provided, ownership validation is performed.
             If user_id is None, returns todo regardless of ownership (admin access).
-            Exceptions are handled by FastAPI exception handlers in main.py.
+            Domain exceptions are handled by FastAPI exception handlers in main.py.
         """
         todo = await self.todo_repository.find_by_id(todo_id)
         if not todo:

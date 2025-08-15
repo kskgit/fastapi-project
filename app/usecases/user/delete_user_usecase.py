@@ -1,6 +1,7 @@
 """Delete User UseCase implementation."""
 
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.transaction_manager import TransactionManager
 
 
 class DeleteUserUseCase:
@@ -14,12 +15,16 @@ class DeleteUserUseCase:
     - No dependencies on API, Services, or Infrastructure layers
     """
 
-    def __init__(self, user_repository: UserRepository):
-        """Initialize with repository dependencies.
+    def __init__(
+        self, transaction_manager: TransactionManager, user_repository: UserRepository
+    ):
+        """Initialize with transaction manager and repository dependencies.
 
         Args:
+            transaction_manager: Transaction manager for database operations
             user_repository: UserRepository interface implementation
         """
+        self.transaction_manager = transaction_manager
         self.user_repository = user_repository
 
     async def execute(self, user_id: int) -> bool:
@@ -37,13 +42,15 @@ class DeleteUserUseCase:
         Note:
             This is a soft delete operation - the user is marked as deleted
             but not physically removed from the database.
+            Transaction management is handled explicitly within this method.
         """
-        try:
+        async with (
+            self.transaction_manager.begin_transaction()
+        ):  # Explicit transaction boundary
             # Check if user exists
             user = await self.user_repository.find_by_id(user_id)
             if not user:
                 return False  # User doesn't exist
 
             return await self.user_repository.delete(user_id)
-        except Exception as e:
-            raise RuntimeError(f"Failed to delete user: {str(e)}") from e
+        # Transaction automatically commits on success or rolls back on exception

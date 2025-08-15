@@ -1,6 +1,7 @@
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.todo_domain_service import TodoDomainService
+from app.domain.services.transaction_manager import TransactionManager
 
 
 class DeleteTodoUseCase:
@@ -15,14 +16,19 @@ class DeleteTodoUseCase:
     """
 
     def __init__(
-        self, todo_repository: TodoRepository, user_repository: UserRepository
+        self,
+        transaction_manager: TransactionManager,
+        todo_repository: TodoRepository,
+        user_repository: UserRepository,
     ):
-        """Initialize with repository dependencies.
+        """Initialize with transaction manager and repository dependencies.
 
         Args:
+            transaction_manager: Transaction manager for database operations
             todo_repository: TodoRepository interface implementation
             user_repository: UserRepository interface implementation
         """
+        self.transaction_manager = transaction_manager
         self.todo_repository = todo_repository
         self.user_repository = user_repository
         self.todo_domain_service = TodoDomainService()
@@ -42,19 +48,24 @@ class DeleteTodoUseCase:
 
         Note:
             Only the todo owner can delete their todos.
-            Exceptions are handled by FastAPI exception handlers in main.py.
+            Domain exceptions are handled by FastAPI exception handlers in main.py.
+            Transaction management is handled explicitly within this method.
         """
-        # Validate that user exists
-        await self.todo_domain_service.validate_user_exists_for_todo_operation(
-            user_id, self.user_repository
-        )
+        async with (
+            self.transaction_manager.begin_transaction()
+        ):  # Explicit transaction boundary
+            # Validate that user exists
+            await self.todo_domain_service.validate_user_exists_for_todo_operation(
+                user_id, self.user_repository
+            )
 
-        # Get the existing todo to validate ownership
-        todo = await self.todo_repository.find_by_id(todo_id)
-        if not todo:
-            return False  # Todo doesn't exist
+            # Get the existing todo to validate ownership
+            todo = await self.todo_repository.find_by_id(todo_id)
+            if not todo:
+                return False  # Todo doesn't exist
 
-        # Validate ownership
-        self.todo_domain_service.validate_todo_ownership(todo, user_id)
+            # Validate ownership
+            self.todo_domain_service.validate_todo_ownership(todo, user_id)
 
-        return await self.todo_repository.delete(todo_id)
+            return await self.todo_repository.delete(todo_id)
+        # Transaction automatically commits on success or rolls back on exception

@@ -37,7 +37,7 @@ class GetUserByIdUseCase:
             UserNotFoundException: If user not found
 
         Note:
-            Exceptions are handled by FastAPI exception handlers in main.py.
+            Domain exceptions are handled by FastAPI exception handlers in main.py.
         """
         user = await self.user_repository.find_by_id(user_id)
         if not user:
