@@ -169,3 +169,15 @@ class TodoRepository(ABC):
             True if todo exists, False otherwise
         """
         pass
+
+    @abstractmethod
+    async def delete_all_by_user_id(self, user_id: int) -> int:
+        """Delete all todos for a specific user.
+
+        Args:
+            user_id: ID of the user whose todos should be deleted
+
+        Returns:
+            Number of todos deleted
+        """
+        pass

@@ -1,5 +1,6 @@
 """Delete User UseCase implementation."""
 
+from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.transaction_manager import TransactionManager
 
@@ -8,24 +9,30 @@ class DeleteUserUseCase:
     """UseCase for deleting a User.
 
     Single Responsibility: Handle the deletion of a user with proper
-    validation and error handling.
+    validation and error handling. Also handles cascade deletion of
+    related todos in the same transaction.
 
     Dependencies:
-    - Only depends on Domain layer (UserRepository interface)
+    - Only depends on Domain layer (UserRepository, TodoRepository interfaces)
     - No dependencies on API, Services, or Infrastructure layers
     """
 
     def __init__(
-        self, transaction_manager: TransactionManager, user_repository: UserRepository
+        self,
+        transaction_manager: TransactionManager,
+        user_repository: UserRepository,
+        todo_repository: TodoRepository,
     ):
         """Initialize with transaction manager and repository dependencies.
 
         Args:
             transaction_manager: Transaction manager for database operations
             user_repository: UserRepository interface implementation
+            todo_repository: TodoRepository interface implementation
         """
         self.transaction_manager = transaction_manager
         self.user_repository = user_repository
+        self.todo_repository = todo_repository
 
     async def execute(self, user_id: int) -> bool:
         """Execute the delete user use case.
@@ -37,12 +44,12 @@ class DeleteUserUseCase:
             bool: True if deleted successfully, False if not found
 
         Raises:
-            RuntimeError: If user deletion fails
+            RuntimeError: If user or todo deletion fails
 
         Note:
-            This is a soft delete operation - the user is marked as deleted
-            but not physically removed from the database.
+            This operation deletes the user and all related todos in a single transaction.
             Transaction management is handled explicitly within this method.
+            If any operation fails, all changes are rolled back.
         """
         async with (
             self.transaction_manager.begin_transaction()
@@ -52,5 +59,10 @@ class DeleteUserUseCase:
             if not user:
                 return False  # User doesn't exist
 
-            return await self.user_repository.delete(user_id)
+            await self.todo_repository.delete_all_by_user_id(user_id)
+
+            # Then delete the user
+            await self.user_repository.delete(user_id)
+
+            return True
         # Transaction automatically commits on success or rolls back on exception

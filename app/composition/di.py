@@ -231,4 +231,5 @@ def get_delete_user_usecase(db: AsyncSession = Depends(get_db)) -> DeleteUserUse
     """
     transaction_manager = SQLAlchemyTransactionManager(db)
     user_repository = SQLAlchemyUserRepository(db)
-    return DeleteUserUseCase(transaction_manager, user_repository)
+    todo_repository = SQLAlchemyTodoRepository(db)
+    return DeleteUserUseCase(transaction_manager, user_repository, todo_repository)

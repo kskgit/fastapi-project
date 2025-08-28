@@ -275,3 +275,31 @@ class SQLAlchemyTodoRepository(TodoRepository):
             raise RuntimeError(
                 f"Database error while checking todo existence: {str(e)}"
             )
+
+    async def delete_all_by_user_id(self, user_id: int) -> int:
+        """Delete all todos for a specific user.
+
+        Note: Transaction management is handled by the UseCase layer.
+        """
+        try:
+            from sqlalchemy import delete
+
+            # Count todos before deletion for return value
+            count_result = await self.db.execute(
+                select(TodoModel).where(TodoModel.user_id == user_id)
+            )
+            todos_to_delete = count_result.scalars().all()
+            delete_count = len(todos_to_delete)
+
+            if delete_count > 0:
+                # Execute bulk delete
+                await self.db.execute(
+                    delete(TodoModel).where(TodoModel.user_id == user_id)
+                )
+
+            return delete_count
+
+        except SQLAlchemyError as e:
+            raise RuntimeError(
+                f"Database error while deleting todos for user {user_id}: {str(e)}"
+            )
