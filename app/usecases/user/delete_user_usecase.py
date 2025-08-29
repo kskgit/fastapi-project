@@ -47,7 +47,8 @@ class DeleteUserUseCase:
             RuntimeError: If user or todo deletion fails
 
         Note:
-            This operation deletes the user and all related todos in a single transaction.
+            This operation deletes the user and all related todos in a single
+            transaction.
             Transaction management is handled explicitly within this method.
             If any operation fails, all changes are rolled back.
         """
@@ -59,10 +60,14 @@ class DeleteUserUseCase:
             if not user:
                 return False  # User doesn't exist
 
+            # First, delete all todos associated with the user
             await self.todo_repository.delete_all_by_user_id(user_id)
 
             # Then delete the user
-            await self.user_repository.delete(user_id)
+            user_deleted = await self.user_repository.delete(user_id)
+
+            if not user_deleted:
+                raise RuntimeError(f"Failed to delete user with id {user_id}")
 
             return True
         # Transaction automatically commits on success or rolls back on exception
