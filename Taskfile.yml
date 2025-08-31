@@ -21,11 +21,15 @@ tasks:
     desc: Run ruff linter and fix issues
     cmd: uv run ruff check --fix .
 
-  check:
+  check-all:
     desc: Run all checks (lint and format check)
     cmds:
       - uv run ruff check .
       - uv run ruff format --check .
+      - uv run lint-imports
+      - uv run mypy app/clean
+      - uv run lizard --CCN 5 app/ || echo "⚠️  Complexity warnings found (CCN ≥ 5)"
+      - uv run lizard --CCN 10 app/
 
   test:
     desc: Run unit tests
@@ -38,6 +42,10 @@ tasks:
   test-all:
     desc: Run all tests
     cmd: uv run pytest tests -v
+
+  test-e2e:
+    desc: Run e2e tests
+    cmd: uv run pytest tests/e2e/ -v
 
   db-up:
     desc: Start PostgreSQL container
@@ -58,3 +66,16 @@ tasks:
   migrate-create:
     desc: Create empty migration file
     cmd: uv run alembic revision
+
+  lizard-complexity:
+    desc: Check code complexity with lizard
+    cmd: uv run lizard --CCN 10 app/
+
+  db-rest:
+    desc: Reset database and create fresh migration
+    cmds:
+      - docker exec fastapi-postgres psql -U fastapi_user -d fastapi_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+      - rm -f alembic/versions/*.py
+      - uv run alembic revision --autogenerate -m "Initial migration User and Todo models"
+      - uv run alembic upgrade head
+      - echo "Database reset complete!"

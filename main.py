@@ -1,43 +1,55 @@
-from fastapi import Depends, FastAPI, HTTPException, Request
-from sqlalchemy.orm import Session
+from fastapi import FastAPI, HTTPException, Request
 
-from app.clean.api.endpoints import todos
-from app.clean.core.database_clean import get_db
-from app.clean.infrastructure.repositories.sqlalchemy_todo_repository import (
-    SQLAlchemyTodoRepository,
+from app.api.endpoints import todo as todo_routes
+from app.api.endpoints import user as user_routes
+from app.domain.exceptions import (
+    BusinessRuleException,
+    SystemException,
 )
-from app.clean.services.todo_service import TodoService
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 
 
-def get_todo_repository(db: Session = Depends(get_db)) -> SQLAlchemyTodoRepository:
-    """Dependency injection for TodoRepository."""
-    return SQLAlchemyTodoRepository(db)
+@app.exception_handler(BusinessRuleException)
+async def business_rule_error_handler(
+    request: Request, exc: BusinessRuleException
+) -> HTTPException:
+    """Handle BusinessRuleException and its subclasses.
 
+    This handler provides unified logging and monitoring for all business
+    rule violations while allowing each exception to define its specific
+    HTTP status code.
 
-def get_todo_service(
-    repository: SQLAlchemyTodoRepository = Depends(get_todo_repository),
-) -> TodoService:
-    """Dependency injection for TodoService."""
-    return TodoService(repository)
-
-
-todos.get_todo_service = get_todo_service
-
-
-@app.exception_handler(ValueError)
-async def value_error_handler(request: Request, exc: ValueError) -> HTTPException:
-    """Handle ValueError exceptions.
-
-    ValueError is used for business logic errors:
-    - Todo not found -> 404
-    - Invalid business rules -> 400
+    Business rule violations are logged at WARNING level and do not
+    trigger operational alerts as they are user-caused errors.
     """
-    error_message = str(exc)
-    if "not found" in error_message.lower():
-        raise HTTPException(status_code=404, detail=error_message)
-    raise HTTPException(status_code=400, detail=error_message)
+    import logging
+
+    # Log business rule violations at WARNING level
+    logger = logging.getLogger(__name__)
+    logger.log(
+        level=getattr(logging, exc.get_log_level()),
+        msg=f"Business rule violation: {exc} | Category: {exc.get_error_category()}",
+    )
+
+    # Use the specific HTTP status code from the exception
+    raise HTTPException(status_code=exc.http_status_code.value, detail=str(exc))
+
+
+@app.exception_handler(SystemException)
+async def system_error_handler(request: Request, exc: SystemException) -> HTTPException:
+    """Handle SystemException exceptions.
+
+    SystemException is used for system layer failures:
+    - ConnectionException (data persistence failures) -> 503
+    - Other system errors -> 503
+
+    HTTP 503 indicates service temporarily unavailable, suggesting retry.
+    """
+    raise HTTPException(
+        status_code=503,
+        detail="Service temporarily unavailable. Please try again later.",
+    )
 
 
 @app.exception_handler(RuntimeError)
@@ -49,7 +61,8 @@ async def runtime_error_handler(request: Request, exc: RuntimeError) -> HTTPExce
     raise HTTPException(status_code=500, detail=f"Internal server error: {str(exc)}")
 
 
-app.include_router(todos.router)
+app.include_router(todo_routes.router)
+app.include_router(user_routes.router)
 
 
 @app.get("/")

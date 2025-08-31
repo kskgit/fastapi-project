@@ -13,8 +13,10 @@ dependencies = [
     "alembic>=1.16.1",
     "asyncpg>=0.30.0",
     "fastapi>=0.115.12",
+    "greenlet>=3.2.3",
     "psycopg2-binary>=2.9.10",
     "pydantic-settings>=2.9.1",
+    "pydantic[email]>=2.11.7",
     "sqlalchemy>=2.0.41",
     "uvicorn>=0.34.3",
 ]
@@ -29,11 +31,15 @@ dev = [
     "mypy>=1.16.0",
     "ruff>=0.11.13",
     "import-linter>=2.0.0",
+    "lizard>=1.17.10",
 ]
 test = [
     "pytest>=8.0.0",
     "pytest-mock>=3.12.0",
     "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.23.0",
+    "aiosqlite>=0.20.0",
+    "httpx>=0.28.1",
 ]
 
 [tool.ruff]
@@ -76,7 +82,9 @@ addopts = [
 markers = [
     "unit: Unit tests",
     "integration: Integration tests",
+    "asyncio: Async integration tests",
 ]
+asyncio_mode = "auto"
 
 # =============================================================================
 # Clean Architecture Import Restrictions
@@ -87,39 +95,23 @@ markers = [
 root_packages = ["app"]
 include_external_packages = true
 
-# API layer restrictions
+# Clean Architecture Layer Dependencies
 [[tool.importlinter.contracts]]
-name = "API Layer Restrictions"
-type = "forbidden"
-source_modules = ["app.clean.api"]
-forbidden_modules = [
-    "sqlalchemy",
-    "alembic", 
-    "asyncpg",
-    "psycopg2",
-    "app.clean.infrastructure",  # No direct infrastructure access
-]
-
-# Services layer restrictions
-[[tool.importlinter.contracts]]
-name = "Services Layer Restrictions" 
-type = "forbidden"
-source_modules = ["app.clean.services"]
-forbidden_modules = [
-    "fastapi",
-    "sqlalchemy",
-    "alembic",
-    "asyncpg", 
-    "psycopg2",
-    "app.clean.infrastructure",  # Use repository interfaces only
-    "app.clean.api",            # No upward dependencies
+name = "Clean Architecture Layers"
+type = "layers"
+layers = [
+    "app.api",
+    "app.composition",  # Composition Root layer (can access all)
+    "app.usecases", 
+    "app.infrastructure",
+    "app.domain"
 ]
 
 # Domain layer restrictions (most restrictive)
 [[tool.importlinter.contracts]]
 name = "Domain Layer Purity"
 type = "forbidden"
-source_modules = ["app.clean.domain"]
+source_modules = ["app.domain"]
 forbidden_modules = [
     "fastapi",
     "pydantic",
@@ -129,33 +121,43 @@ forbidden_modules = [
     "psycopg2", 
     "httpx",
     "requests",
-    "app.clean.api",
-    "app.clean.services", 
-    "app.clean.infrastructure",
+    "app.api",
+    "app.usecases", 
+    "app.infrastructure",
 ]
 
 # Infrastructure layer restrictions
 [[tool.importlinter.contracts]]
 name = "Infrastructure Layer Restrictions"
 type = "forbidden"
-source_modules = ["app.clean.infrastructure"]
+source_modules = ["app.infrastructure"]
 forbidden_modules = [
     "fastapi",               # No web framework knowledge
-    "app.clean.api",         # No upward dependencies
+    "app.api",         # No upward dependencies
+    "app.usecases",    # No upward dependencies
 ]
 
-# UseCases layer restrictions
+# UseCases layer restrictions - strictest layer for business logic
 [[tool.importlinter.contracts]]
 name = "UseCases Layer Restrictions"
 type = "forbidden"
-source_modules = ["app.clean.usecases"]
+source_modules = ["app.usecases"]
 forbidden_modules = [
-    "fastapi",
-    "sqlalchemy",
+    "fastapi",                  # Pure business logic - no web framework
+    "sqlalchemy",               # Use repository interfaces only
     "alembic",
     "asyncpg", 
     "psycopg2",
-    "app.clean.infrastructure",  # Use repository interfaces only
-    "app.clean.api",            # No upward dependencies
-    "app.clean.services",       # Independent from services
+    "app.infrastructure",  # Use repository interfaces only
+    "app.api",            # No upward dependencies
+    "app.composition",    # No upward dependencies
+]
+
+# Composition Root layer restrictions - can import all but no upward dependencies  
+[[tool.importlinter.contracts]]
+name = "Composition Root Layer Restrictions"
+type = "forbidden"
+source_modules = ["app.composition"]
+forbidden_modules = [
+    "app.api",            # No upward dependencies to API layer
 ]

@@ -321,3 +321,125 @@ raise RuntimeError(f"Failed to create todo: {str(e)}")
 各層の具体的な実装例は、実装時に段階的に提供します。
 
 このアーキテクチャにより、保守性が高く、テストしやすく、技術変更に強いTodo管理APIを構築できます。
+
+---
+
+## 実装進捗とメモリ (2025-01-05)
+
+### 完了した作業
+
+#### 1. Clean Architecture層構造の実装
+- `app/clean/` 配下に5層構造を構築
+- API、UseCases、Domain、Infrastructure、Services の分離完了
+
+#### 2. Import制約の実装
+- **import-linter** を導入して層間依存関係を制約
+- `pyproject.toml` で各層の禁止importを設定
+- ruffの層別設定は廃止し、import-linterで一元管理
+
+#### 3. UseCaseパターンの導入
+- `TodoService.create_todo` を `CreateTodoUseCase.execute` に分離
+- 1クラス1メソッドの原則でUseCase実装
+- `app/clean/usecases/create_todo_usecase.py` を作成
+
+#### 4. マルチユーザー対応
+- **User Entity** (`app/clean/domain/entities/user.py`) を作成
+- **Todo Entity** にuser_idフィールドを追加
+- **UserRepository Interface** を作成
+- User-Todo関連付けでマルチユーザー管理を実現
+
+#### 5. データベース層の更新  
+- SQLAlchemy ModelsにUserModelを追加
+- TodoModelにuser_id外部キーを追加
+- User-Todo間の1対多リレーションシップを設定
+
+#### 6. タスク管理コマンドの追加
+- **Taskfile.yml** に `db-rest` コマンドを追加
+- alembic downgrade base → revision → upgrade の自動化
+
+### 現在の技術構成
+
+#### 依存性管理
+- **import-linter**: 層間依存関係の制約
+- **ruff**: コードフォーマット・リント
+- **mypy**: 型チェック（層別設定）
+- **pytest**: テストフレームワーク
+
+#### アーキテクチャパターン
+- **Repository Pattern**: データアクセス抽象化
+- **UseCase Pattern**: ビジネスロジック単一責任
+- **Domain-Driven Design**: 純粋ドメインエンティティ
+- **Dependency Injection**: FastAPIによる依存注入
+
+### 未完了の作業
+
+#### 1. Repository実装の更新
+- [ ] **SQLAlchemyTodoRepository** のuser_id対応
+- [ ] **SQLAlchemyUserRepository** の完全実装
+- [ ] Domain Entity ↔ SQLAlchemy Model 変換の更新
+
+#### 2. API層の更新
+- [ ] API DTOのuser_id対応（TodoCreateDTO等）
+- [ ] エンドポイントのマルチユーザー対応
+- [ ] 認証・認可システムの実装
+
+#### 3. その他の実装
+- [ ] 他のUseCaseクラスの実装（UpdateTodo、DeleteTodo等）
+- [ ] テストの更新（マルチユーザー対応）
+- [ ] データベースマイグレーションの実行
+
+### 実行予定のコマンド
+
+```bash
+# データベースリセット（次回セッション開始時に実行）
+task db-rest
+
+# または手動で
+uv run alembic downgrade base
+uv run alembic revision --autogenerate -m "Reset: User and Todo models"  
+uv run alembic upgrade head
+```
+
+### 技術的注意点
+
+#### Clean Architecture制約
+- Domain層はSQLAlchemy/FastAPI禁止
+- Services層はinfrastructure層直接アクセス禁止  
+- API層はSQLAlchemy禁止
+- UseCases層は独立性維持
+
+#### マルチユーザー対応
+- 全TodoはUser.idとの関連付け必須
+- 認証後のuser_idをUseCase層で受け取り
+- Todoアクセス時の所有権チェック実装
+
+#### データベース管理
+- alembicによるマイグレーション管理
+- PostgreSQL本番対応済み設定
+- 開発時はdb-restコマンドでリセット可能
+
+### 次回開始時の優先タスク
+
+1. **db-rest実行** でデータベース状態をクリーンアップ
+2. **Repository実装の更新** でuser_id対応完了
+3. **API層の更新** でエンドツーエンド動作確認
+4. **認証システム追加** で実用性向上
+
+このメモリを基に、次回セッションでは効率的に作業を継続できます。
+
+---
+
+## 重要な実装ルール
+
+### Git操作に関する制約
+- **NEVER run `git add` automatically** - ユーザーが明示的に指示した場合のみ実行
+- **Git commit前の確認必須** - コミット前に必ずユーザーの承認を得る
+- **Git操作は慎重に** - 自動的なステージング、コミット、プッシュを禁止
+
+### 推奨ワークフロー
+1. コード変更後、必ずユーザーに確認を求める
+2. ユーザーが承認した場合のみ `git add` を実行
+3. `git commit` 前に再度確認を求める
+4. プッシュは明示的な指示がない限り実行しない
+
+この制約により、ユーザーが意図しないGit操作を防ぎ、開発プロセスの安全性を確保する。
