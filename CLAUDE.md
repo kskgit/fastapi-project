@@ -443,3 +443,30 @@ uv run alembic upgrade head
 4. プッシュは明示的な指示がない限り実行しない
 
 この制約により、ユーザーが意図しないGit操作を防ぎ、開発プロセスの安全性を確保する。
+
+### **作業完了の必須条件 (2025-01-05 追加)**
+すべての作業完了時に以下を必ず実行し、commit hookを通過させること：
+
+#### **commit hook チェックコマンド**
+```bash
+uv run ruff check .          # コード品質チェック
+uv run mypy .               # 型チェック  
+uv run lint-imports         # import制約チェック
+```
+
+#### **エラー修正の優先順位**
+1. **ruff**: `uv run ruff check . --fix` で自動修正
+2. **mypy**: 型エラーの手動修正
+3. **import-linter**: Clean Architecture制約違反の修正
+
+#### **作業完了の確認基準**
+- `uv run ruff check .` → `All checks passed!`
+- `uv run mypy .` → `Success: no issues found`  
+- `uv run lint-imports` → `Contracts: X kept, 0 broken.`
+
+#### **重要事項**
+- **git addは実行しない** - ユーザーが明示的に指示した場合のみ
+- **すべてのエラーを解消** してから作業完了とする
+- **ユーザーが安心してcommitできる状態** を保証する
+
+この基準により、常に高品質なコードを維持し、commit hookエラーによる開発の中断を防ぐ。
