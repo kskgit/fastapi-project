@@ -28,7 +28,7 @@ pre-push:
     import-linter-all:
       run: uv run lint-imports
     mypy-all:
-      run: uv run mypy app/clean
+      run: uv run mypy .
     lizard-complexity-warning-all:
       run: uv run lizard --CCN 5 app/ || echo "⚠️  Complexity warnings found (CCN ≥ 5)"
     lizard-complexity-critical-all:
