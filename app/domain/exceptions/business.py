@@ -5,85 +5,12 @@ providing unified logging and monitoring capabilities while allowing
 specific HTTP response codes for different types of business rules.
 """
 
-from abc import ABC
-from enum import Enum
 from typing import Any
 
-
-class BusinessRuleExceptionStatusCode(Enum):
-    # 処理実行前にリクエスト内容の不備で処理が実行できない
-    VALIDATION_ERR = 400
-    # 処理対象のリソースが見つからない
-    NOT_FOUND = 404
-    # ビジネスロジックの制約で処理が実行出来ない
-    UNPROCESSABLE_ENTITY = 422
+from app.domain.exceptions.base import BaseUserException, ExceptionStatusCode
 
 
-class BusinessRuleException(Exception, ABC):
-    """Base exception for all business rule violations.
-
-    This exception provides unified handling for all types of business logic
-    errors with consistent logging levels and monitoring behavior, while
-    allowing subclasses to define appropriate HTTP status codes.
-
-    Business rule violations are considered user-caused errors that:
-    - Should be logged at WARNING level (not ERROR)
-    - Should not trigger operational alerts
-    - Should provide clear user-facing error messages
-    """
-
-    def __init__(
-        self,
-        message: str,
-        details: dict[str, Any] | None = None,
-    ) -> None:
-        """Initialize business rule exception.
-
-        Args:
-            message: Human-readable error message
-            details: Additional context information about the violation
-        """
-        super().__init__(message)
-        self.details = details or {}
-
-    def get_log_level(self) -> str:
-        """Get log level for this business rule violation.
-
-        Returns:
-            str: Always 'WARNING' for business rule violations
-        """
-        return "WARNING"
-
-    def should_trigger_alert(self) -> bool:
-        """Check if this error should trigger operational alerts.
-
-        Returns:
-            bool: Always False for business rule violations
-        """
-        return False
-
-    def get_error_category(self) -> str:
-        """Get error category for metrics and monitoring.
-
-        Returns:
-            str: Error category for classification
-        """
-        return "business_rule_violation"
-
-    @property
-    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
-        """Get HTTP status code for API response.
-
-        Returns:
-            BusinessRuleExceptionStatusCode: HTTP status code
-
-        Note:
-            Must be implemented by subclasses
-        """
-        raise NotImplementedError("Subclasses must implement http_status_code property")
-
-
-class ValidationException(BusinessRuleException):
+class ValidationException(BaseUserException):
     """Exception raised for input validation errors.
 
     This exception is raised when input data fails validation rules
@@ -126,16 +53,16 @@ class ValidationException(BusinessRuleException):
         self.field_name = field_name
 
     @property
-    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
+    def http_status_code(self) -> ExceptionStatusCode:
         """Get HTTP status code for validation errors.
 
         Returns:
             BusinessRuleExceptionStatusCode: 400 Bad Request for validation errors
         """
-        return BusinessRuleExceptionStatusCode.VALIDATION_ERR
+        return ExceptionStatusCode.VALIDATION_ERR
 
 
-class UniqueConstraintException(BusinessRuleException):
+class UniqueConstraintException(BaseUserException):
     """Exception raised for uniqueness constraint violations.
 
     This represents a business rule where certain fields or combinations
@@ -163,11 +90,11 @@ class UniqueConstraintException(BusinessRuleException):
         self.constraint_name = constraint_name
 
     @property
-    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
-        return BusinessRuleExceptionStatusCode.UNPROCESSABLE_ENTITY
+    def http_status_code(self) -> ExceptionStatusCode:
+        return ExceptionStatusCode.UNPROCESSABLE_ENTITY
 
 
-class StateTransitionException(BusinessRuleException):
+class StateTransitionException(BaseUserException):
     """Exception raised for invalid state transitions.
 
     This represents a business rule where entities can only transition
@@ -200,17 +127,17 @@ class StateTransitionException(BusinessRuleException):
         self.attempted_state = attempted_state
 
     @property
-    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
+    def http_status_code(self) -> ExceptionStatusCode:
         """Get HTTP status code for state transition violations.
 
         Returns:
             BusinessRuleExceptionStatusCode: 422 Unprocessable
             Entity for business logic violations
         """
-        return BusinessRuleExceptionStatusCode.UNPROCESSABLE_ENTITY
+        return ExceptionStatusCode.UNPROCESSABLE_ENTITY
 
 
-class ResourceNotFoundException(BusinessRuleException):
+class ResourceNotFoundException(BaseUserException):
     """Exception raised when a requested resource cannot be found.
 
     This represents a business rule violation where operations can only
@@ -246,13 +173,13 @@ class ResourceNotFoundException(BusinessRuleException):
         self.resource_id = resource_id
 
     @property
-    def http_status_code(self) -> BusinessRuleExceptionStatusCode:
+    def http_status_code(self) -> ExceptionStatusCode:
         """Get HTTP status code for resource not found errors.
 
         Returns:
             BusinessRuleExceptionStatusCode: 404 Not Found for missing resources
         """
-        return BusinessRuleExceptionStatusCode.NOT_FOUND
+        return ExceptionStatusCode.NOT_FOUND
 
 
 class UserNotFoundException(ResourceNotFoundException):

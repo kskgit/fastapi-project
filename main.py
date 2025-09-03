@@ -3,16 +3,16 @@ from fastapi import FastAPI, HTTPException, Request
 from app.api.endpoints import todo as todo_routes
 from app.api.endpoints import user as user_routes
 from app.domain.exceptions import (
-    BusinessRuleException,
+    BaseUserException,
     SystemException,
 )
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 
 
-@app.exception_handler(BusinessRuleException)
+@app.exception_handler(BaseUserException)
 async def business_rule_error_handler(
-    request: Request, exc: BusinessRuleException
+    request: Request, exc: BaseUserException
 ) -> HTTPException:
     """Handle BusinessRuleException and its subclasses.
 

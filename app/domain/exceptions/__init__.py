@@ -6,7 +6,7 @@ error handling.
 """
 
 from .business import (
-    BusinessRuleException,
+    BaseUserException,
     ResourceNotFoundException,
     StateTransitionException,
     TodoNotFoundException,
@@ -14,13 +14,13 @@ from .business import (
     UserNotFoundException,
     ValidationException,
 )
-from .infrastructure import (
+from .system import (
     ConnectionException,
     SystemException,
 )
 
 __all__ = [
-    "BusinessRuleException",
+    "BaseException",
     "ValidationException",
     "ResourceNotFoundException",
     "UniqueConstraintException",
@@ -29,4 +29,5 @@ __all__ = [
     "TodoNotFoundException",
     "SystemException",
     "ConnectionException",
+    "BaseUserException",
 ]
