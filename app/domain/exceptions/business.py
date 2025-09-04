@@ -7,10 +7,30 @@ specific HTTP response codes for different types of business rules.
 
 from typing import Any
 
-from app.domain.exceptions.base import BaseUserException, ExceptionStatusCode
+from app.domain.exceptions.base import BaseCustomException, ExceptionStatusCode
 
 
-class ValidationException(BaseUserException):
+class BusinessRuleException(BaseCustomException):
+    """Base exception for business rule violations.
+
+    This exception provides unified handling for user-caused business logic
+    errors with consistent WARNING level logging and monitoring behavior.
+    """
+
+    def get_log_level(self) -> str:
+        """Business rule violations are logged at WARNING level."""
+        return "WARNING"
+
+    def should_trigger_alert(self) -> bool:
+        """Business rule violations should not trigger operational alerts."""
+        return False
+
+    def get_error_category(self) -> str:
+        """Get error category for business rule violations."""
+        return "business_rule_violation"
+
+
+class ValidationException(BusinessRuleException):
     """Exception raised for input validation errors.
 
     This exception is raised when input data fails validation rules
@@ -62,7 +82,7 @@ class ValidationException(BaseUserException):
         return ExceptionStatusCode.VALIDATION_ERR
 
 
-class UniqueConstraintException(BaseUserException):
+class UniqueConstraintException(BusinessRuleException):
     """Exception raised for uniqueness constraint violations.
 
     This represents a business rule where certain fields or combinations
@@ -94,7 +114,7 @@ class UniqueConstraintException(BaseUserException):
         return ExceptionStatusCode.UNPROCESSABLE_ENTITY
 
 
-class StateTransitionException(BaseUserException):
+class StateTransitionException(BusinessRuleException):
     """Exception raised for invalid state transitions.
 
     This represents a business rule where entities can only transition
@@ -137,7 +157,7 @@ class StateTransitionException(BaseUserException):
         return ExceptionStatusCode.UNPROCESSABLE_ENTITY
 
 
-class ResourceNotFoundException(BaseUserException):
+class ResourceNotFoundException(BusinessRuleException):
     """Exception raised when a requested resource cannot be found.
 
     This represents a business rule violation where operations can only

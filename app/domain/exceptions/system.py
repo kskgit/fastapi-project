@@ -10,8 +10,10 @@ while preserving the essential error information for domain operations.
 
 from typing import Any
 
+from app.domain.exceptions.base import BaseCustomException, ExceptionStatusCode
 
-class SystemException(Exception):
+
+class SystemException(BaseCustomException):
     """Base exception for system-related errors affecting domain operations.
 
     This exception is raised when system layer problems prevent
@@ -32,16 +34,32 @@ class SystemException(Exception):
         error_code: str | None = None,
         details: dict[str, Any] | None = None,
     ) -> None:
-        """Initialize infrastructure exception.
+        """Initialize system exception.
 
         Args:
-            message: Human-readable error message describing the infrastructure issue
+            message: Human-readable error message describing the system issue
             error_code: Unique error code (defaults to class name)
-            details: Additional context information about the infrastructure failure
+            details: Additional context information about the system failure
         """
-        super().__init__(message)
+        super().__init__(message, details)
         self.error_code = error_code or "system_error"
-        self.details = details
+
+    def get_log_level(self) -> str:
+        """Get log level for system exceptions."""
+        return "ERROR"
+
+    def should_trigger_alert(self) -> bool:
+        """System errors should trigger operational alerts."""
+        return True
+
+    def get_error_category(self) -> str:
+        """Get error category for system exceptions."""
+        return "system_error"
+
+    @property
+    def http_status_code(self) -> ExceptionStatusCode:
+        """System errors default to 500 Internal Server Error."""
+        return ExceptionStatusCode.INTERNAL_SERVER_ERROR
 
 
 class ConnectionException(SystemException):
@@ -77,4 +95,57 @@ class ConnectionException(SystemException):
             message=final_message,
             error_code="connection_failed",
             details=details,
+        )
+
+    @property
+    def http_status_code(self) -> ExceptionStatusCode:
+        """Connection errors indicate service unavailable."""
+        return ExceptionStatusCode.SERVICE_UNAVAILABLE
+
+
+class DataPersistenceException(SystemException):
+    """Exception raised when data persistence operations fail.
+
+    This exception is raised when the application cannot successfully
+    perform data persistence operations such as save, update, delete, or find.
+    It abstracts away specific storage technology details and focuses on
+    the domain-level impact: data operation could not be completed.
+
+    Examples:
+        - Failed to save entity due to database constraint violation
+        - Failed to update entity due to connection timeout
+        - Failed to delete entity due to foreign key constraints
+        - Failed to retrieve entity due to query execution error
+    """
+
+    def __init__(
+        self,
+        message: str,
+        operation: str | None = None,
+        entity_type: str | None = None,
+        entity_id: int | str | None = None,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Initialize data persistence exception.
+
+        Args:
+            message: Human-readable error message describing the persistence failure
+            operation: The operation that failed (save, update, delete, find)
+            entity_type: The type of entity involved in the operation
+            entity_id: The ID of the specific entity (if applicable)
+            details: Additional context information about the persistence failure
+        """
+        # Build structured details
+        structured_details = details or {}
+        if operation:
+            structured_details["operation"] = operation
+        if entity_type:
+            structured_details["entity_type"] = entity_type
+        if entity_id:
+            structured_details["entity_id"] = entity_id
+
+        super().__init__(
+            message=message,
+            error_code="data_persistence_failed",
+            details=structured_details,
         )

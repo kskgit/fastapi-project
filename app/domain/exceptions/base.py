@@ -10,20 +10,14 @@ class ExceptionStatusCode(Enum):
     NOT_FOUND = 404
     # ビジネスロジックの制約で処理が実行出来ない
     UNPROCESSABLE_ENTITY = 422
+    # システムエラー・内部サーバーエラー
+    INTERNAL_SERVER_ERROR = 500
+    # サービス一時的に利用不可
+    SERVICE_UNAVAILABLE = 503
 
 
-class BaseUserException(Exception, ABC):
-    """Base exception for all business rule violations.
-
-    This exception provides unified handling for all types of business logic
-    errors with consistent logging levels and monitoring behavior, while
-    allowing subclasses to define appropriate HTTP status codes.
-
-    Business rule violations are considered user-caused errors that:
-    - Should be logged at WARNING level (not ERROR)
-    - Should not trigger operational alerts
-    - Should provide clear user-facing error messages
-    """
+class BaseCustomException(Exception, ABC):
+    """共通のユーザ定義例外."""
 
     def __init__(
         self,
@@ -40,28 +34,36 @@ class BaseUserException(Exception, ABC):
         self.details = details or {}
 
     def get_log_level(self) -> str:
-        """Get log level for this business rule violation.
+        """Get log level for this domain exception.
 
         Returns:
-            str: Always 'WARNING' for business rule violations
+            str: Log level appropriate for the exception type
+        Note:
+            Should be overridden by subclasses to return appropriate level
         """
-        return "WARNING"
+        raise NotImplementedError("Subclasses must implement get_log_level method")
 
     def should_trigger_alert(self) -> bool:
         """Check if this error should trigger operational alerts.
 
         Returns:
-            bool: Always False for business rule violations
+            bool: Whether this error requires operational attention
+        Note:
+            Should be overridden by subclasses based on error severity
         """
-        return False
+        raise NotImplementedError(
+            "Subclasses must implement should_trigger_alert method"
+        )
 
     def get_error_category(self) -> str:
         """Get error category for metrics and monitoring.
 
         Returns:
             str: Error category for classification
+        Note:
+            Should be overridden by subclasses for proper categorization
         """
-        return "business_rule_violation"
+        raise NotImplementedError("Subclasses must implement get_error_category method")
 
     @property
     def http_status_code(self) -> ExceptionStatusCode:

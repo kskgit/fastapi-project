@@ -1,55 +1,49 @@
+import logging
+
 from fastapi import FastAPI, HTTPException, Request
 
 from app.api.endpoints import todo as todo_routes
 from app.api.endpoints import user as user_routes
-from app.domain.exceptions import (
-    BaseUserException,
-    SystemException,
-)
+from app.domain.exceptions import BaseCustomException
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 
 
-@app.exception_handler(BaseUserException)
-async def business_rule_error_handler(
-    request: Request, exc: BaseUserException
+@app.exception_handler(BaseCustomException)
+async def domain_exception_handler(
+    request: Request, exc: BaseCustomException
 ) -> HTTPException:
-    """Handle BusinessRuleException and its subclasses.
+    """Handle all domain exceptions with unified logging and monitoring.
 
-    This handler provides unified logging and monitoring for all business
-    rule violations while allowing each exception to define its specific
-    HTTP status code.
-
-    Business rule violations are logged at WARNING level and do not
-    trigger operational alerts as they are user-caused errors.
+    This handler provides centralized handling for all domain-level exceptions
+    including business rule violations and system errors, with appropriate
+    logging levels and monitoring based on the exception type.
     """
-    import logging
 
-    # Log business rule violations at WARNING level
+    # Log with appropriate level based on exception type
     logger = logging.getLogger(__name__)
+    log_level = getattr(logging, exc.get_log_level())
+
+    # Add structured logging context
+    extra_context = {
+        "exception_type": exc.__class__.__name__,
+        "error_category": exc.get_error_category(),
+        "should_trigger_alert": exc.should_trigger_alert(),
+        "request_path": request.url.path,
+    }
+
+    # Include details if available (for SystemException)
+    if hasattr(exc, "details") and exc.details:
+        extra_context["details"] = exc.details
+    if hasattr(exc, "error_code"):
+        extra_context["error_code"] = exc.error_code
+
     logger.log(
-        level=getattr(logging, exc.get_log_level()),
-        msg=f"Business rule violation: {exc} | Category: {exc.get_error_category()}",
+        level=log_level, msg=f"Domain exception occurred: {exc}", extra=extra_context
     )
 
     # Use the specific HTTP status code from the exception
     raise HTTPException(status_code=exc.http_status_code.value, detail=str(exc))
-
-
-@app.exception_handler(SystemException)
-async def system_error_handler(request: Request, exc: SystemException) -> HTTPException:
-    """Handle SystemException exceptions.
-
-    SystemException is used for system layer failures:
-    - ConnectionException (data persistence failures) -> 503
-    - Other system errors -> 503
-
-    HTTP 503 indicates service temporarily unavailable, suggesting retry.
-    """
-    raise HTTPException(
-        status_code=503,
-        detail="Service temporarily unavailable. Please try again later.",
-    )
 
 
 @app.exception_handler(RuntimeError)
