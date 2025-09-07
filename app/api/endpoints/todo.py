@@ -25,10 +25,6 @@ from app.usecases.todo.get_todo_by_id_usecase import GetTodoByIdUseCase
 from app.usecases.todo.get_todos_usecase import GetTodosUseCase
 from app.usecases.todo.update_todo_usecase import UpdateTodoUseCase
 
-# Service layer has been removed in favor of UseCase pattern
-# All service-based endpoints will be migrated to UseCase pattern
-
-
 router = APIRouter(prefix="/todos", tags=["todos"])
 
 

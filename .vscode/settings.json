@@ -25,5 +25,10 @@
     "${workspaceFolder}"
   ],
   "python.analysis.autoSearchPaths": true,
-  "python.analysis.autoImportCompletions": true
+  "python.analysis.autoImportCompletions": true,
+  "cursorpyright.analysis.autoImportCompletions": true,
+  "cursorpyright.analysis.autoSearchPaths": true,
+  "cursorpyright.analysis.extraPaths": [
+    "${workspaceFolder}"
+  ]
 }
