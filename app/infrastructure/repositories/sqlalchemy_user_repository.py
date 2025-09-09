@@ -165,14 +165,17 @@ class SQLAlchemyUserRepository(UserRepository):
             return result.scalar_one_or_none() is not None
 
         except Exception as e:
+            import traceback
+
             raise DataPersistenceException(
-                message=f"Failed to check user existence: {str(e)}",
+                message="Failed to check user existence",
                 operation="exists",
                 entity_type="user",
                 entity_id=user_id,
                 details={
                     "original_exception_type": e.__class__.__name__,
                     "original_message": str(e),
+                    "stack_trace": traceback.format_exc(),
                 },
             )
 

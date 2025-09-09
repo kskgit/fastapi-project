@@ -1,5 +1,4 @@
 import logging
-import traceback
 
 from fastapi import FastAPI, HTTPException, Request
 
@@ -31,8 +30,11 @@ async def domain_exception_handler(
         "error_category": exc.get_error_category(),
         "should_trigger_alert": exc.should_trigger_alert(),
         "request_path": request.url.path,
-        "stack_trace": traceback.format_exc(),  # Always include stack trace in logs
     }
+
+    # Include original stack trace if available in exception details
+    if hasattr(exc, "details") and exc.details and "stack_trace" in exc.details:
+        extra_context["stack_trace"] = exc.details["stack_trace"]
 
     # Include details if available (for SystemException)
     if hasattr(exc, "details") and exc.details:
@@ -40,7 +42,12 @@ async def domain_exception_handler(
     if hasattr(exc, "error_code"):
         extra_context["error_code"] = exc.error_code
 
-    logger.log(level=log_level, msg=f"Exception occurred: {exc}", extra=extra_context)
+    # Log exception with stack trace
+    detail_message = f"Domain exception occurred: {exc}"
+    if extra_context.get("stack_trace"):
+        detail_message += f"\nStack trace:\n{extra_context['stack_trace']}"
+
+    logger.log(level=log_level, msg=detail_message, extra=extra_context)
 
     # Use the specific HTTP status code from the exception
     # API response contains only clean, user-friendly message (no stack trace)
