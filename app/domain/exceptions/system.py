@@ -121,7 +121,7 @@ class DataPersistenceException(SystemException):
     def __init__(
         self,
         message: str,
-        operation: str | None = None,
+        method_name: str | None = None,
         entity_type: str | None = None,
         entity_id: int | str | None = None,
         details: dict[str, Any] | None = None,
@@ -130,15 +130,15 @@ class DataPersistenceException(SystemException):
 
         Args:
             message: Human-readable error message describing the persistence failure
-            operation: The operation that failed (save, update, delete, find)
+            method_name: The method name that failed (automatically detected)
             entity_type: The type of entity involved in the operation
             entity_id: The ID of the specific entity (if applicable)
             details: Additional context information about the persistence failure
         """
         # Build structured details
         structured_details = details or {}
-        if operation:
-            structured_details["operation"] = operation
+        if method_name:
+            structured_details["method_name"] = method_name
         if entity_type:
             structured_details["entity_type"] = entity_type
         if entity_id:

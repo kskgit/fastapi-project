@@ -96,7 +96,7 @@ class SQLAlchemyTodoRepository(TodoRepository):
         except SQLAlchemyError as e:
             raise DataPersistenceException(
                 message=f"Failed to save todo: {str(e)}",
-                operation="save",
+                method_name="save",
                 entity_type="todo",
                 entity_id=todo.id if todo.id else None,
             )

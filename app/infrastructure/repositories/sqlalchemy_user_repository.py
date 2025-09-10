@@ -169,7 +169,7 @@ class SQLAlchemyUserRepository(UserRepository):
 
             raise DataPersistenceException(
                 message="Failed to check user existence",
-                operation="exists",
+                method_name="exists",
                 entity_type="user",
                 entity_id=user_id,
                 details={
