@@ -1,5 +1,6 @@
 """SQLAlchemy implementation of UserRepository."""
 
+import traceback
 from collections.abc import Sequence
 from datetime import datetime
 
@@ -164,17 +165,10 @@ class SQLAlchemyUserRepository(UserRepository):
             )
             return result.scalar_one_or_none() is not None
 
-        except Exception as e:
-            import traceback
-
+        except Exception:
             raise DataPersistenceException(
                 message="Failed to check user existence",
-                method_name="exists",
-                entity_type="user",
-                entity_id=user_id,
                 details={
-                    "original_exception_type": e.__class__.__name__,
-                    "original_message": str(e),
                     "stack_trace": traceback.format_exc(),
                 },
             )

@@ -43,7 +43,7 @@ async def domain_exception_handler(
         extra_context["error_code"] = exc.error_code
 
     # Log exception with stack trace
-    detail_message = f"Domain exception occurred: {exc}"
+    detail_message = f"Exception occurred: {exc}"
     if extra_context.get("stack_trace"):
         detail_message += f"\nStack trace:\n{extra_context['stack_trace']}"
 
