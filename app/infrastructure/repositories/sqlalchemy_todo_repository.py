@@ -1,5 +1,6 @@
 """SQLAlchemy implementation of TodoRepository."""
 
+import traceback
 from collections.abc import Sequence
 from datetime import datetime
 
@@ -96,9 +97,9 @@ class SQLAlchemyTodoRepository(TodoRepository):
         except SQLAlchemyError as e:
             raise DataPersistenceException(
                 message=f"Failed to save todo: {str(e)}",
-                method_name="save",
-                entity_type="todo",
-                entity_id=todo.id if todo.id else None,
+                details={
+                    "stack_trace": traceback.format_exc(),
+                },
             )
 
     async def find_by_id(self, todo_id: int) -> Todo | None:
