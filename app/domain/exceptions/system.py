@@ -31,7 +31,6 @@ class SystemException(BaseCustomException):
     def __init__(
         self,
         message: str,
-        error_code: str | None = None,
         details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize system exception.
@@ -42,7 +41,6 @@ class SystemException(BaseCustomException):
             details: Additional context information about the system failure
         """
         super().__init__(message, details)
-        self.error_code = error_code or "system_error"
 
     def get_log_level(self) -> str:
         """Get log level for system exceptions."""
@@ -93,7 +91,6 @@ class ConnectionException(SystemException):
 
         super().__init__(
             message=final_message,
-            error_code="connection_failed",
             details=details,
         )
 
@@ -121,9 +118,6 @@ class DataPersistenceException(SystemException):
     def __init__(
         self,
         message: str,
-        method_name: str | None = None,
-        entity_type: str | None = None,
-        entity_id: int | str | None = None,
         details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize data persistence exception.
@@ -137,15 +131,8 @@ class DataPersistenceException(SystemException):
         """
         # Build structured details
         structured_details = details or {}
-        if method_name:
-            structured_details["method_name"] = method_name
-        if entity_type:
-            structured_details["entity_type"] = entity_type
-        if entity_id:
-            structured_details["entity_id"] = entity_id
 
         super().__init__(
             message=message,
-            error_code="data_persistence_failed",
             details=structured_details,
         )
