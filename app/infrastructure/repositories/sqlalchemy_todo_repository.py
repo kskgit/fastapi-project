@@ -97,9 +97,7 @@ class SQLAlchemyTodoRepository(TodoRepository):
         except SQLAlchemyError as e:
             raise DataPersistenceException(
                 message=f"Failed to save todo: {str(e)}",
-                details={
-                    "stack_trace": traceback.format_exc(),
-                },
+                trace=traceback.format_exc(),
             )
 
     async def find_by_id(self, todo_id: int) -> Todo | None:

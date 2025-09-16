@@ -168,9 +168,7 @@ class SQLAlchemyUserRepository(UserRepository):
         except Exception:
             raise DataPersistenceException(
                 message="Failed to check user existence",
-                details={
-                    "stack_trace": traceback.format_exc(),
-                },
+                trace=traceback.format_exc(),
             )
 
     async def count_total(self) -> int:

@@ -8,8 +8,6 @@ These exceptions abstract away technical implementation details
 while preserving the essential error information for domain operations.
 """
 
-from typing import Any
-
 from app.domain.exceptions.base import BaseCustomException, ExceptionStatusCode
 
 
@@ -31,7 +29,7 @@ class SystemException(BaseCustomException):
     def __init__(
         self,
         message: str,
-        details: dict[str, Any] | None = None,
+        trace: str,
     ) -> None:
         """Initialize system exception.
 
@@ -40,6 +38,7 @@ class SystemException(BaseCustomException):
             error_code: Unique error code (defaults to class name)
             details: Additional context information about the system failure
         """
+        details = {"stack_trace": trace}
         super().__init__(message, details)
 
     def get_log_level(self) -> str:
@@ -76,8 +75,8 @@ class ConnectionException(SystemException):
 
     def __init__(
         self,
+        trace: str,
         message: str | None = None,
-        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize connection exception.
 
@@ -91,7 +90,7 @@ class ConnectionException(SystemException):
 
         super().__init__(
             message=final_message,
-            details=details,
+            trace=trace,
         )
 
     @property
@@ -118,7 +117,7 @@ class DataPersistenceException(SystemException):
     def __init__(
         self,
         message: str,
-        details: dict[str, Any] | None = None,
+        trace: str,
     ) -> None:
         """Initialize data persistence exception.
 
@@ -129,10 +128,8 @@ class DataPersistenceException(SystemException):
             entity_id: The ID of the specific entity (if applicable)
             details: Additional context information about the persistence failure
         """
-        # Build structured details
-        structured_details = details or {}
 
         super().__init__(
             message=message,
-            details=structured_details,
+            trace=trace,
         )
