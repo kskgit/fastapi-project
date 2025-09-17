@@ -1,66 +1,18 @@
-import logging
-
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI
 
 from app.api.endpoints import todo as todo_routes
 from app.api.endpoints import user as user_routes
+from app.core.middleware.exception_handlers import (
+    domain_exception_handler,
+    runtime_error_handler,
+)
 from app.domain.exceptions import BaseCustomException
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 
-
-@app.exception_handler(BaseCustomException)
-async def domain_exception_handler(
-    request: Request, exc: BaseCustomException
-) -> HTTPException:
-    """Handle all domain exceptions with unified logging and monitoring.
-
-    This handler provides centralized handling for all domain-level exceptions
-    including business rule violations and system errors, with appropriate
-    logging levels and monitoring based on the exception type.
-    """
-
-    # Log with appropriate level based on exception type
-    logger = logging.getLogger(__name__)
-    log_level = getattr(logging, exc.get_log_level())
-
-    # Add structured logging context
-    extra_context = {
-        "exception_type": exc.__class__.__name__,
-        "error_category": exc.get_error_category(),
-        "should_trigger_alert": exc.should_trigger_alert(),
-        "request_path": request.url.path,
-    }
-
-    # Include original stack trace if available in exception details
-    if hasattr(exc, "details") and exc.details and "stack_trace" in exc.details:
-        extra_context["stack_trace"] = exc.details["stack_trace"]
-
-    # Include details if available (for SystemException)
-    if hasattr(exc, "details") and exc.details:
-        extra_context["details"] = exc.details
-    if hasattr(exc, "error_code"):
-        extra_context["error_code"] = exc.error_code
-
-    # Log exception with stack trace
-    detail_message = f"Exception occurred: {exc}"
-    if extra_context.get("stack_trace"):
-        detail_message += f"\nStack trace:\n{extra_context['stack_trace']}"
-
-    logger.log(level=log_level, msg=detail_message, extra=extra_context)
-
-    # Use the specific HTTP status code from the exception
-    # API response contains only clean, user-friendly message (no stack trace)
-    raise HTTPException(status_code=exc.http_status_code.value, detail=str(exc))
-
-
-@app.exception_handler(RuntimeError)
-async def runtime_error_handler(request: Request, exc: RuntimeError) -> HTTPException:
-    """Handle RuntimeError exceptions.
-
-    RuntimeError is used for unexpected system errors -> 500
-    """
-    raise HTTPException(status_code=500, detail=f"Internal server error: {str(exc)}")
+# Register exception handlers
+app.add_exception_handler(BaseCustomException, domain_exception_handler)
+app.add_exception_handler(RuntimeError, runtime_error_handler)
 
 
 app.include_router(todo_routes.router)
