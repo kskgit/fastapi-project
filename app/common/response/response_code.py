@@ -14,9 +14,9 @@ class CustomResponseCode(Enum):
     HTTP_504 = (504, "Gateway Timeout")
 
     @property
-    def code(self):
+    def code(self) -> int:
         return self.value[0]
 
     @property
-    def message(self):
+    def message(self) -> str:
         return self.value[1]

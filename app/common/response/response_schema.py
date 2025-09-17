@@ -53,7 +53,7 @@ class ResponseBase:
         res: CustomResponseCode = CustomResponseCode.HTTP_200,
         data: Any | None = None,
         schema: Any,
-    ) -> ResponseSchemaModel:
+    ) -> ResponseSchemaModel[Any]:
         """
         Successful response
 
@@ -69,7 +69,7 @@ class ResponseBase:
         *,
         res: CustomResponseCode,
         data: Any = None,
-    ) -> ResponseModel | ResponseSchemaModel:
+    ) -> ResponseModel | ResponseSchemaModel[Any]:
         """
         Failed response
 

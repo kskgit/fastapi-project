@@ -16,8 +16,8 @@ class TestCreateTodoE2E:
     """E2E tests for todo creation via HTTP API."""
 
     async def test_create_todo_minimal_data_success(
-        self, test_client: AsyncClient, test_user
-    ):
+        self, test_client: AsyncClient, test_user: object
+    ) -> None:
         """Test successful todo creation with minimal data via HTTP."""
         # Arrange
         todo_data = {
@@ -50,7 +50,7 @@ class TestCreateTodoE2E:
         assert get_data["title"] == todo_data["title"]
         assert get_data["id"] == todo_id
 
-    async def test_create_todo_user_not_found(self, test_client: AsyncClient):
+    async def test_create_todo_user_not_found(self, test_client: AsyncClient) -> None:
         """Test todo creation fails when user does not exist."""
         # Arrange
         todo_data = {
@@ -81,7 +81,7 @@ class TestCreateTodoE2E:
 
     async def test_create_todo_data_persistence_exception(
         self, test_client: AsyncClient
-    ):
+    ) -> None:
         """Test todo creation fails when database persistence error occurs."""
         # Arrange
         todo_data = {

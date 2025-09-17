@@ -6,7 +6,7 @@ from app.domain.entities.todo import TodoPriority, TodoStatus
 from app.infrastructure.database.connection import Base
 
 
-class UserModel(Base):
+class UserModel(Base):  # type: ignore[misc]
     """SQLAlchemy Model for User - Infrastructure layer concern only."""
 
     __tablename__ = "users"
@@ -27,7 +27,7 @@ class UserModel(Base):
     )
 
 
-class TodoModel(Base):
+class TodoModel(Base):  # type: ignore[misc]
     """SQLAlchemy Model for Todo - Infrastructure layer concern only."""
 
     __tablename__ = "todos"

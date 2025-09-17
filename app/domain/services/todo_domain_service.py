@@ -70,7 +70,7 @@ class TodoDomainService:
         if skip < 0:
             raise ValidationException("Skip cannot be negative", field_name="skip")
 
-    def validate_update_fields_provided(self, *fields) -> None:
+    def validate_update_fields_provided(self, *fields: object) -> None:
         """Validate that at least one field is provided for update.
 
         Args:
