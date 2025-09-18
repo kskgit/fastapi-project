@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.domain.exceptions.system import DataPersistenceException
+from app.domain.exceptions.system import DataOperationException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.infrastructure.database.models import TodoModel
 
@@ -94,10 +94,10 @@ class SQLAlchemyTodoRepository(TodoRepository):
 
             return self._to_domain_entity(model)
 
-        except SQLAlchemyError as e:
-            raise DataPersistenceException(
-                message=f"Failed to save todo: {str(e)}",
+        except SQLAlchemyError:
+            raise DataOperationException(
                 trace=traceback.format_exc(),
+                operation_context=self,
             )
 
     async def find_by_id(self, todo_id: int) -> Todo | None:

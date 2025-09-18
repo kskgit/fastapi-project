@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.user import User
-from app.domain.exceptions.system import DataPersistenceException
+from app.domain.exceptions.system import DataOperationException
 from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.database.models import UserModel
 
@@ -166,9 +166,9 @@ class SQLAlchemyUserRepository(UserRepository):
             return result.scalar_one_or_none() is not None
 
         except Exception:
-            raise DataPersistenceException(
-                message="Failed to check user existence",
+            raise DataOperationException(
                 trace=traceback.format_exc(),
+                operation_context=self,
             )
 
     async def count_total(self) -> int:

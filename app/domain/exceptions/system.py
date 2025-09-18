@@ -99,7 +99,7 @@ class ConnectionException(SystemException):
         return ExceptionStatusCode.SERVICE_UNAVAILABLE
 
 
-class DataPersistenceException(SystemException):
+class DataOperationException(SystemException):
     """Exception raised when data persistence operations fail.
 
     This exception is raised when the application cannot successfully
@@ -116,20 +116,56 @@ class DataPersistenceException(SystemException):
 
     def __init__(
         self,
-        message: str,
         trace: str,
+        operation_context: object | None = None,
+        operation_name: str | None = None,
     ) -> None:
         """Initialize data persistence exception.
 
         Args:
-            message: Human-readable error message describing the persistence failure
-            method_name: The method name that failed (automatically detected)
-            entity_type: The type of entity involved in the operation
-            entity_id: The ID of the specific entity (if applicable)
-            details: Additional context information about the persistence failure
+            trace: Stack trace information for debugging
+            operation_context: Object context (typically self) to extract class and
+                method names
+            operation_name: Optional manual specification of operation name
         """
+        context_info = self._extract_context_info(operation_context, operation_name)
+        message = f"Failed to execute data operation in {context_info}"
 
         super().__init__(
             message=message,
             trace=trace,
         )
+
+    def _extract_context_info(
+        self, operation_context: object | None, operation_name: str | None
+    ) -> str:
+        """Extract context information from operation context or name.
+
+        Args:
+            operation_context: Object context (typically self)
+            operation_name: Manual operation name specification
+
+        Returns:
+            str: Context information for error message
+        """
+        if operation_name:
+            return operation_name
+
+        if operation_context:
+            try:
+                import inspect
+
+                class_name = operation_context.__class__.__name__
+
+                # Get caller method name by traversing stack frames
+                frame = inspect.currentframe()
+                if frame and frame.f_back and frame.f_back.f_back:
+                    method_name = frame.f_back.f_back.f_code.co_name
+                    return f"{class_name}.{method_name}"
+                else:
+                    return class_name
+            except Exception:
+                # Fallback to class name only if frame inspection fails
+                return operation_context.__class__.__name__
+
+        return "unknown operation"

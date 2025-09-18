@@ -7,7 +7,7 @@ from httpx import AsyncClient
 
 from app.composition.di import get_create_todo_usecase
 from app.domain.exceptions.business import UserNotFoundException
-from app.domain.exceptions.system import DataPersistenceException
+from app.domain.exceptions.system import DataOperationException
 from main import app
 
 
@@ -91,9 +91,9 @@ class TestCreateTodoE2E:
 
         # Mock the CreateTodoUseCase to raise DataPersistenceException
         mock_usecase = AsyncMock()
-        mock_usecase.execute.side_effect = DataPersistenceException(
-            message="Failed to check user existence",
+        mock_usecase.execute.side_effect = DataOperationException(
             trace="Traceback (most recent call last):\n  File ...\nSQLAlchemyError",
+            operation_name="TestClass.test_method",
         )
 
         # Override the dependency
