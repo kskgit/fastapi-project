@@ -37,22 +37,20 @@ async def domain_exception_handler(request: Request, exc: Exception) -> JSONResp
         "request_path": request.url.path,
     }
 
-    # Include original stack trace if available in exception details
-    if hasattr(exc, "details") and exc.details and "stack_trace" in exc.details:
-        extra_context["stack_trace"] = exc.details["stack_trace"]
-
-    # Include details if available (for SystemException)
+    # Include details if available
     if hasattr(exc, "details") and exc.details:
         extra_context["details"] = exc.details
     if hasattr(exc, "error_code"):
         extra_context["error_code"] = exc.error_code
 
-    # Log exception with stack trace
+    # Log exception with stack trace using exc_info=True
     detail_message = f"Exception occurred: {exc}"
-    if extra_context.get("stack_trace"):
-        detail_message += f"\nStack trace:\n{extra_context['stack_trace']}"
-
-    logger.log(level=log_level, msg=detail_message, extra=extra_context)
+    logger.log(
+        level=log_level,
+        msg=detail_message,
+        extra=extra_context,
+        exc_info=True,
+    )
 
     # Use the specific HTTP status code from the exception
     # API response contains only clean, user-friendly message (no stack trace)
