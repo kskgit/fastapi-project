@@ -4,7 +4,6 @@ from app.api.endpoints import todo as todo_routes
 from app.api.endpoints import user as user_routes
 from app.core.middleware.exception_handlers import (
     domain_exception_handler,
-    runtime_error_handler,
 )
 from app.domain.exceptions import BaseCustomException
 
@@ -12,7 +11,6 @@ app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 
 # Register exception handlers
 app.add_exception_handler(BaseCustomException, domain_exception_handler)
-app.add_exception_handler(RuntimeError, runtime_error_handler)
 
 
 app.include_router(todo_routes.router)

@@ -59,19 +59,3 @@ async def domain_exception_handler(request: Request, exc: Exception) -> JSONResp
     return JSONResponse(
         status_code=exc.http_status_code.value, content={"detail": str(exc)}
     )
-
-
-async def runtime_error_handler(request: Request, exc: Exception) -> JSONResponse:
-    """Handle RuntimeError exceptions.
-
-    RuntimeError is used for unexpected system errors -> 500
-    """
-    # Ensure we're handling a RuntimeError
-    if not isinstance(exc, RuntimeError):
-        return JSONResponse(
-            status_code=500, content={"detail": "Internal server error"}
-        )
-
-    return JSONResponse(
-        status_code=500, content={"detail": f"Internal server error: {str(exc)}"}
-    )
