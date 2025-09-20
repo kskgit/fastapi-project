@@ -37,11 +37,9 @@ async def domain_exception_handler(request: Request, exc: Exception) -> JSONResp
         "request_path": request.url.path,
     }
 
-    # Include details if available
+    # 主にシステムエラーが対象
     if hasattr(exc, "details") and exc.details:
         extra_context["details"] = exc.details
-    if hasattr(exc, "error_code"):
-        extra_context["error_code"] = exc.error_code
 
     # Log exception with stack trace using exc_info=True
     detail_message = f"Exception occurred: {exc}"

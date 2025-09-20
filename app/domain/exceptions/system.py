@@ -35,7 +35,6 @@ class SystemException(BaseCustomException):
 
         Args:
             message: Human-readable error message describing the system issue
-            error_code: Unique error code (defaults to class name)
             details: Additional context information about the system failure
         """
         details = {"stack_trace": trace}
