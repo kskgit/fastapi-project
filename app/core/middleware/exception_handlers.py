@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from app.domain.exceptions import BaseCustomException
 
 
-async def domain_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+async def exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle all domain exceptions with unified logging and monitoring.
 
     This handler provides centralized handling for all domain-level exceptions
