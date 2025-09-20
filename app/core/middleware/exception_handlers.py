@@ -29,24 +29,11 @@ async def domain_exception_handler(request: Request, exc: Exception) -> JSONResp
     logger = logging.getLogger(__name__)
     log_level = getattr(logging, exc.get_log_level())
 
-    # Add structured logging context
-    extra_context = {
-        "exception_type": exc.__class__.__name__,
-        "error_category": exc.get_error_category(),
-        "should_trigger_alert": exc.should_trigger_alert(),
-        "request_path": request.url.path,
-    }
-
-    # 主にシステムエラーが対象
-    if hasattr(exc, "details") and exc.details:
-        extra_context["details"] = exc.details
-
     # Log exception with stack trace using exc_info=True
     detail_message = f"Exception occurred: {exc}"
     logger.log(
         level=log_level,
         msg=detail_message,
-        extra=extra_context,
         exc_info=True,
     )
 
