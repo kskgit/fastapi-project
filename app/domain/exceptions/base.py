@@ -65,6 +65,18 @@ class BaseCustomException(Exception, ABC):
         """
         raise NotImplementedError("Subclasses must implement get_error_category method")
 
+    def get_user_message(self) -> str:
+        """Get user-friendly message for API response.
+
+        Returns:
+            str: User-safe error message without internal implementation details
+
+        Note:
+            By default returns the internal message. Subclasses should override
+            this method to provide secure, user-friendly messages.
+        """
+        return str(self)
+
     @property
     def http_status_code(self) -> ExceptionStatusCode:
         """Get HTTP status code for API response.

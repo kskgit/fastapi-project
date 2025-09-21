@@ -38,7 +38,8 @@ async def exception_handler(request: Request, exc: Exception) -> JSONResponse:
     )
 
     # Use the specific HTTP status code from the exception
-    # API response contains only clean, user-friendly message (no stack trace)
+    # API response contains only clean, user-friendly message (no internal details)
     return JSONResponse(
-        status_code=exc.http_status_code.value, content={"detail": str(exc)}
+        status_code=exc.http_status_code.value,
+        content={"detail": exc.get_user_message()},
     )

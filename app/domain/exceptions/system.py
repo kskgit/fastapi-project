@@ -168,3 +168,11 @@ class DataOperationException(SystemException):
                 return operation_context.__class__.__name__
 
         return "unknown operation"
+
+    def get_user_message(self) -> str:
+        """Get user-friendly message for API response.
+
+        Returns:
+            str: Generic error message without exposing internal details
+        """
+        return "Failed to execute data operation"
