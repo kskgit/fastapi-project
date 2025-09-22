@@ -92,7 +92,6 @@ class TestCreateTodoE2E:
         # Mock the CreateTodoUseCase to raise DataPersistenceException
         mock_usecase = AsyncMock()
         mock_usecase.execute.side_effect = DataOperationException(
-            trace="Traceback (most recent call last):\n  File ...\nSQLAlchemyError",
             operation_name="TestClass.test_method",
         )
 

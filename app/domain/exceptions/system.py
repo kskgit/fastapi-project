@@ -8,6 +8,8 @@ These exceptions abstract away technical implementation details
 while preserving the essential error information for domain operations.
 """
 
+from typing import Any
+
 from app.domain.exceptions.base import BaseCustomException, ExceptionStatusCode
 
 
@@ -29,7 +31,7 @@ class SystemException(BaseCustomException):
     def __init__(
         self,
         message: str,
-        trace: str,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize system exception.
 
@@ -37,7 +39,6 @@ class SystemException(BaseCustomException):
             message: Human-readable error message describing the system issue
             details: Additional context information about the system failure
         """
-        details = {"stack_trace": trace}
         super().__init__(message, details)
 
     def get_log_level(self) -> str:
@@ -74,8 +75,8 @@ class ConnectionException(SystemException):
 
     def __init__(
         self,
-        trace: str,
         message: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize connection exception.
 
@@ -89,7 +90,7 @@ class ConnectionException(SystemException):
 
         super().__init__(
             message=final_message,
-            trace=trace,
+            details=details,
         )
 
     @property
@@ -115,24 +116,26 @@ class DataOperationException(SystemException):
 
     def __init__(
         self,
-        trace: str,
         operation_context: object | None = None,
         operation_name: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         """Initialize data persistence exception.
 
         Args:
-            trace: Stack trace information for debugging
             operation_context: Object context (typically self) to extract class and
                 method names
             operation_name: Optional manual specification of operation name
         """
         context_info = self._extract_context_info(operation_context, operation_name)
         message = f"Failed to execute data operation in {context_info}"
+        final_details = {"operation_context": context_info}
+        if details:
+            final_details.update(details)
 
         super().__init__(
             message=message,
-            trace=trace,
+            details=final_details,
         )
 
     def _extract_context_info(

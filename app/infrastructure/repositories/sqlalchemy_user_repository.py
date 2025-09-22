@@ -1,6 +1,5 @@
 """SQLAlchemy implementation of UserRepository."""
 
-import traceback
 from collections.abc import Sequence
 from datetime import datetime
 
@@ -167,7 +166,6 @@ class SQLAlchemyUserRepository(UserRepository):
 
         except SQLAlchemyError:
             raise DataOperationException(
-                trace=traceback.format_exc(),
                 operation_context=self,
             )
 

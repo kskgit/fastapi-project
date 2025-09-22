@@ -1,6 +1,5 @@
 """SQLAlchemy implementation of TodoRepository."""
 
-import traceback
 from collections.abc import Sequence
 from datetime import datetime
 
@@ -96,7 +95,6 @@ class SQLAlchemyTodoRepository(TodoRepository):
 
         except SQLAlchemyError:
             raise DataOperationException(
-                trace=traceback.format_exc(),
                 operation_context=self,
             )
 
