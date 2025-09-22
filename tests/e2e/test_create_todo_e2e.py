@@ -106,7 +106,7 @@ class TestCreateTodoE2E:
             # Assert - Should return 500 Internal Server Error
             assert response.status_code == 500
             response_data = response.json()
-            assert "Failed to check user existence" in response_data["detail"]
+            assert "Failed to execute data operation" in response_data["detail"]
         finally:
             # Clean up - Remove the override
             if get_create_todo_usecase in app.dependency_overrides:
