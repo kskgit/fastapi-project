@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from app.domain.exceptions import BaseCustomException
 
 
-async def exception_handler(request: Request, exc: Exception) -> JSONResponse:
+async def custom_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle all domain exceptions with unified logging and monitoring.
 
     This handler provides centralized handling for all domain-level exceptions
@@ -25,8 +25,9 @@ async def exception_handler(request: Request, exc: Exception) -> JSONResponse:
             status_code=500, content={"detail": "Internal server error"}
         )
 
-    # Log with appropriate level based on exception type
     logger = logging.getLogger(__name__)
+
+    # Log with appropriate level based on exception type
     log_level = getattr(logging, exc.get_log_level())
 
     # Log exception with stack trace using exc_info=True
