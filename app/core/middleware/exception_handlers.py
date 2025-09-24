@@ -7,23 +7,20 @@ error handling, logging, and monitoring for the application.
 import logging
 
 from fastapi import Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from app.domain.exceptions import BaseCustomException
 
 
-async def custom_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+async def custom_exception_handler(
+    request: Request, exc: BaseCustomException
+) -> JSONResponse:
     """Handle all domain exceptions with unified logging and monitoring.
 
     This handler provides centralized handling for all domain-level exceptions
     including business rule violations and system errors, with appropriate
     logging levels and monitoring based on the exception type.
     """
-    # Ensure we're handling a BaseCustomException
-    if not isinstance(exc, BaseCustomException):
-        return JSONResponse(
-            status_code=500, content={"detail": "Internal server error"}
-        )
 
     logger = logging.getLogger(__name__)
 
@@ -44,3 +41,14 @@ async def custom_exception_handler(request: Request, exc: Exception) -> JSONResp
         status_code=exc.http_status_code.value,
         content={"detail": exc.get_user_message()},
     )
+
+
+async def custom_exception_handler_adapter(
+    request: Request, exc: Exception
+) -> Response:
+    """Adapter that ensures FastAPI-compatible signature for custom handler."""
+
+    if not isinstance(exc, BaseCustomException):
+        raise exc
+
+    return await custom_exception_handler(request, exc)
