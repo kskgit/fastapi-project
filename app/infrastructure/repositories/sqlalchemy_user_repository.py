@@ -164,7 +164,7 @@ class SQLAlchemyUserRepository(UserRepository):
             )
             return result.scalar_one_or_none() is not None
 
-        except (OSError, SQLAlchemyError):
+        except SQLAlchemyError:
             raise DataOperationException(
                 operation_context=self,
             )

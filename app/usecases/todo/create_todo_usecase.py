@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from app.domain.entities.todo import Todo, TodoPriority
+from app.domain.exceptions.business import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.todo_domain_service import TodoDomainService
@@ -94,6 +95,4 @@ class CreateTodoUseCase:
             UserNotFoundException: If user does not exist
         """
         if not await self.user_repository.exists(user_id):
-            from app.domain.exceptions.business import UserNotFoundException
-
             raise UserNotFoundException(user_id)
