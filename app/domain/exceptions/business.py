@@ -178,19 +178,7 @@ class ResourceNotFoundException(BusinessRuleException):
             details: Additional context information
         """
         message = f"{resource_type} with id {resource_id} not found"
-
-        # Include resource information in details
-        exception_details = details or {}
-        exception_details.update(
-            {
-                "resource_type": resource_type,
-                "resource_id": resource_id,
-            }
-        )
-
-        super().__init__(message=message, details=exception_details)
-        self.resource_type = resource_type
-        self.resource_id = resource_id
+        super().__init__(message=message)
 
     @property
     def http_status_code(self) -> ExceptionStatusCode:
