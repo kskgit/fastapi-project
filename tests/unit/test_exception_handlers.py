@@ -50,7 +50,8 @@ async def test_business_exception_handler_returns_warning_with_expected_response
     # BusinessRuleExceptionのloglevelはWARNINGであること
     # 設定したメッセージがログに出力されること
     assert any(
-        record.levelname == "WARNING" and "Sample business error" in record.msg
+        record.levelname == "WARNING"
+        and "BuisinessException occurred: Sample business error" in record.msg
         for record in caplog.records
     )
 class _SampleSystemException(SystemException):
