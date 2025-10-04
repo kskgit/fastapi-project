@@ -47,8 +47,12 @@ def register_exception_handlers(app: FastAPI) -> None:
 
         log_level = getattr(logging, exc.get_log_level())
 
-        detail_message = "SystemException occurred"
-        logger.log(level=log_level, msg=detail_message, exc_info=True)
+        detail_message = f"SystemException occurred: {exc}"
+        logger.log(
+            level=log_level,
+            msg=detail_message,
+            exc_info=True,
+        )
 
         return JSONResponse(
             status_code=exc.http_status_code.value,

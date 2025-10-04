@@ -53,3 +53,45 @@ async def test_business_exception_handler_returns_warning_with_expected_response
         record.levelname == "WARNING" and "Sample business error" in record.msg
         for record in caplog.records
     )
+class _SampleSystemException(SystemException):
+    def __init__(self, message: str = "Sample system error") -> None:
+        super().__init__(message=message)
+
+    @property
+    def http_status_code(self) -> ExceptionStatusCode:
+        return ExceptionStatusCode.SERVICE_UNAVAILABLE
+
+
+async def test_system_exception_handler_returns_warning_with_expected_response(
+    caplog,
+) -> None:
+    app = FastAPI()
+    register_exception_handlers(app)
+
+    @app.get("/boom")
+    async def boom() -> None:
+        raise _SampleSystemException()
+
+    caplog.set_level("ERROR")
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app, raise_app_exceptions=False),
+        base_url="http://testserver",
+    ) as client:
+        response = await client.get("/boom")
+
+    # 例外クラスで設定したステータスコードでレスポンスされること
+    assert response.status_code == ExceptionStatusCode.SERVICE_UNAVAILABLE.value
+
+    # 例外クラスで設定したメッセージがレスポンスされること
+    assert response.json() == {"detail": "Sample system error"}
+
+    # SystemException occurredがログに表示されること
+    assert any(
+        record.levelname == "ERROR"
+        and "SystemException occurred: Sample system error" in record.msg
+        for record in caplog.records
+    )
+
+    # Stack Traceがログに含まれていること
+    assert "Traceback (most recent call last):" in caplog.text
