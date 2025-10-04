@@ -54,6 +54,11 @@ async def test_business_exception_handler_returns_warning_with_expected_response
         and "BuisinessException occurred: Sample business error" in record.msg
         for record in caplog.records
     )
+
+    # Stack Traceがログに含まれていないこと
+    assert "Traceback (most recent call last):" not in caplog.text
+
+
 class _SampleSystemException(SystemException):
     def __init__(self, message: str = "Sample system error") -> None:
         super().__init__(message=message)
