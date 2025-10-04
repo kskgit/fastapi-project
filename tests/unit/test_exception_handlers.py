@@ -94,6 +94,7 @@ async def test_system_exception_handler_returns_warning_with_expected_response(
     assert response.json() == {"detail": "Sample system error"}
 
     # SystemException occurredがログに表示されること
+    # BusinessRuleExceptionのloglevelはERRORであること
     assert any(
         record.levelname == "ERROR"
         and "SystemException occurred: Sample system error" in record.msg
