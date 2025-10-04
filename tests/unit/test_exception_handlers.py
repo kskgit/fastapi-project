@@ -5,6 +5,7 @@ from httpx import ASGITransport, AsyncClient
 from app.core.middleware.exception_handlers import register_exception_handlers
 from app.domain.exceptions.base import ExceptionStatusCode
 from app.domain.exceptions.business import BusinessRuleException
+from app.domain.exceptions.system import SystemException
 
 pytestmark = pytest.mark.anyio("asyncio")
 
@@ -36,7 +37,7 @@ async def test_business_exception_handler_returns_warning_with_expected_response
     caplog.set_level("WARNING")
 
     async with AsyncClient(
-        transport=ASGITransport(app=app, raise_app_exceptions=False),
+        transport=ASGITransport(app=app),
         base_url="http://testserver",
     ) as client:
         response = await client.get("/boom")
