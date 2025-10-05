@@ -82,7 +82,7 @@ async def test_system_exception_handler_returns_warning_with_expected_response(
     caplog.set_level("ERROR")
 
     async with AsyncClient(
-        transport=ASGITransport(app=app, raise_app_exceptions=False),
+        transport=ASGITransport(app=app),
         base_url="http://testserver",
     ) as client:
         response = await client.get("/boom")
@@ -103,3 +103,34 @@ async def test_system_exception_handler_returns_warning_with_expected_response(
 
     # Stack Traceがログに含まれていること
     assert "Traceback (most recent call last):" in caplog.text
+
+
+async def test_unhandled_exception_handler_returns_internal_server_error(
+    caplog,
+) -> None:
+    app = FastAPI()
+    register_exception_handlers(app)
+
+    @app.get("/boom")
+    async def boom() -> None:
+        raise RuntimeError("Unhandled error")
+
+    caplog.set_level("CRITICAL")
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app, raise_app_exceptions=False),
+        base_url="http://testserver",
+    ) as client:
+        response = await client.get("/boom")
+
+    # 500固定で返却されること
+    assert response.status_code == 500
+
+    # INTERNAL_SERVER_ERROR固定で返却されること
+    assert response.json() == {"detail": "INTERNAL_SERVER_ERROR"}
+
+    assert any(
+        record.levelname == "CRITICAL"
+        and "Exception occurred: Unhandled error" in record.msg
+        for record in caplog.records
+    )
