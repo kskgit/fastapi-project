@@ -52,7 +52,7 @@ async def test_business_exception_handler_returns_warning_with_expected_response
     # 設定したメッセージがログに出力されること
     assert any(
         record.levelname == "WARNING"
-        and "BuisinessException occurred: Sample business error" in record.msg
+        and "BusinessException occurred: Sample business error" in record.msg
         for record in caplog.records
     )
 
@@ -108,6 +108,9 @@ async def test_system_exception_handler_returns_warning_with_expected_response(
 async def test_unhandled_exception_handler_returns_internal_server_error(
     caplog,
 ) -> None:
+    """unhandled_exception は通常 raise_app_exceptions=True だが、
+    レスポンスの形を確認するため False にして検証する。
+    """
     app = FastAPI()
     register_exception_handlers(app)
 
@@ -136,4 +139,28 @@ async def test_unhandled_exception_handler_returns_internal_server_error(
     )
 
     # Stack Traceがログに含まれていること
+    assert "Traceback (most recent call last):" in caplog.text
+
+
+async def test_unhandled_exception_handler_handles_with_raise_app_exceptions_true(
+    caplog,
+) -> None:
+    """unhandled_exception は通常 raise_app_exceptions=Trueのため、
+    レスポンス後に例外が再throwされても例外が意図した通り出力されているか検証する。
+    """
+    app = FastAPI()
+    register_exception_handlers(app)
+
+    @app.get("/boom")
+    async def boom() -> None:
+        raise RuntimeError("Unhandled error")
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app, raise_app_exceptions=True),
+        base_url="http://testserver",
+    ) as client:
+        with pytest.raises(RuntimeError, match="Unhandled error"):
+            await client.get("/boom")
+
+    assert "Exception occurred: Unhandled error" in caplog.text
     assert "Traceback (most recent call last):" in caplog.text
