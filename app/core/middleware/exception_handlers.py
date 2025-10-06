@@ -69,6 +69,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         logger.log(
             level=logging.CRITICAL,
             msg=detail_message,
+            exc_info=True,
         )
 
         return JSONResponse(

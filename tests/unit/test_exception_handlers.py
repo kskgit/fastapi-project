@@ -134,3 +134,6 @@ async def test_unhandled_exception_handler_returns_internal_server_error(
         and "Exception occurred: Unhandled error" in record.msg
         for record in caplog.records
     )
+
+    # Stack Traceがログに含まれていること
+    assert "Traceback (most recent call last):" in caplog.text
