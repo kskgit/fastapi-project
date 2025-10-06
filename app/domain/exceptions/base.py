@@ -77,6 +77,22 @@ class BaseCustomException(Exception, ABC):
         """
         return str(self)
 
+    def get_log_prefix(self) -> str:
+        """Get prefix for log message.
+
+        Returns:
+            str: Default prefix using class name
+        """
+        return f"{self.__class__.__name__} occurred"
+
+    def include_exc_info(self) -> bool:
+        """Determine whether log should include traceback information.
+
+        Returns:
+            bool: Defaults to False unless subclass overrides
+        """
+        return False
+
     @property
     def http_status_code(self) -> ExceptionStatusCode:
         """Get HTTP status code for API response.

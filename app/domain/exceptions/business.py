@@ -21,6 +21,9 @@ class BusinessRuleException(BaseCustomException):
         """Business rule violations are logged at WARNING level."""
         return "WARNING"
 
+    def get_log_prefix(self) -> str:
+        return "BusinessException occurred"
+
     def should_trigger_alert(self) -> bool:
         """Business rule violations should not trigger operational alerts."""
         return False

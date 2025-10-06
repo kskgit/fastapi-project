@@ -45,8 +45,14 @@ class SystemException(BaseCustomException):
         """Get log level for system exceptions."""
         return "ERROR"
 
+    def get_log_prefix(self) -> str:
+        return "SystemException occurred"
+
     def should_trigger_alert(self) -> bool:
         """System errors should trigger operational alerts."""
+        return True
+
+    def include_exc_info(self) -> bool:
         return True
 
     def get_error_category(self) -> str:
