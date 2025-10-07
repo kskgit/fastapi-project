@@ -43,28 +43,6 @@ class BaseCustomException(Exception, ABC):
         """
         raise NotImplementedError("Subclasses must implement get_log_level method")
 
-    def should_trigger_alert(self) -> bool:
-        """Check if this error should trigger operational alerts.
-
-        Returns:
-            bool: Whether this error requires operational attention
-        Note:
-            Should be overridden by subclasses based on error severity
-        """
-        raise NotImplementedError(
-            "Subclasses must implement should_trigger_alert method"
-        )
-
-    def get_error_category(self) -> str:
-        """Get error category for metrics and monitoring.
-
-        Returns:
-            str: Error category for classification
-        Note:
-            Should be overridden by subclasses for proper categorization
-        """
-        raise NotImplementedError("Subclasses must implement get_error_category method")
-
     def get_user_message(self) -> str:
         """Get user-friendly message for API response.
 
