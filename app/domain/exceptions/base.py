@@ -57,6 +57,17 @@ class BaseCustomException(Exception, ABC):
         """
         return str(self)
 
+    @property
+    def log_prefix(self) -> str:
+        """Prefix for log message output."""
+
+        return f"{self.__class__.__name__} occurred"
+
+    @property
+    def include_exc_info(self) -> bool:
+        """Whether the log entry should include traceback information."""
+
+        return False
 
     @property
     def http_status_code(self) -> ExceptionStatusCode:

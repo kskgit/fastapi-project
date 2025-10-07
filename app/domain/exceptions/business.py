@@ -26,14 +26,6 @@ class BusinessRuleException(BaseCustomException):
     def log_prefix(self) -> str:
         return "BusinessException occurred"
 
-    def should_trigger_alert(self) -> bool:
-        """Business rule violations should not trigger operational alerts."""
-        return False
-
-    def get_error_category(self) -> str:
-        """Get error category for business rule violations."""
-        return "business_rule_violation"
-
 
 class ValidationException(BusinessRuleException):
     """Exception raised for input validation errors.

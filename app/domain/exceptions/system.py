@@ -50,13 +50,9 @@ class SystemException(BaseCustomException):
     def log_prefix(self) -> str:
         return "SystemException occurred"
 
-    def should_trigger_alert(self) -> bool:
-        """System errors should trigger operational alerts."""
+    @property
+    def include_exc_info(self) -> bool:
         return True
-
-    def get_error_category(self) -> str:
-        """Get error category for system exceptions."""
-        return "system_error"
 
     @property
     def http_status_code(self) -> ExceptionStatusCode:

@@ -9,16 +9,15 @@ import logging
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse, Response
 
-from app.domain.exceptions.business import BusinessRuleException
-from app.domain.exceptions.system import SystemException
+from app.domain.exceptions.base import BaseCustomException
 
 
 def register_exception_handlers(app: FastAPI) -> None:
     """Register global exception handlers for the FastAPI application."""
 
-    @app.exception_handler(BusinessRuleException)
+    @app.exception_handler(BaseCustomException)
     async def business_exception_handler(
-        request: Request, exc: BusinessRuleException
+        request: Request, exc: BaseCustomException
     ) -> Response:
         """Handle business domain exceptions."""
 
@@ -26,32 +25,11 @@ def register_exception_handlers(app: FastAPI) -> None:
 
         log_level = getattr(logging, exc.log_level)
 
-        detail_message = f"BuisinessException occurred: {exc}"
+        detail_message = f"{exc.log_prefix}: {exc}"
         logger.log(
             level=log_level,
             msg=detail_message,
-        )
-
-        return JSONResponse(
-            status_code=exc.http_status_code.value,
-            content={"detail": exc.user_message},
-        )
-
-    @app.exception_handler(SystemException)
-    async def system_exception_handler(
-        request: Request, exc: SystemException
-    ) -> Response:
-        """Handle system domain exceptions."""
-
-        logger = logging.getLogger(__name__)
-
-        log_level = getattr(logging, exc.log_level)
-
-        detail_message = f"SystemException occurred: {exc}"
-        logger.log(
-            level=log_level,
-            msg=detail_message,
-            exc_info=True,
+            exc_info=exc.include_exc_info,
         )
 
         return JSONResponse(
