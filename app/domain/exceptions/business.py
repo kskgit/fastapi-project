@@ -17,9 +17,14 @@ class BusinessRuleException(BaseCustomException):
     errors with consistent WARNING level logging and monitoring behavior.
     """
 
-    def get_log_level(self) -> str:
+    @property
+    def log_level(self) -> str:
         """Business rule violations are logged at WARNING level."""
         return "WARNING"
+
+    @property
+    def log_prefix(self) -> str:
+        return "BusinessException occurred"
 
     def should_trigger_alert(self) -> bool:
         """Business rule violations should not trigger operational alerts."""

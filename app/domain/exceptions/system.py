@@ -41,9 +41,14 @@ class SystemException(BaseCustomException):
         """
         super().__init__(message, details)
 
-    def get_log_level(self) -> str:
+    @property
+    def log_level(self) -> str:
         """Get log level for system exceptions."""
         return "ERROR"
+
+    @property
+    def log_prefix(self) -> str:
+        return "SystemException occurred"
 
     def should_trigger_alert(self) -> bool:
         """System errors should trigger operational alerts."""
@@ -172,7 +177,8 @@ class DataOperationException(SystemException):
 
         return "unknown operation"
 
-    def get_user_message(self) -> str:
+    @property
+    def user_message(self) -> str:
         """Get user-friendly message for API response.
 
         Returns:

@@ -33,7 +33,8 @@ class BaseCustomException(Exception, ABC):
         super().__init__(message)
         self.details = details or {}
 
-    def get_log_level(self) -> str:
+    @property
+    def log_level(self) -> str:
         """Get log level for this domain exception.
 
         Returns:
@@ -41,9 +42,10 @@ class BaseCustomException(Exception, ABC):
         Note:
             Should be overridden by subclasses to return appropriate level
         """
-        raise NotImplementedError("Subclasses must implement get_log_level method")
+        raise NotImplementedError("Subclasses must implement log_level property")
 
-    def get_user_message(self) -> str:
+    @property
+    def user_message(self) -> str:
         """Get user-friendly message for API response.
 
         Returns:
@@ -54,6 +56,7 @@ class BaseCustomException(Exception, ABC):
             this method to provide secure, user-friendly messages.
         """
         return str(self)
+
 
     @property
     def http_status_code(self) -> ExceptionStatusCode:

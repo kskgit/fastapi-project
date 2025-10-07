@@ -20,11 +20,11 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def business_exception_handler(
         request: Request, exc: BusinessRuleException
     ) -> Response:
-        """Handle domain exceptions with structured logging and responses."""
+        """Handle business domain exceptions."""
 
         logger = logging.getLogger(__name__)
 
-        log_level = getattr(logging, exc.get_log_level())
+        log_level = getattr(logging, exc.log_level)
 
         detail_message = f"BuisinessException occurred: {exc}"
         logger.log(
@@ -34,18 +34,18 @@ def register_exception_handlers(app: FastAPI) -> None:
 
         return JSONResponse(
             status_code=exc.http_status_code.value,
-            content={"detail": exc.get_user_message()},
+            content={"detail": exc.user_message},
         )
 
     @app.exception_handler(SystemException)
     async def system_exception_handler(
         request: Request, exc: SystemException
     ) -> Response:
-        """Handle domain exceptions with structured logging and responses."""
+        """Handle system domain exceptions."""
 
         logger = logging.getLogger(__name__)
 
-        log_level = getattr(logging, exc.get_log_level())
+        log_level = getattr(logging, exc.log_level)
 
         detail_message = f"SystemException occurred: {exc}"
         logger.log(
@@ -56,7 +56,7 @@ def register_exception_handlers(app: FastAPI) -> None:
 
         return JSONResponse(
             status_code=exc.http_status_code.value,
-            content={"detail": exc.get_user_message()},
+            content={"detail": exc.user_message},
         )
 
     @app.exception_handler(Exception)
