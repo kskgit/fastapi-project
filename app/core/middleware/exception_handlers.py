@@ -16,7 +16,7 @@ def register_exception_handlers(app: FastAPI) -> None:
     """Register global exception handlers for the FastAPI application."""
 
     @app.exception_handler(BaseCustomException)
-    async def business_exception_handler(
+    async def custom_exception_handler(
         request: Request, exc: BaseCustomException
     ) -> Response:
         """Handle business domain exceptions."""
