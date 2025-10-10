@@ -1,6 +1,6 @@
 """CreateTodoUseCase正常系のテスト"""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import Mock
 
 import pytest
@@ -51,7 +51,7 @@ async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
         user_repository=user_repository,
     )
 
-    due_date = datetime.utcnow()
+    due_date = datetime.now(UTC)
 
     # Act
     result = await usecase.execute(
