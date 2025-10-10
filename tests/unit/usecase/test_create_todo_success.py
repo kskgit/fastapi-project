@@ -30,6 +30,7 @@ def mock_transaction_manager() -> Mock:
 
 
 async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
+    # Arrange
     todo_repository = Mock(spec=TodoRepository)
     user_repository = Mock(spec=UserRepository)
 
@@ -52,6 +53,7 @@ async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
 
     due_date = datetime.utcnow()
 
+    # Act
     result = await usecase.execute(
         title="Write tests",
         user_id=1,
@@ -60,6 +62,7 @@ async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
         priority=TodoPriority.high,
     )
 
+    # Assert
     assert result is saved_todo
 
     user_repository.exists.assert_awaited_once_with(1)
