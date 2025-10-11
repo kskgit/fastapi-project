@@ -8,25 +8,9 @@ import pytest
 from app.domain.entities.todo import Todo, TodoPriority
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.transaction_manager import TransactionManager
 from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
 
 pytestmark = pytest.mark.anyio("asyncio")
-
-
-class _AsyncNoopTransactionContext:
-    async def __aenter__(self):
-        return None
-
-    async def __aexit__(self, exc_type, exc, tb):
-        return False
-
-
-@pytest.fixture
-def mock_transaction_manager() -> Mock:
-    transaction_manager = Mock(spec=TransactionManager)
-    transaction_manager.begin_transaction.return_value = _AsyncNoopTransactionContext()
-    return transaction_manager
 
 
 async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
