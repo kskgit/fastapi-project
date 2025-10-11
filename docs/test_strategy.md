@@ -22,6 +22,19 @@
 
 # Usecase
 
+## ファイル名
+`test_{ユースケース名}.py`とする
+
+例）`create_todo_usecase.py`→`test_create_todo_usecase.py`
+
+
+## メソッド名
+`test_{usecase名の_usecaseを除く値}_{success or failure}_{理由（任意）}.py`とする
+
+例）
+- `test_create_todo_success`
+- `test_create_user_failure_username_already_exists`
+
 ## モック対象
 - repository
 

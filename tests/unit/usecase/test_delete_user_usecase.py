@@ -1,4 +1,4 @@
-"""Test cascade deletion of user and related todos in same transaction."""
+"""DeleteUserUseCaseのテスト"""
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -17,9 +17,12 @@ from app.infrastructure.services.sqlalchemy_transaction_manager import (
 )
 from app.usecases.user.delete_user_usecase import DeleteUserUseCase
 
+pytest.importorskip("aiosqlite")
+pytestmark = pytest.mark.anyio("asyncio")
 
-class TestDeleteUserCascade:
-    """Test cascade deletion behavior for user and related todos."""
+
+class TestDeleteUserUseCase:
+    """DeleteUserUseCaseの振る舞いを検証するテスト群"""
 
     @pytest.fixture(scope="function")
     async def in_memory_db(self):
@@ -70,15 +73,12 @@ class TestDeleteUserCascade:
         await db_session.commit()
         return saved_user, todos
 
-    @pytest.mark.asyncio
-    async def test_delete_user_cascades_todos_success(
+    async def test_delete_user_success_cascades_todos(
         self, db_session, test_user_with_todos
     ):
-        """Test successful deletion of user and all related todos in same
-        transaction."""
-        user, todos = test_user_with_todos
-
+        """削除成功時に関連Todoがカスケードで削除されることを確認"""
         # Arrange
+        user, todos = test_user_with_todos
         transaction_manager = SQLAlchemyTransactionManager(db_session)
         user_repo = SQLAlchemyUserRepository(db_session)
         todo_repo = SQLAlchemyTodoRepository(db_session)
@@ -87,11 +87,10 @@ class TestDeleteUserCascade:
             transaction_manager, user_repo, todo_repo
         )
 
-        # Verify initial state
         initial_todos = await todo_repo.find_all_by_user_id(user.id)
         assert len(initial_todos) == 3
 
-        # Act - Delete user (should cascade to todos)
+        # Act
         result = await delete_user_usecase.execute(user.id)
 
         # Assert
@@ -109,14 +108,13 @@ class TestDeleteUserCascade:
         for todo in todos:
             assert await todo_repo.find_by_id(todo.id) is None
 
-    @pytest.mark.asyncio
-    async def test_delete_user_rollback_on_failure(
+    async def test_delete_user_failure_rollback_preserves_todos(
         self, db_session, test_user_with_todos
     ):
-        """Test that user deletion rollback preserves todos when user deletion fails."""
+        """削除失敗時にトランザクションがロールバックされることを確認"""
+        # Arrange
         user, todos = test_user_with_todos
 
-        # Arrange - Mock user repository to simulate failure
         class FailingUserRepository(SQLAlchemyUserRepository):
             async def delete(self, user_id: int) -> bool:
                 # Simulate user deletion failure after todos are deleted
@@ -130,17 +128,18 @@ class TestDeleteUserCascade:
             transaction_manager, failing_user_repo, todo_repo
         )
 
-        # Verify initial state
         initial_todos = await todo_repo.find_all_by_user_id(user.id)
         assert len(initial_todos) == 3
 
-        # Act & Assert - Should raise RuntimeError due to user deletion failure
+        # Act
         with pytest.raises(
             RuntimeError, match=f"Failed to delete user with id {user.id}"
-        ):
+        ) as exc_info:
             await delete_user_usecase.execute(user.id)
 
-        # Verify rollback - user should still exist
+        # Assert
+        assert str(exc_info.value) == f"Failed to delete user with id {user.id}"
+
         actual_user_repo = SQLAlchemyUserRepository(db_session)
         preserved_user = await actual_user_repo.find_by_id(user.id)
         assert preserved_user is not None
@@ -156,9 +155,8 @@ class TestDeleteUserCascade:
             assert found_todo is not None
             assert found_todo.title == original_todo.title
 
-    @pytest.mark.asyncio
-    async def test_delete_nonexistent_user(self, db_session):
-        """Test deletion of non-existent user returns False without error."""
+    async def test_delete_user_failure_user_not_found(self, db_session):
+        """存在しないユーザー削除時にFalseが返ることを確認"""
         # Arrange
         transaction_manager = SQLAlchemyTransactionManager(db_session)
         user_repo = SQLAlchemyUserRepository(db_session)
@@ -168,16 +166,15 @@ class TestDeleteUserCascade:
             transaction_manager, user_repo, todo_repo
         )
 
-        # Act - Try to delete non-existent user
+        # Act
         result = await delete_user_usecase.execute(999)
 
         # Assert
         assert result is False
 
-    @pytest.mark.asyncio
-    async def test_delete_user_with_no_todos(self, db_session):
-        """Test deletion of user with no todos succeeds."""
-        # Arrange - Create user without todos
+    async def test_delete_user_success_no_todos(self, db_session):
+        """Todoが無いユーザーでも削除が成功することを確認"""
+        # Arrange
         user_repo = SQLAlchemyUserRepository(db_session)
         user = User.create(username="user_no_todos", email="notodos@example.com")
         saved_user = await user_repo.save(user)
@@ -200,10 +197,9 @@ class TestDeleteUserCascade:
         deleted_user = await user_repo.find_by_id(saved_user.id)
         assert deleted_user is None
 
-    @pytest.mark.asyncio
-    async def test_transaction_isolation_during_cascade_delete(self, in_memory_db):
-        """Test transaction isolation during cascade deletion."""
-        # Create two separate sessions
+    async def test_delete_user_success_transaction_isolation(self, in_memory_db):
+        """トランザクションの分離性が保たれることを確認"""
+        # Arrange
         AsyncSessionLocal = async_sessionmaker(
             in_memory_db, class_=AsyncSession, expire_on_commit=False
         )
@@ -225,7 +221,7 @@ class TestDeleteUserCascade:
             await todo_repo1.save(todo)
             await session1.commit()
 
-            # Session 2: Start deletion transaction but don't commit
+            # Act
             tm1 = SQLAlchemyTransactionManager(session1)
 
             try:
@@ -243,6 +239,6 @@ class TestDeleteUserCascade:
             except Exception:
                 pass  # Expected rollback
 
-            # After rollback, user should still exist in both sessions
+            # Assert
             final_users = await user_repo2.find_all()
             assert len(final_users) > 0
