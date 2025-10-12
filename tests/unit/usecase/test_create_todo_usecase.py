@@ -1,13 +1,14 @@
 """CreateTodoUseCase正常系のテスト"""
 
 from datetime import UTC, datetime
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
 from app.domain.entities.todo import Todo, TodoPriority
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.user_domain_service import UserDomainService
 from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
 
 pytestmark = pytest.mark.anyio("asyncio")
@@ -15,10 +16,9 @@ pytestmark = pytest.mark.anyio("asyncio")
 
 async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
     # Arrange
-    todo_repository = Mock(spec=TodoRepository)
-    user_repository = Mock(spec=UserRepository)
-
-    user_repository.exists.return_value = True
+    todo_repository = AsyncMock(spec=TodoRepository)
+    user_repository = AsyncMock(spec=UserRepository)
+    user_domain_service = AsyncMock(spec=UserDomainService)
 
     saved_todo = Todo(
         id=123,
@@ -33,6 +33,7 @@ async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
         transaction_manager=mock_transaction_manager,
         todo_repository=todo_repository,
         user_repository=user_repository,
+        user_domain_service=user_domain_service,
     )
 
     due_date = datetime.now(UTC)
@@ -49,7 +50,9 @@ async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
     # Assert
     assert result is saved_todo
 
-    user_repository.exists.assert_awaited_once_with(1)
+    user_domain_service.validate_user_exists.assert_awaited_once_with(
+        1, user_repository=user_repository
+    )
     todo_repository.save.assert_awaited_once()
 
     saved_arg = todo_repository.save.call_args.args[0]

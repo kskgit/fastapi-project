@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.user_domain_service import UserDomainService
 from app.infrastructure.database.connection import get_db
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
@@ -84,7 +85,13 @@ def get_create_todo_usecase(db: AsyncSession = Depends(get_db)) -> CreateTodoUse
     transaction_manager = SQLAlchemyTransactionManager(db)
     todo_repository = SQLAlchemyTodoRepository(db)
     user_repository = SQLAlchemyUserRepository(db)
-    return CreateTodoUseCase(transaction_manager, todo_repository, user_repository)
+    user_domain_service = UserDomainService()
+    return CreateTodoUseCase(
+        transaction_manager,
+        todo_repository,
+        user_repository,
+        user_domain_service,
+    )
 
 
 def get_get_todos_usecase(

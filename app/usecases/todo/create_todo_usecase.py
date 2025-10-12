@@ -1,11 +1,10 @@
 from datetime import datetime
 
 from app.domain.entities.todo import Todo, TodoPriority
-from app.domain.exceptions.business import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.todo_domain_service import TodoDomainService
 from app.domain.services.transaction_manager import TransactionManager
+from app.domain.services.user_domain_service import UserDomainService
 
 
 class CreateTodoUseCase:
@@ -24,6 +23,7 @@ class CreateTodoUseCase:
         transaction_manager: TransactionManager,
         todo_repository: TodoRepository,
         user_repository: UserRepository,
+        user_domain_service: UserDomainService,
     ):
         """Initialize with transaction manager and repository dependencies.
 
@@ -35,7 +35,7 @@ class CreateTodoUseCase:
         self.transaction_manager = transaction_manager
         self.todo_repository = todo_repository
         self.user_repository = user_repository
-        self.todo_domain_service = TodoDomainService()
+        self.user_domain_service = user_domain_service
 
     async def execute(
         self,
@@ -69,11 +69,10 @@ class CreateTodoUseCase:
             This method focuses on business logic only.
             Transaction management is handled by SQLAlchemy autobegin.
         """
-        async with (
-            self.transaction_manager.begin_transaction()
-        ):  # Explicit transaction boundary
-            # Validate that user exists (async version)
-            await self._validate_user_exists_async(user_id)
+        async with self.transaction_manager.begin_transaction():
+            await self.user_domain_service.validate_user_exists(
+                user_id, user_repository=self.user_repository
+            )
 
             todo = Todo.create(
                 user_id=user_id,
@@ -83,16 +82,3 @@ class CreateTodoUseCase:
                 priority=priority,
             )
             return await self.todo_repository.save(todo)
-        # Transaction automatically commits on success or rolls back on exception
-
-    async def _validate_user_exists_async(self, user_id: int) -> None:
-        """Validate that user exists for todo operations (async version).
-
-        Args:
-            user_id: User ID to validate
-
-        Raises:
-            UserNotFoundException: If user does not exist
-        """
-        if not await self.user_repository.exists(user_id):
-            raise UserNotFoundException(user_id)

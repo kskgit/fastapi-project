@@ -1,6 +1,7 @@
 """User Domain Service - Business logic for User entity operations."""
 
 from app.domain.entities.user import User
+from app.domain.exceptions.business import UserNotFoundException
 from app.domain.repositories.user_repository import UserRepository
 
 from ..exceptions import UniqueConstraintException, ValidationException
@@ -72,6 +73,20 @@ class UserDomainService:
 
         if new_email is not None and new_email != current_user.email:
             await self._validate_email_uniqueness(user_id, new_email, user_repository)
+
+    async def validate_user_exists(
+        self, user_id: int, user_repository: UserRepository
+    ) -> None:
+        """Validate that user exists for todo operations (async version).
+
+        Args:
+            user_id: User ID to validate
+
+        Raises:
+            UserNotFoundException: If user does not exist
+        """
+        if not await user_repository.exists(user_id):
+            raise UserNotFoundException(user_id)
 
     async def _validate_username_uniqueness(
         self, user_id: int, username: str, user_repository: UserRepository
