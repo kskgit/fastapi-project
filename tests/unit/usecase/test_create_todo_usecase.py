@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 from app.domain.entities.todo import Todo, TodoPriority
+from app.domain.exceptions.business import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.user_domain_service import UserDomainService
@@ -61,5 +62,65 @@ async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
     assert saved_arg.description == "Add unit test for todo creation"
     assert saved_arg.due_date == due_date
     assert saved_arg.priority == TodoPriority.high
+
+    mock_transaction_manager.begin_transaction.assert_called_once()
+
+
+async def test_create_todo_failure_user_not_found(
+    mock_transaction_manager: Mock,
+) -> None:
+    # Arrange
+    todo_repository = AsyncMock(spec=TodoRepository)
+    user_repository = AsyncMock(spec=UserRepository)
+    user_domain_service = AsyncMock(spec=UserDomainService)
+    user_domain_service.validate_user_exists.side_effect = UserNotFoundException(999)
+
+    usecase = CreateTodoUseCase(
+        transaction_manager=mock_transaction_manager,
+        todo_repository=todo_repository,
+        user_repository=user_repository,
+        user_domain_service=user_domain_service,
+    )
+
+    # Act & Assert
+    with pytest.raises(UserNotFoundException):
+        await usecase.execute(title="Write tests", user_id=999)
+
+    user_domain_service.validate_user_exists.assert_awaited_once_with(
+        999, user_repository=user_repository
+    )
+    todo_repository.save.assert_not_called()
+    mock_transaction_manager.begin_transaction.assert_called_once()
+
+
+async def test_create_todo_failure_save_error_rolls_back(
+    mock_transaction_manager: Mock,
+) -> None:
+    # Arrange
+    todo_repository = AsyncMock(spec=TodoRepository)
+    user_repository = AsyncMock(spec=UserRepository)
+    user_domain_service = AsyncMock(spec=UserDomainService)
+    user_domain_service.validate_user_exists.return_value = None
+
+    persistence_error = RuntimeError("failed to save todo")
+    todo_repository.save.side_effect = persistence_error
+
+    usecase = CreateTodoUseCase(
+        transaction_manager=mock_transaction_manager,
+        todo_repository=todo_repository,
+        user_repository=user_repository,
+        user_domain_service=user_domain_service,
+    )
+
+    # Act & Assert
+    with pytest.raises(RuntimeError) as exc_info:
+        await usecase.execute(title="Write tests", user_id=1)
+
+    assert exc_info.value is persistence_error
+
+    user_domain_service.validate_user_exists.assert_awaited_once_with(
+        1, user_repository=user_repository
+    )
+    todo_repository.save.assert_awaited_once()
 
     mock_transaction_manager.begin_transaction.assert_called_once()
