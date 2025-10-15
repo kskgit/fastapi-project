@@ -1,8 +1,10 @@
 """Unit tests for SQLAlchemyTodoRepository."""
 
 import pytest
+from sqlalchemy import select
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.infrastructure.database.models import TodoModel
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
 )
@@ -12,7 +14,7 @@ from app.infrastructure.repositories.sqlalchemy_todo_repository import (
 class TestSQLAlchemyTodoRepository:
     """Unit tests for SQLAlchemyTodoRepository implementation."""
 
-    async def test_save_creates_todo_in_database(self, repo_db_session):
+    async def test_save_success(self, repo_db_session):
         """Test that save method creates a Todo in the database."""
         # Arrange
         repository = SQLAlchemyTodoRepository(repo_db_session)
@@ -37,11 +39,12 @@ class TestSQLAlchemyTodoRepository:
         assert saved_todo.created_at is not None
         assert saved_todo.updated_at is not None
 
-        # Assert - Todo exists in database
-        found_todo = await repository.find_by_id(saved_todo.id)
-        assert found_todo is not None
-        assert found_todo.id == saved_todo.id
-        assert found_todo.title == "Test Todo"
-        assert found_todo.description == "Test Description"
-        assert found_todo.user_id == 1
-        assert found_todo.priority == TodoPriority.high
+        # Assert - Todo exists in database (direct DB check)
+        result = await repo_db_session.execute(
+            select(TodoModel).where(TodoModel.id == saved_todo.id)
+        )
+        model = result.scalar_one()
+        assert model.title == "Test Todo"
+        assert model.description == "Test Description"
+        assert model.user_id == 1
+        assert model.priority == TodoPriority.high
