@@ -2,8 +2,10 @@
 
 import pytest
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.domain.exceptions.system import DataOperationException
 from app.infrastructure.database.models import TodoModel
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
@@ -48,3 +50,41 @@ class TestSQLAlchemyTodoRepository:
         assert model.description == "Test Description"
         assert model.user_id == 1
         assert model.priority == TodoPriority.high
+
+    async def test_save_failure_raises_data_operation_exception(
+        self, repo_db_session, monkeypatch
+    ):
+        """Test that SQL errors are wrapped in DataOperationException."""
+        # Arrange
+        repository = SQLAlchemyTodoRepository(repo_db_session)
+        todo = Todo.create(
+            user_id=1,
+            title="Bad Todo",
+            description="Fails on flush",
+            priority=TodoPriority.medium,
+        )
+
+        async def _raise_sqlalchemy_error(*args, **kwargs):
+            raise SQLAlchemyError("flush failed")
+
+        monkeypatch.setattr(repo_db_session, "flush", _raise_sqlalchemy_error)
+
+        # Act
+        with pytest.raises(DataOperationException) as exc_info:
+            await repository.save(todo)
+
+        # Assert
+        assert exc_info.value.details["operation_context"] == (
+            "SQLAlchemyTodoRepository.save"
+        )
+
+    async def test_find_by_id_failure_not_found(self, repo_db_session):
+        """Test that find_by_id returns None when todo does not exist."""
+        # Arrange
+        repository = SQLAlchemyTodoRepository(repo_db_session)
+
+        # Act
+        result = await repository.find_by_id(999)
+
+        # Assert
+        assert result is None
