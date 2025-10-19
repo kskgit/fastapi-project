@@ -16,8 +16,8 @@ from app.infrastructure.repositories.sqlalchemy_todo_repository import (
 class TestSQLAlchemyTodoRepository:
     """Unit tests for SQLAlchemyTodoRepository implementation."""
 
-    async def test_save_success(self, repo_db_session):
-        """Test that save method creates a Todo in the database."""
+    async def test_create_success(self, repo_db_session):
+        """Test that create persists a new Todo."""
         # Arrange
         repository = SQLAlchemyTodoRepository(repo_db_session)
         todo = Todo.create(
@@ -28,7 +28,7 @@ class TestSQLAlchemyTodoRepository:
         )
 
         # Act
-        saved_todo = await repository.save(todo)
+        saved_todo = await repository.create(todo)
         await repo_db_session.commit()
 
         # Assert - Returned todo has ID and correct data
@@ -51,7 +51,7 @@ class TestSQLAlchemyTodoRepository:
         assert model.user_id == 1
         assert model.priority == TodoPriority.high
 
-    async def test_save_failure_raises_data_operation_exception(
+    async def test_create_failure_raises_data_operation_exception(
         self, repo_db_session, monkeypatch
     ):
         """Test that SQL errors are wrapped in DataOperationException."""
@@ -71,11 +71,95 @@ class TestSQLAlchemyTodoRepository:
 
         # Act
         with pytest.raises(DataOperationException) as exc_info:
-            await repository.save(todo)
+            await repository.create(todo)
 
         # Assert
         assert exc_info.value.details["operation_context"] == (
-            "SQLAlchemyTodoRepository.save"
+            "SQLAlchemyTodoRepository.create"
+        )
+
+    async def test_update_success(self, repo_db_session):
+        """Test that update modifies an existing Todo."""
+        # Arrange
+        repository = SQLAlchemyTodoRepository(repo_db_session)
+        existing = await repository.create(
+            Todo.create(
+                user_id=1,
+                title="Original",
+                description="Desc",
+                priority=TodoPriority.medium,
+            )
+        )
+
+        updated_todo = Todo(
+            id=existing.id,
+            user_id=existing.user_id,
+            title="Updated",
+            description="New Description",
+            due_date=existing.due_date,
+            status=TodoStatus.in_progress,
+            priority=TodoPriority.high,
+            created_at=existing.created_at,
+            updated_at=existing.updated_at,
+        )
+
+        # Act
+        result = await repository.update(updated_todo)
+        await repo_db_session.commit()
+
+        # Assert - Returned todo reflects updates
+        assert result.id == existing.id
+        assert result.title == "Updated"
+        assert result.description == "New Description"
+        assert result.status == TodoStatus.in_progress
+        assert result.priority == TodoPriority.high
+
+        # Assert - Database row is updated
+        db_result = await repo_db_session.execute(
+            select(TodoModel).where(TodoModel.id == existing.id)
+        )
+        model = db_result.scalar_one()
+        assert model.title == "Updated"
+        assert model.description == "New Description"
+        assert model.status == TodoStatus.in_progress
+        assert model.priority == TodoPriority.high
+
+    async def test_update_failure_raises_data_operation_exception(
+        self, repo_db_session, monkeypatch
+    ):
+        """Update wraps SQLAlchemy errors in DataOperationException."""
+        # Arrange
+        repository = SQLAlchemyTodoRepository(repo_db_session)
+        existing = await repository.create(
+            Todo.create(
+                user_id=1,
+                title="Original",
+                description="Desc",
+                priority=TodoPriority.low,
+            )
+        )
+
+        async def _raise_sqlalchemy_error(*args, **kwargs):
+            raise SQLAlchemyError("flush failed")
+
+        monkeypatch.setattr(repo_db_session, "flush", _raise_sqlalchemy_error)
+
+        updated = Todo(
+            id=existing.id,
+            user_id=existing.user_id,
+            title="Broken",
+            description="Desc",
+            status=TodoStatus.pending,
+            priority=TodoPriority.low,
+        )
+
+        # Act / Assert
+        with pytest.raises(DataOperationException) as exc_info:
+            await repository.update(updated)
+
+        # Assert
+        assert exc_info.value.details["operation_context"] == (
+            "SQLAlchemyTodoRepository.update"
         )
 
     async def test_find_by_id_failure_not_found(self, repo_db_session):

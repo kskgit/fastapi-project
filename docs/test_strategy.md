@@ -70,7 +70,7 @@
 `test_{メソッド名}_{success or failure}_{理由（任意）}.py`とする
 
 例）
-- `test_save_success`
+- `test_create_success`
 
 ## モック対象
 - dbはテスト用のインメモリdbを利用する

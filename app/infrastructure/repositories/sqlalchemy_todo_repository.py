@@ -56,47 +56,53 @@ class SQLAlchemyTodoRepository(TodoRepository):
             updated_at=entity.updated_at,
         )
 
-    async def save(self, todo: Todo) -> Todo:
-        """Save a todo (create or update).
+    async def create(self, todo: Todo) -> Todo:
+        """Persist a new todo.
 
         Note: Transaction management is handled by the UseCase layer.
         Always flushes to ensure ID is available for return value.
         """
+        if todo.id is not None:
+            raise ValueError("Cannot create todo with existing id")
+
         try:
-            if todo.id is None:
-                # Create new todo
-                model = self._to_model(todo)
-                model.created_at = datetime.now()
-                model.updated_at = datetime.now()
-                self.db.add(model)
-                await self.db.flush()
-                await self.db.refresh(model)
-            else:
-                # Update existing todo
-                result = await self.db.execute(
-                    select(TodoModel).where(TodoModel.id == todo.id)
-                )
-                model_or_none = result.scalar_one_or_none()
-                if model_or_none is None:
-                    raise ValueError(f"Todo with id {todo.id} not found")
-                model = model_or_none
-
-                # Update fields
-                model.title = todo.title
-                model.description = todo.description
-                model.due_date = todo.due_date
-                model.status = todo.status
-                model.priority = todo.priority
-                model.updated_at = datetime.now()
-                await self.db.flush()
-                await self.db.refresh(model)
-
+            model = self._to_model(todo)
+            now = datetime.now()
+            model.created_at = now
+            model.updated_at = now
+            self.db.add(model)
+            await self.db.flush()
+            await self.db.refresh(model)
             return self._to_domain_entity(model)
-
         except SQLAlchemyError:
-            raise DataOperationException(
-                operation_context=self,
+            raise DataOperationException(operation_context=self)
+
+    async def update(self, todo: Todo) -> Todo:
+        """Update an existing todo."""
+        if todo.id is None:
+            raise ValueError("Cannot update todo without id")
+
+        try:
+            result = await self.db.execute(
+                select(TodoModel).where(TodoModel.id == todo.id)
             )
+            model_or_none = result.scalar_one_or_none()
+            if model_or_none is None:
+                raise ValueError(f"Todo with id {todo.id} not found")
+
+            model = model_or_none
+            model.title = todo.title
+            model.description = todo.description
+            model.due_date = todo.due_date
+            model.status = todo.status
+            model.priority = todo.priority
+            model.updated_at = datetime.now()
+
+            await self.db.flush()
+            await self.db.refresh(model)
+            return self._to_domain_entity(model)
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
     async def find_by_id(self, todo_id: int) -> Todo | None:
         """Find todo by ID."""

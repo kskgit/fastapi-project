@@ -81,4 +81,4 @@ class CreateTodoUseCase:
                 due_date=due_date,
                 priority=priority,
             )
-            return await self.todo_repository.save(todo)
+            return await self.todo_repository.create(todo)

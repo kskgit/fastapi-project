@@ -67,7 +67,7 @@ class TestDeleteUserUseCase:
                 title=f"Todo {i + 1}",
                 description=f"Test todo {i + 1} for cascade deletion",
             )
-            saved_todo = await todo_repo.save(todo)
+            saved_todo = await todo_repo.create(todo)
             todos.append(saved_todo)
 
         await db_session.commit()

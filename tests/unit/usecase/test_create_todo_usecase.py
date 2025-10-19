@@ -26,7 +26,7 @@ async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
         description="Add unit test for todo creation",
         priority=TodoPriority.high,
     )
-    todo_repository.save.return_value = saved_todo
+    todo_repository.create.return_value = saved_todo
 
     usecase = CreateTodoUseCase(
         transaction_manager=mock_transaction_manager,
@@ -52,9 +52,9 @@ async def test_create_todo_success(mock_transaction_manager: Mock) -> None:
     user_domain_service.validate_user_exists.assert_awaited_once_with(
         1, user_repository=user_repository
     )
-    todo_repository.save.assert_awaited_once()
+    todo_repository.create.assert_awaited_once()
 
-    saved_arg = todo_repository.save.call_args.args[0]
+    saved_arg = todo_repository.create.call_args.args[0]
     assert saved_arg.title == "Write tests"
     assert saved_arg.user_id == 1
     assert saved_arg.description == "Add unit test for todo creation"
@@ -87,7 +87,7 @@ async def test_create_todo_failure_user_not_found(
     user_domain_service.validate_user_exists.assert_awaited_once_with(
         999, user_repository=user_repository
     )
-    todo_repository.save.assert_not_called()
+    todo_repository.create.assert_not_called()
     mock_transaction_manager.begin_transaction.assert_called_once()
 
 
@@ -101,7 +101,7 @@ async def test_create_todo_failure_save_error(
     user_domain_service.validate_user_exists.return_value = None
 
     persistence_error = RuntimeError("failed to save todo")
-    todo_repository.save.side_effect = persistence_error
+    todo_repository.create.side_effect = persistence_error
 
     usecase = CreateTodoUseCase(
         transaction_manager=mock_transaction_manager,
@@ -119,6 +119,6 @@ async def test_create_todo_failure_save_error(
     user_domain_service.validate_user_exists.assert_awaited_once_with(
         1, user_repository=user_repository
     )
-    todo_repository.save.assert_awaited_once()
+    todo_repository.create.assert_awaited_once()
 
     mock_transaction_manager.begin_transaction.assert_called_once()

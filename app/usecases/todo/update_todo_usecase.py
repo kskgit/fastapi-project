@@ -82,7 +82,7 @@ class UpdateTodoUseCase:
             self._update_todo_fields(
                 todo, title, description, due_date, status, priority
             )
-            return await self.todo_repository.save(todo)
+            return await self.todo_repository.update(todo)
         # Transaction automatically commits on success or rolls back on exception
 
     # ドメイン側に処理を移動させる

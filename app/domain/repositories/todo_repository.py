@@ -11,14 +11,26 @@ class TodoRepository(ABC):
     """
 
     @abstractmethod
-    async def save(self, todo: Todo) -> Todo:
-        """Save a todo (create or update).
+    async def create(self, todo: Todo) -> Todo:
+        """Persist a new todo entity.
 
         Args:
-            todo: Todo domain entity to save
+            todo: Todo domain entity to create (must not have id assigned)
 
         Returns:
-            Saved todo with updated fields (id, timestamps)
+            Todo entity with generated ID and timestamps
+        """
+        pass
+
+    @abstractmethod
+    async def update(self, todo: Todo) -> Todo:
+        """Update an existing todo entity.
+
+        Args:
+            todo: Todo entity with an existing ID to update
+
+        Returns:
+            Updated Todo entity reflecting persisted changes
         """
         pass
 
