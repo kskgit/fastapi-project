@@ -218,7 +218,7 @@ class TestDeleteUserUseCase:
                 title="Isolation Todo",
                 description="Test isolation",
             )
-            await todo_repo1.save(todo)
+            await todo_repo1.create(todo)
             await session1.commit()
 
             # Act
