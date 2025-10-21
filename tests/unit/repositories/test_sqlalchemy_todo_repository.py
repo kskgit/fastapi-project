@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.domain.exceptions.business import TodoNotFoundException
 from app.domain.exceptions.system import DataOperationException
 from app.infrastructure.database.models import TodoModel
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
@@ -123,6 +124,25 @@ class TestSQLAlchemyTodoRepository:
         assert model.description == "New Description"
         assert model.status == TodoStatus.in_progress
         assert model.priority == TodoPriority.high
+
+    async def test_update_failure_not_found(self, repo_db_session):
+        """Update raises TodoNotFoundException when todo does not exist."""
+        # Arrange
+        repository = SQLAlchemyTodoRepository(repo_db_session)
+        missing = Todo(
+            id=999,
+            user_id=1,
+            title="Missing",
+            description="Should fail",
+            status=TodoStatus.pending,
+            priority=TodoPriority.low,
+        )
+
+        # Act / Assert
+        with pytest.raises(TodoNotFoundException) as exc_info:
+            await repository.update(missing)
+
+        assert str(exc_info.value) == "Todo with id 999 not found"
 
     async def test_update_failure_raises_data_operation_exception(
         self, repo_db_session, monkeypatch

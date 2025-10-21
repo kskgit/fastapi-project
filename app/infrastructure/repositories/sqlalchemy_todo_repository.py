@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.domain.exceptions.business import TodoNotFoundException
 from app.domain.exceptions.system import DataOperationException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.infrastructure.database.models import TodoModel
@@ -88,7 +89,7 @@ class SQLAlchemyTodoRepository(TodoRepository):
             )
             model_or_none = result.scalar_one_or_none()
             if model_or_none is None:
-                raise ValueError(f"Todo with id {todo.id} not found")
+                raise TodoNotFoundException(todo_id=todo.id)
 
             model = model_or_none
             model.title = todo.title
