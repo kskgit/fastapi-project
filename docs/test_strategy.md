@@ -61,9 +61,9 @@
 # Repository
 
 ## ファイル名
-`test_{Repositoryファイル名}.py`とする
+`test_{Repositoryファイル名}_{メソッド名}.py`とする
 
-例）`sqlalchemy_todo_repository.py`→`test_sqlalchemy_todo_repository.py`
+例）`sqlalchemy_todo_repository.py/create`→`test_sqlalchemy_todo_repository_create.py`
 
 
 ## メソッド名
