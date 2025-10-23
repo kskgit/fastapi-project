@@ -33,3 +33,5 @@ pre-push:
       run: uv run lizard --CCN 5 app/ || echo "⚠️  Complexity warnings found (CCN ≥ 5)"
     lizard-complexity-critical-all:
       run: uv run lizard --CCN 10 app/
+    pytest-unit:
+      run: uv run pytest tests/unit
