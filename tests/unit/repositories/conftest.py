@@ -1,6 +1,7 @@
 """Repository unit test configuration and fixtures."""
 
 import pytest
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.infrastructure.database.models import Base
@@ -33,4 +34,22 @@ async def repo_db_session(in_memory_engine):
     )
 
     async with AsyncSessionLocal() as session:
+        yield session
+
+
+@pytest.fixture(scope="function")
+async def repo_db_session_sqlalchemy_error(in_memory_engine):
+    """Session fixture that forces SQLAlchemyError on flush for failure-path tests."""
+    AsyncSessionLocal = async_sessionmaker(
+        in_memory_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
+    async with AsyncSessionLocal() as session:
+
+        async def _raise_sqlalchemy_error(*args, **kwargs):
+            raise SQLAlchemyError("forced SQLAlchemyError for test")
+
+        session.flush = _raise_sqlalchemy_error  # type: ignore[assignment]
         yield session

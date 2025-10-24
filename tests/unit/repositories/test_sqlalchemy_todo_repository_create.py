@@ -2,7 +2,6 @@
 
 import pytest
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
 from app.domain.exceptions.system import DataOperationException
@@ -51,22 +50,17 @@ class TestSQLAlchemyTodoRepositoryCreate:
         assert model.priority == TodoPriority.high
 
     async def test_create_failure_raises_data_operation_exception(
-        self, repo_db_session, monkeypatch
+        self, repo_db_session_sqlalchemy_error
     ):
         """SQLAlchemyError を DataOperationException にラップすることを確認する。"""
         # Arrange
-        repository = SQLAlchemyTodoRepository(repo_db_session)
+        repository = SQLAlchemyTodoRepository(repo_db_session_sqlalchemy_error)
         todo = Todo.create(
             user_id=1,
             title="Bad Todo",
             description="Fails on flush",
             priority=TodoPriority.medium,
         )
-
-        async def _raise_sqlalchemy_error(*args, **kwargs):
-            raise SQLAlchemyError("flush failed")
-
-        monkeypatch.setattr(repo_db_session, "flush", _raise_sqlalchemy_error)
 
         # Act / Assert
         with pytest.raises(DataOperationException) as exc_info:

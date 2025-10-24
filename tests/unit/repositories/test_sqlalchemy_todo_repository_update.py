@@ -2,7 +2,6 @@
 
 import pytest
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
 
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
 from app.domain.exceptions.business import TodoNotFoundException
@@ -82,7 +81,7 @@ class TestSQLAlchemyTodoRepositoryUpdate:
         assert str(exc_info.value) == "Todo with id 999 not found"
 
     async def test_update_failure_raises_data_operation_exception(
-        self, repo_db_session, monkeypatch
+        self, repo_db_session, repo_db_session_sqlalchemy_error
     ):
         """SQLAlchemyError が DataOperationException にラップされることを確認する。"""
         # Arrange
@@ -95,12 +94,9 @@ class TestSQLAlchemyTodoRepositoryUpdate:
                 priority=TodoPriority.low,
             )
         )
+        await repo_db_session.commit()
 
-        async def _raise_sqlalchemy_error(*args, **kwargs):
-            raise SQLAlchemyError("flush failed")
-
-        monkeypatch.setattr(repo_db_session, "flush", _raise_sqlalchemy_error)
-
+        error_repository = SQLAlchemyTodoRepository(repo_db_session_sqlalchemy_error)
         updated = Todo(
             id=existing.id,
             user_id=existing.user_id,
@@ -112,7 +108,7 @@ class TestSQLAlchemyTodoRepositoryUpdate:
 
         # Act / Assert
         with pytest.raises(DataOperationException) as exc_info:
-            await repository.update(updated)
+            await error_repository.update(updated)
 
         assert exc_info.value.details["operation_context"] == (
             "SQLAlchemyTodoRepository.update"
