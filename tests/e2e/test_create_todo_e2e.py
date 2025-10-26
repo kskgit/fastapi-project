@@ -129,3 +129,33 @@ class TestCreateTodoE2E:
             # Clean up - Remove the override
             if get_create_todo_usecase in app.dependency_overrides:
                 del app.dependency_overrides[get_create_todo_usecase]
+
+    async def test_create_todo_failure_unexpected_exception(
+        self, test_client: AsyncClient
+    ) -> None:
+        """Test todo creation fails when database persistence error occurs."""
+        # Arrange
+        todo_data = {
+            "title": "Complete project documentation",
+            "description": "Write comprehensive documentation",
+        }
+
+        # Mock the CreateTodoUseCase to raise DataPersistenceException
+        mock_usecase = AsyncMock()
+        mock_usecase.execute.side_effect = Exception("unexpected_exception")
+
+        # Override the dependency
+        app.dependency_overrides[get_create_todo_usecase] = lambda: mock_usecase
+
+        try:
+            # Act
+            response = await test_client.post("/todos/", json=todo_data)
+
+            # Assert - Should return 500 Internal Server Error
+            assert response.status_code == 500
+            response_data = response.json()
+            assert "Internal Server Error" in response_data["detail"]
+        finally:
+            # Clean up - Remove the override
+            if get_create_todo_usecase in app.dependency_overrides:
+                del app.dependency_overrides[get_create_todo_usecase]
