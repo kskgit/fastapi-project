@@ -50,6 +50,25 @@ class TestCreateTodoE2E:
         assert get_data["title"] == todo_data["title"]
         assert get_data["id"] == todo_id
 
+    async def test_create_todo_validation_error_title_too_short(
+        self, test_client: AsyncClient, test_user: object
+    ) -> None:
+        """Validationエラー: タイトルがトリム後に3文字未満の場合は400を返す."""
+        # Arrange
+        todo_data = {
+            "title": "  ab ",
+        }
+
+        # Act
+        response = await test_client.post("/todos/", json=todo_data)
+
+        # Assert
+        assert response.status_code == 400
+        response_data = response.json()
+        assert response_data["detail"] == (
+            "Title must be at least 3 characters long after removing whitespace"
+        )
+
     async def test_create_todo_user_not_found(self, test_client: AsyncClient) -> None:
         """Test todo creation fails when user does not exist."""
         # Arrange
