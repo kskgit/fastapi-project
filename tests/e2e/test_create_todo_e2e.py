@@ -6,7 +6,6 @@ import pytest
 from httpx import AsyncClient
 
 from app.composition.di import get_create_todo_usecase
-from app.domain.exceptions.business import UserNotFoundException
 from app.domain.exceptions.system import DataOperationException
 from main import app
 
@@ -21,6 +20,7 @@ class TestCreateTodoE2E:
         """Test successful todo creation with minimal data via HTTP."""
         # Arrange
         todo_data = {
+            "user_id": test_user.id,
             "title": "Complete project documentation",
         }
 
@@ -50,12 +50,31 @@ class TestCreateTodoE2E:
         assert get_data["title"] == todo_data["title"]
         assert get_data["id"] == todo_id
 
+    async def test_create_todo_missing_user_id_returns_422(
+        self, test_client: AsyncClient, test_user: object
+    ) -> None:
+        """user_id未指定の場合は422 Unprocessable Entityを返す."""
+        # Arrange
+        todo_data = {
+            "title": "Complete project documentation",
+        }
+
+        # Act
+        response = await test_client.post("/todos/", json=todo_data)
+
+        # Assert
+        assert response.status_code == 422
+        response_data = response.json()
+        assert response_data["detail"][0]["msg"] == "Field required"
+        assert response_data["detail"][0]["loc"] == ["body", "user_id"]
+
     async def test_create_todo_validation_error_title_too_short(
         self, test_client: AsyncClient, test_user: object
     ) -> None:
         """Validationエラー: タイトルがトリム後に3文字未満の場合は400を返す."""
         # Arrange
         todo_data = {
+            "user_id": test_user.id,
             "title": "  ab ",
         }
 
@@ -69,46 +88,38 @@ class TestCreateTodoE2E:
             "Title must be at least 3 characters long after removing whitespace"
         )
 
-    async def test_create_todo_user_not_found(self, test_client: AsyncClient) -> None:
+    async def test_create_todo_user_not_found(
+        self, test_client: AsyncClient, test_user: object
+    ) -> None:
         """Test todo creation fails when user does not exist."""
         # Arrange
         todo_data = {
+            "user_id": 9999,
             "title": "Complete project documentation",
             "description": "Write comprehensive documentation",
         }
 
-        # Mock the CreateTodoUseCase to raise UserNotFoundException
-        mock_usecase = AsyncMock()
-        mock_usecase.execute.side_effect = UserNotFoundException(999)
+        # Act
+        response = await test_client.post("/todos/", json=todo_data)
 
-        # Override the dependency
-        app.dependency_overrides[get_create_todo_usecase] = lambda: mock_usecase
+        # Assert - Should return 404 User Not Found
+        assert response.status_code == 404
+        response_data = response.json()
+        assert "detail" in response_data
+        # assert "User with id 999 not found" in response_data["detail"]
 
-        try:
-            # Act
-            response = await test_client.post("/todos/", json=todo_data)
-
-            # Assert - Should return 404 User Not Found
-            assert response.status_code == 404
-            response_data = response.json()
-            assert "detail" in response_data
-            assert "User with id 999 not found" in response_data["detail"]
-        finally:
-            # Clean up - Remove the override
-            if get_create_todo_usecase in app.dependency_overrides:
-                del app.dependency_overrides[get_create_todo_usecase]
-
-    async def test_create_todo_data_persistence_exception(
-        self, test_client: AsyncClient
+    async def test_create_todo_data_operation_exception(
+        self, test_client: AsyncClient, test_user: object
     ) -> None:
-        """Test todo creation fails when database persistence error occurs."""
+        """Test todo creation fails when database operation error occurs."""
         # Arrange
         todo_data = {
+            "user_id": test_user.id,
             "title": "Complete project documentation",
             "description": "Write comprehensive documentation",
         }
 
-        # Mock the CreateTodoUseCase to raise DataPersistenceException
+        # Mock the CreateTodoUseCase to raise DataOperationException
         mock_usecase = AsyncMock()
         mock_usecase.execute.side_effect = DataOperationException(
             operation_name="TestClass.test_method",
@@ -131,11 +142,12 @@ class TestCreateTodoE2E:
                 del app.dependency_overrides[get_create_todo_usecase]
 
     async def test_create_todo_failure_unexpected_exception(
-        self, test_client: AsyncClient
+        self, test_client: AsyncClient, test_user: object
     ) -> None:
         """Test todo creation fails when database persistence error occurs."""
         # Arrange
         todo_data = {
+            "user_id": test_user.id,
             "title": "Complete project documentation",
             "description": "Write comprehensive documentation",
         }

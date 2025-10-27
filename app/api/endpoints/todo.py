@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi import status as http_status
 
 from app.api.dtos.todo_dto import (
-    TodoCreateDTO,
+    CreateTodoDTO,
     TodoResponseDTO,
     TodoUpdateDTO,
 )
@@ -49,12 +49,11 @@ async def get_todos(
     "/", response_model=TodoResponseDTO, status_code=http_status.HTTP_201_CREATED
 )
 async def create_todo(
-    todo_data: TodoCreateDTO,
+    todo_data: CreateTodoDTO,
     usecase: CreateTodoUseCase = Depends(get_create_todo_usecase),
 ) -> TodoResponseDTO:
     """Create a new todo."""
-    # TODO: Replace with actual user_id from authentication
-    user_id = 1
+    user_id = todo_data.user_id
 
     todo = await usecase.execute(
         title=todo_data.title,

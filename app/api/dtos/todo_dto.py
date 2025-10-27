@@ -7,9 +7,10 @@ from app.domain.entities.todo import TodoPriority, TodoStatus
 from app.domain.exceptions import ValidationException
 
 
-class TodoCreateDTO(BaseModel):
+class CreateTodoDTO(BaseModel):
     """DTO for creating a new todo via API."""
 
+    user_id: int = Field(..., description="Todo owner user ID")
     title: str = Field(..., min_length=3, max_length=100, description="Todo title")
     description: str | None = Field(
         None, max_length=500, description="Todo description"
@@ -31,6 +32,18 @@ class TodoCreateDTO(BaseModel):
             )
 
         return stripped
+
+    @field_validator("user_id")
+    @classmethod
+    def validate_user_id(cls, v: int) -> int:
+        """Validate user_id is a positive integer."""
+        if v is None:
+            raise ValidationException("User ID is required")
+
+        if v <= 0:
+            raise ValidationException("User ID must be a positive integer")
+
+        return v
 
 
 class TodoUpdateDTO(BaseModel):
