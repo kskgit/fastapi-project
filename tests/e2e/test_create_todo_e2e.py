@@ -6,6 +6,7 @@ import pytest
 from httpx import AsyncClient
 
 from app.composition.di import get_create_todo_usecase
+from app.domain.entities.user import User
 from app.domain.exceptions.system import DataOperationException
 from main import app
 
@@ -15,7 +16,7 @@ class TestCreateTodoE2E:
     """E2E tests for todo creation via HTTP API."""
 
     async def test_create_todo_minimal_data_success(
-        self, test_client: AsyncClient, test_user: object
+        self, test_client: AsyncClient, test_user: User
     ) -> None:
         """Test successful todo creation with minimal data via HTTP."""
         # Arrange
@@ -51,7 +52,7 @@ class TestCreateTodoE2E:
         assert get_data["id"] == todo_id
 
     async def test_create_todo_missing_user_id_returns_422(
-        self, test_client: AsyncClient, test_user: object
+        self, test_client: AsyncClient, test_user: User
     ) -> None:
         """user_id未指定の場合は422 Unprocessable Entityを返す."""
         # Arrange
@@ -69,7 +70,7 @@ class TestCreateTodoE2E:
         assert response_data["detail"][0]["loc"] == ["body", "user_id"]
 
     async def test_create_todo_validation_error_title_too_short(
-        self, test_client: AsyncClient, test_user: object
+        self, test_client: AsyncClient, test_user: User
     ) -> None:
         """Validationエラー: タイトルがトリム後に3文字未満の場合は400を返す."""
         # Arrange
@@ -89,7 +90,7 @@ class TestCreateTodoE2E:
         )
 
     async def test_create_todo_user_not_found(
-        self, test_client: AsyncClient, test_user: object
+        self, test_client: AsyncClient, test_user: User
     ) -> None:
         """Test todo creation fails when user does not exist."""
         # Arrange
@@ -109,7 +110,7 @@ class TestCreateTodoE2E:
         # assert "User with id 999 not found" in response_data["detail"]
 
     async def test_create_todo_data_operation_exception(
-        self, test_client: AsyncClient, test_user: object
+        self, test_client: AsyncClient, test_user: User
     ) -> None:
         """Test todo creation fails when database operation error occurs."""
         # Arrange
@@ -142,7 +143,7 @@ class TestCreateTodoE2E:
                 del app.dependency_overrides[get_create_todo_usecase]
 
     async def test_create_todo_failure_unexpected_exception(
-        self, test_client: AsyncClient, test_user: object
+        self, test_client: AsyncClient, test_user: User
     ) -> None:
         """Test todo creation fails when database persistence error occurs."""
         # Arrange
