@@ -4,10 +4,11 @@ from unittest.mock import AsyncMock
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import text
 
 from app.composition.di import get_create_todo_usecase
 from app.domain.entities.user import User
-from app.domain.exceptions.system import DataOperationException
+from app.infrastructure.database.connection import get_db
 from main import app
 
 
@@ -112,7 +113,7 @@ class TestCreateTodoE2E:
     async def test_create_todo_data_operation_exception(
         self, test_client: AsyncClient, test_user: User
     ) -> None:
-        """Test todo creation fails when database operation error occurs."""
+        """DB操作エラーを発生させて500応答となることを確認する。"""
         # Arrange
         todo_data = {
             "user_id": test_user.id,
@@ -120,27 +121,25 @@ class TestCreateTodoE2E:
             "description": "Write comprehensive documentation",
         }
 
-        # Mock the CreateTodoUseCase to raise DataOperationException
-        mock_usecase = AsyncMock()
-        mock_usecase.execute.side_effect = DataOperationException(
-            operation_name="TestClass.test_method",
-        )
+        # Drop the todos table to force SQLAlchemy to raise an error during INSERT.
+        get_db_override = app.dependency_overrides.get(get_db)
+        if get_db_override is None:
+            pytest.fail("Database dependency override is not configured for tests.")
 
-        # Override the dependency
-        app.dependency_overrides[get_create_todo_usecase] = lambda: mock_usecase
+        test_db_session = await get_db_override()
+        engine = test_db_session.get_bind()
+        assert engine is not None, "AsyncSession must be bound to an engine."
 
-        try:
-            # Act
-            response = await test_client.post("/todos/", json=todo_data)
+        await test_db_session.execute(text("DROP TABLE todos"))
+        await test_db_session.commit()
 
-            # Assert - Should return 500 Internal Server Error
-            assert response.status_code == 500
-            response_data = response.json()
-            assert "Failed to execute data operation" in response_data["detail"]
-        finally:
-            # Clean up - Remove the override
-            if get_create_todo_usecase in app.dependency_overrides:
-                del app.dependency_overrides[get_create_todo_usecase]
+        # Act
+        response = await test_client.post("/todos/", json=todo_data)
+
+        # Assert - Should return 500 Internal Server Error
+        assert response.status_code == 500
+        response_data = response.json()
+        assert "Failed to execute data operation" in response_data["detail"]
 
     async def test_create_todo_failure_unexpected_exception(
         self, test_client: AsyncClient, test_user: User
@@ -152,7 +151,7 @@ class TestCreateTodoE2E:
             "title": "Complete project documentation",
             "description": "Write comprehensive documentation",
         }
-
+        # TODO usecaseではなく、dbsessionをmockする
         # Mock the CreateTodoUseCase to raise DataPersistenceException
         mock_usecase = AsyncMock()
         mock_usecase.execute.side_effect = Exception("unexpected_exception")
