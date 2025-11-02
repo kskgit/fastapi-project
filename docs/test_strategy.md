@@ -3,9 +3,13 @@
 このプロジェクトでは、テストを読みやすく、意図が伝わりやすい形で保守するために以下の指針を採用します。
 
 # テストを書くタイミング
-- UseCase、ドメインサービス、例外ハンドラなど、ビジネスロジックが分岐する箇所にはユニットテストを用意する。
-- テスト名は意図が伝わる形（例: `test_create_user_failure_username_already_exists`）。
-- 複数レイヤーを跨ぐ動作を確認したい場合は、統合テストを追加する。
+- パブリックメソッドに対して全てテストを記述する
+
+# 命名規約
+- 特に失敗時のテストにおいては接続後を利用しない（by,with,when,doe_toなどばらつきが出ることを防ぐため）
+
+# ファイル作成単位
+- コンテキストを最小限にするために、基本的にはテスト対象に対して1テストファイルとする
 
 # Arrange-Act-Assert (AAA) パターン
 - すべてのテストを Arrange（準備）→ Act（実行）→ Assert（検証）の3段階で記述する。
@@ -27,8 +31,11 @@
 
 # Usecase
 
+## ファイル作成単位
+1 usecaseファイルに対して1ファイル
+
 ## ファイル名
-`test_{ユースケース名}.py`とする
+`test_{Usecaseのファイル名}.py`とする
 
 例）`create_todo_usecase.py`→`test_create_todo_usecase.py`
 
@@ -59,9 +66,11 @@
 
 
 # Repository
+## ファイル作成単位
+1 Repositoryメソッドに対して1ファイル
 
 ## ファイル名
-`test_{Repositoryファイル名}_{メソッド名}.py`とする
+`test_{Repositoryのファイル名}_{メソッド名}.py`とする
 
 例）`sqlalchemy_todo_repository.py/create`→`test_sqlalchemy_todo_repository_create.py`
 
@@ -96,3 +105,25 @@
 - DB接続エラーやユニーク制約違反などを想定し、`DataOperationException` にラップされるか確認
 -  `details["operation_context"]` が対象メソッドを指すことを確認する。
 ※ Repository レイヤではビジネスロジック起因のエラーは原則発生させない
+
+# E2Eテスト
+## ファイル作成単位
+1 エンドポイントに対して1ファイル
+
+## ファイル名
+`test_{endpointsのファイル名}_{endpointsのメソッド名}_{条件（任意）}.py`とする
+
+例）`todo.py/get_todo`→`test_todo_get_todo.py`
+
+## テスト観点と主要パターン
+- エンドポイントが返却するレスポンスの種別（例: 200, 4xx, 5xx）を必ず1ケースずつテストする。
+- `unexpected_exception` シナリオを除き、モックは利用しない。
+- レスポンスのステータスコードと、レスポンスのデータを確認する
+  - 異常系の場合`detail`の中身を確認すると良い
+
+## メソッド名
+`test_{endpointsのメソッド名}_{success or failure}_{理由（任意）}.py`とする
+
+例）
+- `test_create_todo_success`
+- `test_create_todo_failer_missing_user_id`

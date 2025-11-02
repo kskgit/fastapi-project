@@ -14,12 +14,14 @@ from app.infrastructure.repositories.sqlalchemy_todo_repository import (
 )
 from main import app
 
+TODOS_ENDPOINT = "/todos/"
+
 
 @pytest.mark.asyncio
 class TestCreateTodoE2E:
     """E2E tests for todo creation via HTTP API."""
 
-    async def test_create_todo_minimal_data_success(
+    async def test_create_todo_success_minimal_data(
         self, test_client: AsyncClient, test_user: User
     ) -> None:
         """Test successful todo creation with minimal data via HTTP."""
@@ -30,7 +32,7 @@ class TestCreateTodoE2E:
         }
 
         # Act
-        response = await test_client.post("/todos/", json=todo_data)
+        response = await test_client.post(TODOS_ENDPOINT, json=todo_data)
 
         # Assert - HTTP response
         assert response.status_code == 201
@@ -48,14 +50,14 @@ class TestCreateTodoE2E:
 
         # Assert - Verify todo was actually created in database via GET
         todo_id = response_data["id"]
-        get_response = await test_client.get(f"/todos/{todo_id}")
+        get_response = await test_client.get(f"{TODOS_ENDPOINT}{todo_id}")
         assert get_response.status_code == 200
 
         get_data = get_response.json()
         assert get_data["title"] == todo_data["title"]
         assert get_data["id"] == todo_id
 
-    async def test_create_todo_missing_user_id_returns_422(
+    async def test_create_todo_failure_missing_user_id(
         self, test_client: AsyncClient, test_user: User
     ) -> None:
         """user_id未指定の場合は422 Unprocessable Entityを返す."""
@@ -65,7 +67,7 @@ class TestCreateTodoE2E:
         }
 
         # Act
-        response = await test_client.post("/todos/", json=todo_data)
+        response = await test_client.post(TODOS_ENDPOINT, json=todo_data)
 
         # Assert
         assert response.status_code == 422
@@ -73,7 +75,7 @@ class TestCreateTodoE2E:
         assert response_data["detail"][0]["msg"] == "Field required"
         assert response_data["detail"][0]["loc"] == ["body", "user_id"]
 
-    async def test_create_todo_validation_error_title_too_short(
+    async def test_create_todo_failure_title_too_short(
         self, test_client: AsyncClient, test_user: User
     ) -> None:
         """Validationエラー: タイトルがトリム後に3文字未満の場合は400を返す."""
@@ -84,7 +86,7 @@ class TestCreateTodoE2E:
         }
 
         # Act
-        response = await test_client.post("/todos/", json=todo_data)
+        response = await test_client.post(TODOS_ENDPOINT, json=todo_data)
 
         # Assert
         assert response.status_code == 400
@@ -93,7 +95,7 @@ class TestCreateTodoE2E:
             "Title must be at least 3 characters long after removing whitespace"
         )
 
-    async def test_create_todo_user_not_found(
+    async def test_create_todo_failure_user_not_found(
         self, test_client: AsyncClient, test_user: User
     ) -> None:
         """Test todo creation fails when user does not exist."""
@@ -105,15 +107,14 @@ class TestCreateTodoE2E:
         }
 
         # Act
-        response = await test_client.post("/todos/", json=todo_data)
+        response = await test_client.post(TODOS_ENDPOINT, json=todo_data)
 
         # Assert - Should return 404 User Not Found
         assert response.status_code == 404
         response_data = response.json()
-        assert "detail" in response_data
-        # assert "User with id 999 not found" in response_data["detail"]
+        assert response_data["detail"] == "User with id 9999 not found"
 
-    async def test_create_todo_data_operation_exception(
+    async def test_create_todo_failure_data_operation_exception(
         self, test_client: AsyncClient, test_user: User
     ) -> None:
         """DB操作エラーを発生させて500応答となることを確認する。"""
@@ -137,7 +138,7 @@ class TestCreateTodoE2E:
         await test_db_session.commit()
 
         # Act
-        response = await test_client.post("/todos/", json=todo_data)
+        response = await test_client.post(TODOS_ENDPOINT, json=todo_data)
 
         # Assert - Should return 500 Internal Server Error
         assert response.status_code == 500
@@ -163,7 +164,7 @@ class TestCreateTodoE2E:
 
         try:
             # Act
-            response = await test_client.post("/todos/", json=todo_data)
+            response = await test_client.post(TODOS_ENDPOINT, json=todo_data)
 
             # Assert - Should return 500 Internal Server Error
             assert response.status_code == 500

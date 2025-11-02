@@ -130,7 +130,7 @@ async def test_unhandled_exception_handler_returns_internal_server_error(
     assert response.status_code == 500
 
     # INTERNAL_SERVER_ERROR固定で返却されること
-    assert response.json() == {"detail": "INTERNAL_SERVER_ERROR"}
+    assert response.json() == {"detail": "Internal Server Error"}
 
     assert any(
         record.levelname == "CRITICAL"
