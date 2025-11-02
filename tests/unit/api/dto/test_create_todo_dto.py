@@ -1,5 +1,7 @@
 """Unit tests for TodoCreateDTO user_id validation."""
 
+from typing import Any
+
 import pytest
 from pydantic import ValidationError
 
@@ -10,7 +12,7 @@ from app.domain.exceptions import ValidationException
 def test_todo_create_dto_user_id_required() -> None:
     """user_idが必須項目であることを検証する."""
     # Arrange
-    payload = {
+    payload: dict[str, Any] = {
         "title": "Valid todo title",
     }
 
@@ -26,7 +28,7 @@ def test_todo_create_dto_user_id_required() -> None:
 def test_todo_create_dto_user_id_must_be_positive() -> None:
     """user_idは正の整数でなければならない."""
     # Arrange
-    payload = {
+    payload: dict[str, Any] = {
         "user_id": 0,
         "title": "Valid todo title",
     }
