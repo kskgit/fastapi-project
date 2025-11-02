@@ -6,9 +6,12 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy import text
 
-from app.composition.di import get_create_todo_usecase
+from app.composition.di import get_todo_repository
 from app.domain.entities.user import User
 from app.infrastructure.database.connection import get_db
+from app.infrastructure.repositories.sqlalchemy_todo_repository import (
+    SQLAlchemyTodoRepository,
+)
 from main import app
 
 
@@ -127,8 +130,8 @@ class TestCreateTodoE2E:
             pytest.fail("Database dependency override is not configured for tests.")
 
         test_db_session = await get_db_override()
-        engine = test_db_session.get_bind()
-        assert engine is not None, "AsyncSession must be bound to an engine."
+        if test_db_session.get_bind() is None:
+            pytest.fail("AsyncSession must be bound to an engine.")
 
         await test_db_session.execute(text("DROP TABLE todos"))
         await test_db_session.commit()
@@ -151,13 +154,12 @@ class TestCreateTodoE2E:
             "title": "Complete project documentation",
             "description": "Write comprehensive documentation",
         }
-        # TODO usecaseではなく、dbsessionをmockする
-        # Mock the CreateTodoUseCase to raise DataPersistenceException
-        mock_usecase = AsyncMock()
-        mock_usecase.execute.side_effect = Exception("unexpected_exception")
+        # Repository をモックして予期せぬ例外を送出させる
+        todo_repository_mock = AsyncMock(spec=SQLAlchemyTodoRepository)
+        todo_repository_mock.create.side_effect = Exception("unexpected_exception")
 
-        # Override the dependency
-        app.dependency_overrides[get_create_todo_usecase] = lambda: mock_usecase
+        # Override the repository dependency only
+        app.dependency_overrides[get_todo_repository] = lambda: todo_repository_mock
 
         try:
             # Act
@@ -167,7 +169,8 @@ class TestCreateTodoE2E:
             assert response.status_code == 500
             response_data = response.json()
             assert "Internal Server Error" in response_data["detail"]
+            todo_repository_mock.create.assert_awaited_once()
         finally:
             # Clean up - Remove the override
-            if get_create_todo_usecase in app.dependency_overrides:
-                del app.dependency_overrides[get_create_todo_usecase]
+            if get_todo_repository in app.dependency_overrides:
+                del app.dependency_overrides[get_todo_repository]
