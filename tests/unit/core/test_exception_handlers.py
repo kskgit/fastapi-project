@@ -24,9 +24,10 @@ class _SampleBusinessException(BusinessRuleException):
         return ExceptionStatusCode.VALIDATION_ERR
 
 
-async def test_business_exception_handler_returns_warning_with_expected_response(
+async def test_register_exception_handlers_business_exception_returns_warning(
     caplog,
 ) -> None:
+    # Arrange
     app = FastAPI()
     register_exception_handlers(app)
 
@@ -36,12 +37,14 @@ async def test_business_exception_handler_returns_warning_with_expected_response
 
     caplog.set_level("WARNING")
 
+    # Act
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://testserver",
     ) as client:
         response = await client.get("/boom")
 
+    # Assert
     # 例外クラスで設定したステータスコードでレスポンスされること
     assert response.status_code == ExceptionStatusCode.VALIDATION_ERR.value
 
@@ -69,9 +72,10 @@ class _SampleSystemException(SystemException):
         return ExceptionStatusCode.SERVICE_UNAVAILABLE
 
 
-async def test_system_exception_handler_returns_warning_with_expected_response(
+async def test_register_exception_handlers_system_exception_returns_error(
     caplog,
 ) -> None:
+    # Arrange
     app = FastAPI()
     register_exception_handlers(app)
 
@@ -81,12 +85,14 @@ async def test_system_exception_handler_returns_warning_with_expected_response(
 
     caplog.set_level("ERROR")
 
+    # Act
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://testserver",
     ) as client:
         response = await client.get("/boom")
 
+    # Assert
     # 例外クラスで設定したステータスコードでレスポンスされること
     assert response.status_code == ExceptionStatusCode.SERVICE_UNAVAILABLE.value
 
@@ -105,12 +111,13 @@ async def test_system_exception_handler_returns_warning_with_expected_response(
     assert "Traceback (most recent call last):" in caplog.text
 
 
-async def test_unhandled_exception_handler_returns_internal_server_error(
+async def test_register_exception_handlers_unhandled_exception_returns_internal_server_error(  # noqa: E501
     caplog,
 ) -> None:
     """unhandled_exception は通常 raise_app_exceptions=True だが、
     レスポンスの形を確認するため False にして検証する。
     """
+    # Arrange
     app = FastAPI()
     register_exception_handlers(app)
 
@@ -120,12 +127,14 @@ async def test_unhandled_exception_handler_returns_internal_server_error(
 
     caplog.set_level("CRITICAL")
 
+    # Act
     async with AsyncClient(
         transport=ASGITransport(app=app, raise_app_exceptions=False),
         base_url="http://testserver",
     ) as client:
         response = await client.get("/boom")
 
+    # Assert
     # 500固定で返却されること
     assert response.status_code == 500
 
@@ -142,12 +151,13 @@ async def test_unhandled_exception_handler_returns_internal_server_error(
     assert "Traceback (most recent call last):" in caplog.text
 
 
-async def test_unhandled_exception_handler_handles_with_raise_app_exceptions_true(
+async def test_register_exception_handlers_unhandled_exception_reraises_with_raise_app_exceptions_true(  # noqa: E501
     caplog,
 ) -> None:
     """unhandled_exception は通常 raise_app_exceptions=Trueのため、
     レスポンス後に例外が再throwされても例外が意図した通り出力されているか検証する。
     """
+    # Arrange
     app = FastAPI()
     register_exception_handlers(app)
 
@@ -155,6 +165,7 @@ async def test_unhandled_exception_handler_handles_with_raise_app_exceptions_tru
     async def boom() -> None:
         raise RuntimeError("Unhandled error")
 
+    # Act / Assert
     async with AsyncClient(
         transport=ASGITransport(app=app, raise_app_exceptions=True),
         base_url="http://testserver",
@@ -162,5 +173,6 @@ async def test_unhandled_exception_handler_handles_with_raise_app_exceptions_tru
         with pytest.raises(RuntimeError, match="Unhandled error"):
             await client.get("/boom")
 
+    # Assert - logging side effects
     assert "Exception occurred: Unhandled error" in caplog.text
     assert "Traceback (most recent call last):" in caplog.text
