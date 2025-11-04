@@ -7,6 +7,20 @@ from app.domain.entities.todo import TodoPriority, TodoStatus
 from app.domain.exceptions import ValidationException
 
 
+def _normalize_title(value: str, *, empty_error: str) -> str:
+    """Common title normalization shared across create/update DTOs."""
+    if not value:
+        raise ValidationException(empty_error)
+
+    stripped = value.strip()
+    if len(stripped) < 3:
+        raise ValidationException(
+            "Title must be at least 3 characters long after removing whitespace"
+        )
+
+    return stripped
+
+
 class CreateTodoDTO(BaseModel):
     """DTO for creating a new todo via API."""
 
@@ -22,16 +36,7 @@ class CreateTodoDTO(BaseModel):
     @classmethod
     def validate_title(cls, v: str) -> str:
         """Validate title - must not be None and at least 3 characters after strip."""
-        if not v:
-            raise ValidationException("Title cannot be None or empty")
-
-        stripped = v.strip()
-        if len(stripped) < 3:
-            raise ValidationException(
-                "Title must be at least 3 characters long after removing whitespace"
-            )
-
-        return stripped
+        return _normalize_title(v, empty_error="Title cannot be None or empty")
 
     @field_validator("user_id")
     @classmethod
@@ -65,17 +70,7 @@ class TodoUpdateDTO(BaseModel):
         """Validate title if provided - must be at least 3 characters after strip."""
         if v is None:
             return None
-
-        if not v:
-            raise ValidationException("Title cannot be empty")
-
-        stripped = v.strip()
-        if len(stripped) < 3:
-            raise ValidationException(
-                "Title must be at least 3 characters long after removing whitespace"
-            )
-
-        return stripped
+        return _normalize_title(v, empty_error="Title cannot be empty")
 
 
 class TodoResponseDTO(BaseModel):
