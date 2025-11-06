@@ -6,11 +6,6 @@ This module contains all User-related API endpoints.
 from fastapi import APIRouter, Depends, Query
 from fastapi import status as http_status
 
-from app.api.dtos.user_dto import (
-    UserCreateDTO,
-    UserResponseDTO,
-    UserUpdateDTO,
-)
 from app.composition.di import (
     get_create_user_usecase,
     get_delete_user_usecase,
@@ -18,6 +13,7 @@ from app.composition.di import (
     get_get_users_usecase,
     get_update_user_usecase,
 )
+from app.controller.dto.user_dto import UserCreateDTO, UserResponseDTO, UserUpdateDTO
 from app.usecases.user.create_user_usecase import CreateUserUseCase
 from app.usecases.user.delete_user_usecase import DeleteUserUseCase
 from app.usecases.user.get_user_by_id_usecase import GetUserByIdUseCase

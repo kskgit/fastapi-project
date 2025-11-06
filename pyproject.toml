@@ -100,7 +100,7 @@ include_external_packages = true
 name = "Clean Architecture Layers"
 type = "layers"
 layers = [
-    "app.api",
+    "app.controller",
     "app.composition",  # Composition Root layer (can access all)
     "app.usecases", 
     "app.infrastructure",
@@ -121,7 +121,7 @@ forbidden_modules = [
     "psycopg2", 
     "httpx",
     "requests",
-    "app.api",
+    "app.controller",
     "app.usecases", 
     "app.infrastructure",
 ]
@@ -133,7 +133,7 @@ type = "forbidden"
 source_modules = ["app.infrastructure"]
 forbidden_modules = [
     "fastapi",               # No web framework knowledge
-    "app.api",         # No upward dependencies
+    "app.controller",         # No upward dependencies
     "app.usecases",    # No upward dependencies
 ]
 
@@ -149,7 +149,7 @@ forbidden_modules = [
     "asyncpg", 
     "psycopg2",
     "app.infrastructure",  # Use repository interfaces only
-    "app.api",            # No upward dependencies
+    "app.controller",            # No upward dependencies
     "app.composition",    # No upward dependencies
 ]
 
@@ -159,5 +159,5 @@ name = "Composition Root Layer Restrictions"
 type = "forbidden"
 source_modules = ["app.composition"]
 forbidden_modules = [
-    "app.api",            # No upward dependencies to API layer
+    "app.controller",            # No upward dependencies to API layer
 ]

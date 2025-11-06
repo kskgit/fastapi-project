@@ -1,15 +1,13 @@
 from fastapi import FastAPI
 
-from app.api.endpoints import todo as todo_routes
-from app.api.endpoints import user as user_routes
+from app.controller import todo_controller, user_controller
 from app.core.middleware.exception_handlers import register_exception_handlers
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 
 register_exception_handlers(app)
-
-app.include_router(todo_routes.router)
-app.include_router(user_routes.router)
+app.include_router(todo_controller.router)
+app.include_router(user_controller.router)
 
 
 @app.get("/")

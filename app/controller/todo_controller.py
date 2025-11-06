@@ -6,11 +6,6 @@ This module contains all Todo-related API endpoints.
 from fastapi import APIRouter, Depends, Query
 from fastapi import status as http_status
 
-from app.api.dtos.todo_dto import (
-    CreateTodoDTO,
-    TodoResponseDTO,
-    TodoUpdateDTO,
-)
 from app.composition.di import (
     get_create_todo_usecase,
     get_delete_todo_usecase,
@@ -18,6 +13,7 @@ from app.composition.di import (
     get_get_todos_usecase,
     get_update_todo_usecase,
 )
+from app.controller.dto.todo_dto import CreateTodoDTO, TodoResponseDTO, TodoUpdateDTO
 from app.domain.entities.todo import TodoPriority, TodoStatus
 from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
 from app.usecases.todo.delete_todo_usecase import DeleteTodoUseCase

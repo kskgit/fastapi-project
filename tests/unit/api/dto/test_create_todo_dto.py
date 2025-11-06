@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from app.api.dtos.todo_dto import CreateTodoDTO
+from app.controller.dto.todo_dto import CreateTodoDTO
 from app.domain.exceptions import ValidationException
 
 
