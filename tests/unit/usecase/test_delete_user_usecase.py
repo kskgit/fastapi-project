@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from app.domain.entities.todo import Todo
 from app.domain.entities.user import User
+from app.domain.usecases.user.delete_user_usecase import DeleteUserUseCase
 from app.infrastructure.database.models import Base
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
@@ -15,7 +16,6 @@ from app.infrastructure.repositories.sqlalchemy_user_repository import (
 from app.infrastructure.services.sqlalchemy_transaction_manager import (
     SQLAlchemyTransactionManager,
 )
-from app.usecases.user.delete_user_usecase import DeleteUserUseCase
 
 pytest.importorskip("aiosqlite")
 pytestmark = pytest.mark.anyio("asyncio")

@@ -15,11 +15,11 @@ from app.composition.di import (
 )
 from app.controller.dto.todo_dto import CreateTodoDTO, TodoResponseDTO, TodoUpdateDTO
 from app.domain.entities.todo import TodoPriority, TodoStatus
-from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
-from app.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
-from app.usecases.todo.get_todo_by_id_usecase import GetTodoByIdUseCase
-from app.usecases.todo.get_todos_usecase import GetTodosUseCase
-from app.usecases.todo.update_todo_usecase import UpdateTodoUseCase
+from app.domain.usecases.todo.create_todo_usecase import CreateTodoUseCase
+from app.domain.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
+from app.domain.usecases.todo.get_todo_by_id_usecase import GetTodoByIdUseCase
+from app.domain.usecases.todo.get_todos_usecase import GetTodosUseCase
+from app.domain.usecases.todo.update_todo_usecase import UpdateTodoUseCase
 
 router = APIRouter(prefix="/todos", tags=["todos"])
 

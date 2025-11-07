@@ -10,7 +10,7 @@ from app.domain.exceptions.business import UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.user_domain_service import UserDomainService
-from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
+from app.domain.usecases.todo.create_todo_usecase import CreateTodoUseCase
 
 
 async def test_create_todo_success(mock_transaction_manager: Mock) -> None:

@@ -102,7 +102,6 @@ type = "layers"
 layers = [
     "app.controller",
     "app.composition",  # Composition Root layer (can access all)
-    "app.usecases", 
     "app.infrastructure",
     "app.domain"
 ]
@@ -122,7 +121,6 @@ forbidden_modules = [
     "httpx",
     "requests",
     "app.controller",
-    "app.usecases", 
     "app.infrastructure",
 ]
 
@@ -134,24 +132,8 @@ source_modules = ["app.infrastructure"]
 forbidden_modules = [
     "fastapi",               # No web framework knowledge
     "app.controller",         # No upward dependencies
-    "app.usecases",    # No upward dependencies
 ]
 
-# UseCases layer restrictions - strictest layer for business logic
-[[tool.importlinter.contracts]]
-name = "UseCases Layer Restrictions"
-type = "forbidden"
-source_modules = ["app.usecases"]
-forbidden_modules = [
-    "fastapi",                  # Pure business logic - no web framework
-    "sqlalchemy",               # Use repository interfaces only
-    "alembic",
-    "asyncpg", 
-    "psycopg2",
-    "app.infrastructure",  # Use repository interfaces only
-    "app.controller",            # No upward dependencies
-    "app.composition",    # No upward dependencies
-]
 
 # Composition Root layer restrictions - can import all but no upward dependencies  
 [[tool.importlinter.contracts]]

@@ -7,7 +7,7 @@ import pytest
 from app.domain.entities.todo import Todo
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
-from app.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
+from app.domain.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
 
 pytestmark = pytest.mark.anyio("asyncio")
 

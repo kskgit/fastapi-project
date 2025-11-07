@@ -10,6 +10,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.user_domain_service import UserDomainService
+from app.domain.usecases.todo.create_todo_usecase import CreateTodoUseCase
+from app.domain.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
+from app.domain.usecases.todo.get_todo_by_id_usecase import GetTodoByIdUseCase
+from app.domain.usecases.todo.get_todos_usecase import GetTodosUseCase
+from app.domain.usecases.todo.update_todo_usecase import UpdateTodoUseCase
+from app.domain.usecases.user.create_user_usecase import CreateUserUseCase
+from app.domain.usecases.user.delete_user_usecase import DeleteUserUseCase
+from app.domain.usecases.user.get_user_by_id_usecase import GetUserByIdUseCase
+from app.domain.usecases.user.get_users_usecase import GetUsersUseCase
+from app.domain.usecases.user.update_user_usecase import UpdateUserUseCase
 from app.infrastructure.database.connection import get_db
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
@@ -20,16 +30,6 @@ from app.infrastructure.repositories.sqlalchemy_user_repository import (
 from app.infrastructure.services.sqlalchemy_transaction_manager import (
     SQLAlchemyTransactionManager,
 )
-from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
-from app.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
-from app.usecases.todo.get_todo_by_id_usecase import GetTodoByIdUseCase
-from app.usecases.todo.get_todos_usecase import GetTodosUseCase
-from app.usecases.todo.update_todo_usecase import UpdateTodoUseCase
-from app.usecases.user.create_user_usecase import CreateUserUseCase
-from app.usecases.user.delete_user_usecase import DeleteUserUseCase
-from app.usecases.user.get_user_by_id_usecase import GetUserByIdUseCase
-from app.usecases.user.get_users_usecase import GetUsersUseCase
-from app.usecases.user.update_user_usecase import UpdateUserUseCase
 
 # =============================================================================
 # Repository Factory Functions

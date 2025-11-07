@@ -8,7 +8,7 @@ from app.domain.entities.user import User
 from app.domain.exceptions import ConnectionException
 from app.domain.exceptions.business import UniqueConstraintException
 from app.domain.repositories.user_repository import UserRepository
-from app.usecases.user.create_user_usecase import CreateUserUseCase
+from app.domain.usecases.user.create_user_usecase import CreateUserUseCase
 
 pytestmark = pytest.mark.anyio("asyncio")
 
