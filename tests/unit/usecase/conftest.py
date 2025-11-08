@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from app.domain.services.transaction_manager import TransactionManager
+from app.core.transaction_manager import TransactionManager
 
 
 class _AsyncNoopTransactionContext:

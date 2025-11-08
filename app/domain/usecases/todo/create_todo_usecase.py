@@ -1,9 +1,9 @@
 from datetime import datetime
 
+from app.core.transaction_manager import TransactionManager
 from app.domain.entities.todo import Todo, TodoPriority
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.transaction_manager import TransactionManager
 from app.domain.services.user_domain_service import UserDomainService
 
 

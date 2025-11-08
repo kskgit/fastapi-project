@@ -6,7 +6,7 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.services.transaction_manager import TransactionManager
+from app.core.transaction_manager import TransactionManager
 
 
 class SQLAlchemyTransactionManager(TransactionManager):
