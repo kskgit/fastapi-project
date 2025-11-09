@@ -1,3 +1,27 @@
+# データの流れ及び各レイヤの役割
+```mermaid
+graph TD
+    API["API / DTO 層<br/>・入力スキーマの保証<br/>・フォーマット正規化<br/>・早期 4xx の返却"]
+    UC["アプリケーション（ユースケース）層<br/>・ビジネスフロー制御<br/>・他コンポーネント協調<br/>・ドメイン例外への変換"]
+    DOMAIN["ドメインモデル層<br/>・不変条件の保持<br/>・状態遷移時の検証<br/>・エンティティ固有ルール"]
+    INFRA["インフラ層<br/>・DB 制約による最終防衛<br/>・ドライバ例外の握り替え<br/>・永続化の実装"]
+
+    API --> UC --> DOMAIN
+    INFRA --> DOMAIN
+```
+
+# 依存関係の向き
+```mermaid
+graph LR
+    subgraph Allowed Dependencies
+        direction LR
+        API2["API / DTO"] --> UC2["UseCase"]
+        UC2 --> DOMAIN2["Domain"]
+        INFRA2["Infrastructure"] --> DOMAIN2
+    end
+```
+
+
 # Domain VS Domain Service
 1. エンティティ単体で完結 > エンティティ。 不変条件や状態遷移ロジックは極力エンティティ内で閉じる。
 1. 複数エンティティ／リポジトリが絡む > ドメインサービス。 永続化や他アグリゲートへの問い合わせが前提のルールはサービスで吸収。
@@ -49,3 +73,5 @@ FastAPI エンドポイントからドメインまでの層構造（API → DTO 
 - インフラ層のリポジトリは SQLAlchemy を介してデータベースにアクセスする。ドメイン層へドライバ依存の例外を漏らさないため、SQLAlchemy が投げる `SQLAlchemyError`（接続エラー、制約違反、トランザクション失敗など）をキャッチし、`DataOperationException` などのシステム系カスタム例外に置き換える。
 - 例外へは `operation_context` を必ず渡し、どの操作（例: `todo_repository.create`）で失敗したのかを記録する。グローバル例外ハンドラがこの情報をログに出力し、トラブルシュートしやすくなる。
 - `SQLAlchemyError` で拾えない問題（プロセス外のネットワーク断など）は上位へ到達するが、上記方針により DB レイヤ由来の一般的な障害は一貫してシステム例外として扱える。
+
+各レイヤ毎の責務やどこに依存すべきかをガイドに起こす
