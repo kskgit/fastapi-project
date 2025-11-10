@@ -31,8 +31,6 @@
 
 # Usecase
 
-# Usecase
-
 ## ファイル作成単位
 1 usecaseファイルに対して1ファイル
 
