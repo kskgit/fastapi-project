@@ -29,6 +29,29 @@
 - モック化する際は、`AsyncMock` もしくは `return_value` に await 可能なオブジェクトを設定する。
 - 呼び出し回数の確認は`assert_awaited_XX`シリーズ（`assert_awaited_once_with`など）を利用する。これにより、実装でawaitの記述漏れがあった場合にテストが失敗するため、非同期処理の実装ミスを防げる。
 
+# Controller
+
+## ファイル作成単位
+1 Controllerメソッドに対して1ファイル
+
+## ファイル名
+`test_{Controllerのファイル名}_{メソッド名}.py`とする
+
+## メソッド名
+
+## ファイル名
+`test_{メソッド名}_{success or failure}_{理由（任意）}.py`とする
+
+例）`sqlalchemy_todo_repository.py/create`→`test_create_todo_success_returns_response.py`
+
+## モック対象
+- Usecase
+
+## テスト観点と主要パターン
+### 正常系
+- 期待するUseCaseが期待する引数で期待する回数呼ばれていること
+- Usecaseから返却されたレスポンスが期待する型へ変換されてレスポンスされること
+
 # Usecase
 
 ## ファイル作成単位
