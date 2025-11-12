@@ -51,6 +51,9 @@
 ### 正常系
 - 期待するUseCaseが期待する引数で期待する回数呼ばれていること
 - Usecaseから返却されたレスポンスが期待する型へ変換されてレスポンスされること
+### 異常系
+- 例外が発生した場合、例外を握りつぶさず FastAPI のハンドラへ伝播することを確認する。
+- テスト間で同じ観点を共有するために、代表的な例外は `tests/unit/controller/exception_cases.py` の `controller_domain_exception_cases` を利用しする。
 
 # Usecase
 
