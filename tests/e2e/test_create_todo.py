@@ -6,7 +6,7 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy import text
 
-from app.composition.di import get_todo_repository
+from app.composition.common import get_todo_repository
 from app.domain.entities.user import User
 from app.infrastructure.database.connection import get_db
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (

@@ -6,7 +6,7 @@ This module contains all User-related API endpoints.
 from fastapi import APIRouter, Depends, Query
 from fastapi import status as http_status
 
-from app.composition.di import (
+from app.composition.user import (
     get_create_user_usecase,
     get_delete_user_usecase,
     get_get_user_by_id_usecase,

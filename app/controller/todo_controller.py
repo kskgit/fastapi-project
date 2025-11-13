@@ -6,7 +6,7 @@ This module contains all Todo-related API endpoints.
 from fastapi import APIRouter, Depends, Query
 from fastapi import status as http_status
 
-from app.composition.di import (
+from app.composition.todo import (
     get_create_todo_usecase,
     get_delete_todo_usecase,
     get_get_todo_by_id_usecase,
