@@ -1,13 +1,13 @@
-# データの流れ及び各レイヤの役割
+# データの流れ及び各レイヤの概要
 ```mermaid
 graph TD
-    API["API / DTO 層<br/>・入力スキーマの保証<br/>・フォーマット正規化<br/>・早期 4xx の返却"]
-    UC["アプリケーション（ユースケース）層<br/>・ビジネスフロー制御<br/>・他コンポーネント協調<br/>・ドメイン例外への変換"]
-    DOMAIN["ドメインモデル層<br/>・不変条件の保持<br/>・状態遷移時の検証<br/>・エンティティ固有ルール"]
-    INFRA["インフラ層<br/>・DB 制約による最終防衛<br/>・ドライバ例外の握り替え<br/>・永続化の実装"]
+    Controller["Controller<br/>・バリデーション<br/>・UseCase呼び出し"]
+    Usecase["Usecase<br/>・Domain層を組み合わせてビジネスロジックを実現<br/>・必要に応じてInfrastructure呼び出し"]
+    Domain["Domain<br/>・ビジネスロジック"]
+    Infrastructure["Infrastructure<br/>・外部ストレージへのデータ操作"]
 
-    API --> UC --> DOMAIN
-    INFRA --> DOMAIN
+    Controller --> Usecase --> Domain
+    Usecase --> Infrastructure
 ```
 
 # 依存関係の向き
@@ -15,12 +15,11 @@ graph TD
 graph LR
     subgraph Allowed Dependencies
         direction LR
-        API2["API / DTO"] --> UC2["UseCase"]
+        API2["Controller"] --> UC2["UseCase"]
         UC2 --> DOMAIN2["Domain"]
         INFRA2["Infrastructure"] --> DOMAIN2
     end
 ```
-
 
 # Domain VS Domain Service
 1. エンティティ単体で完結 > エンティティ。 不変条件や状態遷移ロジックは極力エンティティ内で閉じる。
@@ -48,32 +47,32 @@ FastAPI のグローバル例外ハンドラ（`app/core/middleware/exception_ha
 # バリデーション設計ポリシー
 FastAPI エンドポイントからドメインまでの層構造（API → DTO → ユースケース → ドメインモデル → リポジトリ）に沿って、各層ごとに守るべき責務を明確に分担する。重複を恐れず二重化することで、別経路からの呼び出しや将来の拡張にも耐えられる。
 
-## API / DTO 層
+## Controller
 - リクエスト構造・型・必須項目など「入力の形」をここで保証する。`field_validator` などを利用し、422 を返せる形で早期に弾く。
 - 単純なフォーマットやトリミング、Null 可否、桁数チェックは DTO 側で処理し、ユースケースへ渡るデータの素性を揃える。
 - DTO で `ValidationException` を送出する場合は、API レスポンス仕様（422 か 400 か）との整合を確認する。
 
-## アプリケーション（ユースケース）層
+## Usecase
 - ビジネスフローや他コンポーネント連携に依存する検証を行う。例：同一ユーザの Todo タイトル重複判定、参照リソースの存在確認。
 - 例外はドメインのカスタム例外へ握り替え、HTTP ステータスが意図通りになるよう制御する。
 
-## ドメインモデル層
+## Domain
 - エンティティが常に満たすべき不変条件（タイトル必須、期限の整合性など）を実装し、どの経路から生成・更新されても破れないようにする。
 - モデル生成時や状態遷移時にバリデーションを実行し、失敗時はビジネス系例外を投げる。
 
-## インフラ層
+## Infrastructure
 - データベース制約（NOT NULL、UNIQUE など）で最終防衛線を敷き、DTO やドメインで取り逃した異常を捕捉する。
 - DB 例外は `DataOperationException` などに変換し、システム系エラーとして扱う。ログには操作名を含める。
 
 この分担により、「入り口で防げるものは DTO」「ビジネス文脈はユースケース」「絶対に破らせたくない不変条件はドメインモデル」「最終砦は DB 制約」となる。層を跨ぐ仕様変更が入った場合でも、責務の境界を明確に保ちやすい。
 
 # 依存関係設計ポリシー
-
+<!-- TODO -->
 
 # Usecase
 ## 役割
 - Domain Entityを組み立てて、**ビジネスロジック**を実現する
-- infrastructureを経由してサービスの呼び出しを行う
+- 必要に応じてInfrastructure呼び出し
 
 ## ファイル作成単位
 1 usecaseファイルに対して1ファイル
@@ -88,11 +87,10 @@ FastAPI エンドポイントからドメインまでの層構造（API → DTO 
 ## メソッド名
 `execute`とする
 
-
 # Repository
 
 ## 例外処理
-- インフラ層のリポジトリは SQLAlchemy を介してデータベースにアクセスする。ドメイン層へドライバ依存の例外を漏らさないため、SQLAlchemy が投げる `SQLAlchemyError`（接続エラー、制約違反、トランザクション失敗など）をキャッチし、`DataOperationException` などのシステム系カスタム例外に置き換える。
+- Infrastructureのリポジトリは SQLAlchemy を介してデータベースにアクセスする。ドメイン層へドライバ依存の例外を漏らさないため、SQLAlchemy が投げる `SQLAlchemyError`（接続エラー、制約違反、トランザクション失敗など）をキャッチし、`DataOperationException` などのシステム系カスタム例外に置き換える。
 - 例外へは `operation_context` を必ず渡し、どの操作（例: `todo_repository.create`）で失敗したのかを記録する。グローバル例外ハンドラがこの情報をログに出力し、トラブルシュートしやすくなる。
 - `SQLAlchemyError` で拾えない問題（プロセス外のネットワーク断など）は上位へ到達するが、上記方針により DB レイヤ由来の一般的な障害は一貫してシステム例外として扱える。
 
