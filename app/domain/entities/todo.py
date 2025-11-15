@@ -1,8 +1,19 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
-from ..exceptions import StateTransitionException
+from ..exceptions import (
+    StateTransitionException,
+    TodoNotFoundException,
+    ValidationException,
+)
+
+if TYPE_CHECKING:
+    from app.domain.repositories.user_repository import UserRepository
+    from app.domain.services.todo_domain_service import TodoDomainService
 
 
 class TodoPriority(str, Enum):
@@ -44,7 +55,7 @@ class Todo:
         description: str | None = None,
         due_date: datetime | None = None,
         priority: TodoPriority = TodoPriority.medium,
-    ) -> "Todo":
+    ) -> Todo:
         """Create a new Todo.
 
         Args:
@@ -179,6 +190,66 @@ class Todo:
             bool: True if the todo is owned by the user, False otherwise
         """
         return self.user_id == user_id
+
+    async def update(
+        self,
+        user_id: int,
+        user_repository: UserRepository,
+        todo_domain_service: TodoDomainService,
+        title: str | None,
+        description: str | None,
+        due_date: datetime | None,
+        status: TodoStatus | None,
+        priority: TodoPriority | None,
+    ) -> None:
+        if self.user_id != user_id:
+            """
+            想定ユースケースであれば、idはこのタイミングでは必ず存在するが
+            型チェック解消のためis Noneケースを用意
+
+            攻撃者にTodoが存在することが伝わらないようにするため、あえてTodoNotFoundExceptionとする
+            """
+            raise TodoNotFoundException(self.id if self.id is not None else -1)
+
+        self._validate_atleast_one_field_provided(
+            title, description, due_date, status, priority
+        )
+
+        self._update_fields(title, description, due_date, status, priority)
+
+    def _validate_atleast_one_field_provided(self, *fields: object) -> None:
+        """Validate that at least one field is provided for update.
+
+        Args:
+            *fields: Variable number of field values to check
+
+        Raises:
+            ValueError: If no fields are provided for update
+
+        Note:
+            This is a domain rule: Update operations must modify at least one field.
+        """
+        if all(field is None for field in fields):
+            raise ValidationException("At least one field must be provided for update")
+
+    def _update_fields(
+        self,
+        title: str | None,
+        description: str | None,
+        due_date: datetime | None,
+        status: TodoStatus | None,
+        priority: TodoPriority | None,
+    ) -> None:
+        if title is not None:
+            self.update_title(title)
+        if description is not None:
+            self.update_description(description)
+        if due_date is not None:
+            self.update_due_date(due_date)
+        if status is not None:
+            self.status = status
+        if priority is not None:
+            self.update_priority(priority)
 
     class Config:
         use_enum_values = True
