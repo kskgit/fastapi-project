@@ -76,12 +76,16 @@
 ## モック対象
 - repository
 - usecase が直接依存するドメインサービスやトランザクションマネージャ（必要に応じて）
+- トランザクションマネージャは `tests/unit/usecase/conftest.py::mock_transaction_manager` を使い回し、非同期コンテキスト管理の実装差異による重複を避ける
 
 ## テスト観点と主要パターン
 ### 正常系
 - repository やドメインサービスが期待通りの引数・回数で呼ばれることを確認
 - UseCase が返却する値が想定どおりであることを確認
 - 非同期メソッドは `assert_awaited_once_with` などで await されているか確認
+
+#### 参考実装
+- [`tests/unit/usecase/test_create_todo_usecase.py/test_create_todo_success`](../tests/unit/usecase/test_create_todo_usecase.py)
 
 ### ビジネスロジック例外
 - ドメインサービスや UseCase 内部の検証で想定する例外が発生するか
