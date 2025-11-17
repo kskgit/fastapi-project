@@ -57,9 +57,7 @@ class GetTodosUseCase:
             Domain exceptions are handled by FastAPI exception handlers in main.py.
         """
         # Validate that user exists
-        await self.todo_domain_service.validate_user_exists_for_todo_operation(
-            user_id, self.user_repository
-        )
+        await self.todo_domain_service.validate_user(user_id, self.user_repository)
 
         # Validate pagination parameters
         self.todo_domain_service.validate_pagination_parameters(skip, limit)

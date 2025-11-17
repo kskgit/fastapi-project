@@ -16,10 +16,10 @@ class TodoDomainService:
     or require repository interactions while keeping the Entity pure.
     """
 
-    async def validate_user_exists_for_todo_operation(
+    async def validate_user(
         self, user_id: int, user_repository: UserRepository
     ) -> None:
-        """Validate that user exists for todo operations.
+        """Todo操作前のユーザチェック.
 
         Args:
             user_id: User ID to validate

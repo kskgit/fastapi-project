@@ -2,7 +2,7 @@ from datetime import datetime
 
 from app.core.transaction_manager import TransactionManager
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
+from app.domain.exceptions import TodoNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.todo_domain_service import TodoDomainService
@@ -73,8 +73,10 @@ class UpdateTodoUseCase:
             Transaction management is handled explicitly within this method.
         """
         async with self.transaction_manager.begin_transaction():
-            if not await self.user_repository.exists(user_id):
-                raise UserNotFoundException(user_id)
+            await self.todo_domain_service.validate_user(
+                user_id=user_id,
+                user_repository=self.user_repository,
+            )
 
             todo = await self.todo_repository.find_by_id(todo_id)
             if not todo:
