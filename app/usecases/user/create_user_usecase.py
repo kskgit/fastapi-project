@@ -1,7 +1,7 @@
 """Create User UseCase implementation."""
 
 from app.core.transaction_manager import TransactionManager
-from app.domain.entities.user import User
+from app.domain.entities.user import User, UserRole
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.user_domain_service import UserDomainService
 
@@ -31,7 +31,11 @@ class CreateUserUseCase:
         self.user_domain_service = UserDomainService()
 
     async def execute(
-        self, username: str, email: str, full_name: str | None = None
+        self,
+        username: str,
+        email: str,
+        role: UserRole,
+        full_name: str | None = None,
     ) -> User:
         """Execute the create user use case.
 

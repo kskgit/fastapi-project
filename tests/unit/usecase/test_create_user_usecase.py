@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from app.domain.entities.user import User
+from app.domain.entities.user import User, UserRole
 from app.domain.exceptions import ConnectionException
 from app.domain.exceptions.business import UniqueConstraintException
 from app.domain.repositories.user_repository import UserRepository
@@ -30,7 +30,10 @@ async def test_create_user_failure_username_already_exists(
         UniqueConstraintException, match="Username 'existing_user' already exists"
     ):
         await usecase.execute(
-            username="existing_user", email="new@example.com", full_name="New User"
+            username="existing_user",
+            email="new@example.com",
+            full_name="New User",
+            role=UserRole.MEMBER,
         )
 
     mock_user_repository.find_by_username.assert_called_once_with("existing_user")
@@ -58,7 +61,10 @@ async def test_create_user_failure_connection_error(
         match="Failed to establish connection to data persistence layer",
     ):
         await usecase.execute(
-            username="new_user", email="new@example.com", full_name="New User"
+            username="new_user",
+            email="new@example.com",
+            full_name="New User",
+            role=UserRole.MEMBER,
         )
 
     mock_user_repository.find_by_username.assert_called_once_with("new_user")

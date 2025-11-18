@@ -46,6 +46,7 @@ async def create_user(
         username=user_data.username,
         email=user_data.email,
         full_name=user_data.full_name,
+        role=user_data.role,
     )
     return UserResponseDTO.from_domain_entity(user)
 
