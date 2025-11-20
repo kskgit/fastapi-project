@@ -13,6 +13,44 @@ from app.usecases.user.create_user_usecase import CreateUserUseCase
 pytestmark = pytest.mark.anyio("asyncio")
 
 
+async def test_create_user_success_assigns_role(
+    mock_transaction_manager: Mock,
+) -> None:
+    """指定したroleが永続化対象Userに設定されることを確認する."""
+    # Arrange
+    mock_user_repository = Mock(spec=UserRepository)
+    mock_user_repository.find_by_username.return_value = None
+    mock_user_repository.find_by_email.return_value = None
+    saved_user = User(
+        id=10,
+        username="viewer_user",
+        email="viewer@example.com",
+        full_name="Viewer User",
+        role=UserRole.VIEWER,
+    )
+    mock_user_repository.save.return_value = saved_user
+    usecase = CreateUserUseCase(mock_transaction_manager, mock_user_repository)
+
+    # Act
+    result = await usecase.execute(
+        username="viewer_user",
+        email="viewer@example.com",
+        full_name="Viewer User",
+        role=UserRole.VIEWER,
+    )
+
+    # Assert
+    mock_user_repository.find_by_username.assert_called_once_with("viewer_user")
+    mock_user_repository.find_by_email.assert_called_once_with("viewer@example.com")
+    mock_user_repository.save.assert_called_once()
+    save_call = mock_user_repository.save.call_args
+    assert save_call is not None
+    saved_entity = save_call.args[0]
+    assert isinstance(saved_entity, User)
+    assert saved_entity.role == UserRole.VIEWER
+    assert result == saved_user
+
+
 async def test_create_user_failure_username_already_exists(
     mock_transaction_manager: Mock,
 ):

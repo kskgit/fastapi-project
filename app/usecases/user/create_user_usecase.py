@@ -62,7 +62,12 @@ class CreateUserUseCase:
             )
 
             # Create new user
-            user = User.create(username=username, email=email, full_name=full_name)
+            user = User.create(
+                username=username,
+                email=email,
+                full_name=full_name,
+                role=role,
+            )
 
             return await self.user_repository.save(user)
         # Transaction automatically commits on success or rolls back on exception

@@ -21,6 +21,7 @@ class User:
     username: str
     email: str
     full_name: str | None = None
+    role: UserRole = UserRole.MEMBER
     is_active: bool = True
     id: int | None = None
     created_at: datetime | None = None
@@ -32,12 +33,14 @@ class User:
         username: str,
         email: str,
         full_name: str | None = None,
+        role: UserRole = UserRole.MEMBER,
     ) -> "User":
         """Create a new User.
 
         Args:
             username: Unique username for the user
             email: User's email address
+            role: User role (viewer/member/admin)
 
         Returns:
             User: New user entity with pending status
@@ -49,6 +52,7 @@ class User:
             username=username,
             email=email,
             full_name=full_name,
+            role=role,
         )
 
     def update_username(self, username: str) -> None:
