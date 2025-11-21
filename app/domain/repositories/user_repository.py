@@ -11,15 +11,13 @@ class UserRepository(ABC):
     """
 
     @abstractmethod
-    async def save(self, user: User) -> User:
-        """Save a user (create or update).
+    async def create(self, user: User) -> User:
+        """Persist a new user entity."""
+        pass
 
-        Args:
-            user: User domain entity to save
-
-        Returns:
-            Saved user with updated fields (id, timestamps)
-        """
+    @abstractmethod
+    async def update(self, user: User) -> User:
+        """Update an existing user entity."""
         pass
 
     @abstractmethod

@@ -30,7 +30,7 @@ def controller_domain_exception_cases() -> Sequence[ControllerExceptionCase]:
         ControllerExceptionCase(
             id="data_operation_error",
             factory=lambda: DataOperationException(
-                operation_name="GenericRepository.save"
+                operation_name="GenericRepository.operation"
             ),
         ),
     )

@@ -68,7 +68,7 @@ class UpdateUserUseCase:
                 user_id, user, username, email, self.user_repository
             )
             self._update_user_fields(user, username, email, full_name)
-            return await self.user_repository.save(user)
+            return await self.user_repository.update(user)
         # Transaction automatically commits on success or rolls back on exception
 
     async def _validate_user_exists(self, user_id: int) -> User:

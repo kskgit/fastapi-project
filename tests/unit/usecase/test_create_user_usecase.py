@@ -28,7 +28,7 @@ async def test_create_user_success_assigns_role(
         full_name="Viewer User",
         role=UserRole.VIEWER,
     )
-    mock_user_repository.save.return_value = saved_user
+    mock_user_repository.create.return_value = saved_user
     usecase = CreateUserUseCase(mock_transaction_manager, mock_user_repository)
 
     # Act
@@ -42,8 +42,8 @@ async def test_create_user_success_assigns_role(
     # Assert
     mock_user_repository.find_by_username.assert_called_once_with("viewer_user")
     mock_user_repository.find_by_email.assert_called_once_with("viewer@example.com")
-    mock_user_repository.save.assert_called_once()
-    save_call = mock_user_repository.save.call_args
+    mock_user_repository.create.assert_called_once()
+    save_call = mock_user_repository.create.call_args
     assert save_call is not None
     saved_entity = save_call.args[0]
     assert isinstance(saved_entity, User)
@@ -76,7 +76,7 @@ async def test_create_user_failure_username_already_exists(
 
     mock_user_repository.find_by_username.assert_called_once_with("existing_user")
     mock_user_repository.find_by_email.assert_not_called()
-    mock_user_repository.save.assert_not_called()
+    mock_user_repository.create.assert_not_called()
 
 
 async def test_create_user_failure_connection_error(
@@ -87,7 +87,7 @@ async def test_create_user_failure_connection_error(
     mock_user_repository = Mock(spec=UserRepository)
     mock_user_repository.find_by_username.return_value = None
     mock_user_repository.find_by_email.return_value = None
-    mock_user_repository.save.side_effect = ConnectionException(
+    mock_user_repository.create.side_effect = ConnectionException(
         "Failed to establish connection to data persistence layer"
     )
 
@@ -107,4 +107,4 @@ async def test_create_user_failure_connection_error(
 
     mock_user_repository.find_by_username.assert_called_once_with("new_user")
     mock_user_repository.find_by_email.assert_called_once_with("new@example.com")
-    mock_user_repository.save.assert_called_once()
+    mock_user_repository.create.assert_called_once()

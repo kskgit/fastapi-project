@@ -57,7 +57,7 @@ class TestDeleteUserUseCase:
             email="cascade@example.com",
             full_name="Test User Cascade",
         )
-        saved_user = await user_repo.save(user)
+        saved_user = await user_repo.create(user)
 
         # Create multiple todos for the user
         todos = []
@@ -177,7 +177,7 @@ class TestDeleteUserUseCase:
         # Arrange
         user_repo = SQLAlchemyUserRepository(db_session)
         user = User.create(username="user_no_todos", email="notodos@example.com")
-        saved_user = await user_repo.save(user)
+        saved_user = await user_repo.create(user)
         await db_session.commit()
 
         transaction_manager = SQLAlchemyTransactionManager(db_session)
@@ -211,7 +211,7 @@ class TestDeleteUserUseCase:
 
             # Session 1: Create user and todos
             user = User.create(username="isolation_user", email="isolation@test.com")
-            saved_user = await user_repo1.save(user)
+            saved_user = await user_repo1.create(user)
 
             todo = Todo.create(
                 user_id=saved_user.id,

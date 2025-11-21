@@ -52,44 +52,47 @@ class SQLAlchemyUserRepository(UserRepository):
             updated_at=entity.updated_at,
         )
 
-    async def save(self, user: User) -> User:
-        """Save a user (create or update).
+    async def create(self, user: User) -> User:
+        """Persist a new user."""
+        if user.id is not None:
+            raise ValueError("Cannot create user with existing id")
 
-        Note: Transaction management is handled by the UseCase layer.
-        Always flushes to ensure ID is available for return value.
-        """
         try:
-            if user.id is None:
-                # Create new user
-                model = self._to_model(user)
-                model.created_at = datetime.now()
-                model.updated_at = datetime.now()
-                self.db.add(model)
-                await self.db.flush()
-                await self.db.refresh(model)
-            else:
-                # Update existing user
-                result = await self.db.execute(
-                    select(UserModel).where(UserModel.id == user.id)
-                )
-                model_or_none = result.scalar_one_or_none()
-                if model_or_none is None:
-                    raise ValueError(f"User with id {user.id} not found")
-                model = model_or_none
-
-                # Update fields
-                model.username = user.username
-                model.email = user.email
-                model.full_name = user.full_name
-                model.is_active = user.is_active
-                model.updated_at = datetime.now()
-                await self.db.flush()
-                await self.db.refresh(model)
-
+            model = self._to_model(user)
+            now = datetime.now()
+            model.created_at = now
+            model.updated_at = now
+            self.db.add(model)
+            await self.db.flush()
+            await self.db.refresh(model)
             return self._to_domain_entity(model)
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while saving user: {str(e)}")
+    async def update(self, user: User) -> User:
+        """Update an existing user."""
+        if user.id is None:
+            raise ValueError("Cannot update user without id")
+
+        try:
+            result = await self.db.execute(
+                select(UserModel).where(UserModel.id == user.id)
+            )
+            model_or_none = result.scalar_one_or_none()
+            if model_or_none is None:
+                raise ValueError(f"User with id {user.id} not found")
+            model = model_or_none
+
+            model.username = user.username
+            model.email = user.email
+            model.full_name = user.full_name
+            model.is_active = user.is_active
+            model.updated_at = datetime.now()
+            await self.db.flush()
+            await self.db.refresh(model)
+            return self._to_domain_entity(model)
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
     async def find_by_id(self, user_id: int) -> User | None:
         """Find user by ID."""

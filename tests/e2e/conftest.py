@@ -54,7 +54,7 @@ async def test_user(test_db_session):
         full_name="E2E Test User",
     )
 
-    saved_user = await user_repo.save(user)
+    saved_user = await user_repo.create(user)
     await test_db_session.commit()
     return saved_user
 

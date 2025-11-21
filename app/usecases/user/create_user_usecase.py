@@ -42,6 +42,7 @@ class CreateUserUseCase:
         Args:
             username: User's username (required, unique)
             email: User's email address (required, unique)
+            role: User's role (viewer/member/admin)
             full_name: User's full name (optional)
 
         Returns:
@@ -69,5 +70,5 @@ class CreateUserUseCase:
                 role=role,
             )
 
-            return await self.user_repository.save(user)
+            return await self.user_repository.create(user)
         # Transaction automatically commits on success or rolls back on exception
