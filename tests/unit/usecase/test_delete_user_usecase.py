@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from app.domain.entities.todo import Todo
 from app.domain.entities.user import User
-from app.infrastructure.database.models import Base
+from app.infrastructure.database.connection import Base
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
 )
