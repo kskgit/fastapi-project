@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.entities.user import User
+from app.domain.entities.user import User, UserRole
 from app.domain.exceptions.system import DataOperationException
 from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.database.models import UserModel
@@ -35,6 +35,7 @@ class SQLAlchemyUserRepository(UserRepository):
             username=model.username,
             email=model.email,
             full_name=model.full_name,
+            role=model.role if hasattr(model, "role") else UserRole.MEMBER,
             is_active=model.is_active,
             created_at=model.created_at,
             updated_at=model.updated_at,
@@ -47,6 +48,7 @@ class SQLAlchemyUserRepository(UserRepository):
             username=entity.username,
             email=entity.email,
             full_name=entity.full_name,
+            role=entity.role,
             is_active=entity.is_active,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
@@ -86,6 +88,7 @@ class SQLAlchemyUserRepository(UserRepository):
             model.username = user.username
             model.email = user.email
             model.full_name = user.full_name
+            model.role = user.role
             model.is_active = user.is_active
             model.updated_at = datetime.now()
             await self.db.flush()
