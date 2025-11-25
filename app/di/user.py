@@ -2,7 +2,7 @@
 
 from fastapi import Depends
 
-from app.composition.common import (
+from app.di.common import (
     get_todo_repository,
     get_transaction_manager,
     get_user_repository,

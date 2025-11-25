@@ -101,7 +101,7 @@ name = "Clean Architecture Layers"
 type = "layers"
 layers = [
     "app.controller",
-    "app.composition",  # Composition Root layer (can access all)
+    "app.di",  # Composition Root layer (can access all)
     "app.usecases", 
     "app.infrastructure",
     "app.domain"
@@ -150,14 +150,14 @@ forbidden_modules = [
     "psycopg2",
     "app.infrastructure",  # Use repository interfaces only
     "app.controller",            # No upward dependencies
-    "app.composition",    # No upward dependencies
+    "app.di",    # No upward dependencies
 ]
 
 # Composition Root layer restrictions - can import all but no upward dependencies  
 [[tool.importlinter.contracts]]
 name = "Composition Root Layer Restrictions"
 type = "forbidden"
-source_modules = ["app.composition"]
+source_modules = ["app.di"]
 forbidden_modules = [
     "app.controller",            # No upward dependencies to API layer
 ]

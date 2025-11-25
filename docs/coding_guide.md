@@ -11,6 +11,7 @@ graph TD
 ```
 
 # 依存関係の向き
+## 概略
 ```mermaid
 graph LR
     subgraph Allowed Dependencies
@@ -21,8 +22,27 @@ graph LR
     end
 ```
 
+## 詳細
+以下のような各レイヤの依存関係をDi層を経由して解決
+- UseCaseとRepositoryの紐付け
+- RepositoryとDBコネクションの紐付け
+
+Di層が依存関係の汚れ役を引き受けることで、その他レイヤの依存関係が簡潔に保たれる
+
+```mermaid
+graph LR
+    subgraph Allowed Dependencies
+        direction LR
+        API2["Controller"] --> DI2["Di"]
+        DI2 --> UC2["UseCase"]
+        DI2 --> INFRA2["Infrastructure"]
+        DI2 --> DOMAIN2["Domain"]
+        UC2 --> DOMAIN2["Domain"]
+        INFRA2 --> DOMAIN2
+    end
+```
+
 # Domain VS Domain Service
-このパターンだとDomain Serviceはなくなるかも
 1. エンティティ単体で完結 > エンティティ。 不変条件や状態遷移ロジックは極力エンティティ内で閉じる。
 1. 複数エンティティ／リポジトリが絡む > ドメインサービス。 永続化や他アグリゲートへの問い合わせが前提のルールはサービスで吸収。
 1. サービスは“調停役”と捉える。 エンティティ同士・リポジトリとの協調が必要になった瞬間がドメインサービスの出番。
@@ -94,4 +114,3 @@ FastAPI エンドポイントからドメインまでの層構造（API → DTO 
 - Infrastructureのリポジトリは SQLAlchemy を介してデータベースにアクセスする。ドメイン層へドライバ依存の例外を漏らさないため、SQLAlchemy が投げる `SQLAlchemyError`（接続エラー、制約違反、トランザクション失敗など）をキャッチし、`DataOperationException` などのシステム系カスタム例外に置き換える。
 - 例外へは `operation_context` を必ず渡し、どの操作（例: `todo_repository.create`）で失敗したのかを記録する。グローバル例外ハンドラがこの情報をログに出力し、トラブルシュートしやすくなる。
 - `SQLAlchemyError` で拾えない問題（プロセス外のネットワーク断など）は上位へ到達するが、上記方針により DB レイヤ由来の一般的な障害は一貫してシステム例外として扱える。
-

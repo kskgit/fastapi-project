@@ -1,17 +1,17 @@
 """Dependency Injection configuration for the entire application.
 
 This remains the composition root for Todo-related dependencies and shared wiring.
-User-specific providers live in app.composition.user to keep this module focused.
+User-specific providers live in app.di.user to keep this module focused.
 """
 
 from fastapi import Depends
 
-from app.composition.common import (
+from app.di.common import (
     get_todo_repository,
     get_transaction_manager,
     get_user_repository,
 )
-from app.composition.user import get_user_domain_service
+from app.di.user import get_user_domain_service
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.user_domain_service import UserDomainService
