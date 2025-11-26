@@ -100,5 +100,11 @@ async def test_update_user_failure_no_fields(
         await usecase.execute(user_id=existing_user.id or -1)
 
     user_repository.find_by_id.assert_awaited_once_with(existing_user.id)
-    usecase.user_domain_service.validate_user_update_uniqueness.assert_not_called()
+    usecase.user_domain_service.validate_user_update_uniqueness.assert_awaited_once_with(
+        existing_user.id,
+        existing_user,
+        None,
+        None,
+        user_repository,
+    )
     user_repository.update.assert_not_called()
