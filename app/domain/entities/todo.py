@@ -191,7 +191,7 @@ class Todo:
         """
         return self.user_id == user_id
 
-    async def update(
+    def update(
         self,
         user_id: int,
         user_repository: UserRepository,

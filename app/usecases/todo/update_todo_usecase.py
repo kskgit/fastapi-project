@@ -82,7 +82,7 @@ class UpdateTodoUseCase:
             if not todo:
                 raise TodoNotFoundException(todo_id)
 
-            await todo.update(
+            todo.update(
                 user_id,
                 self.user_repository,
                 self.todo_domain_service,

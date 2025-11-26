@@ -2,7 +2,7 @@
 
 from app.core.transaction_manager import TransactionManager
 from app.domain.entities.user import User
-from app.domain.exceptions import UserNotFoundException, ValidationException
+from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.user_domain_service import UserDomainService
 
@@ -62,37 +62,18 @@ class UpdateUserUseCase:
         async with (
             self.transaction_manager.begin_transaction()
         ):  # Explicit transaction boundary
-            user = await self._validate_user_exists(user_id)
-            self._validate_update_fields(username, email, full_name)
+            user = await self._get_user(user_id)
             await self.user_domain_service.validate_user_update_uniqueness(
                 user_id, user, username, email, self.user_repository
             )
-            self._update_user_fields(user, username, email, full_name)
+
+            user.update(username, email, full_name)
             return await self.user_repository.update(user)
         # Transaction automatically commits on success or rolls back on exception
 
-    async def _validate_user_exists(self, user_id: int) -> User:
+    async def _get_user(self, user_id: int) -> User:
         """Validate that the user exists."""
         user = await self.user_repository.find_by_id(user_id)
         if not user:
             raise UserNotFoundException(user_id)
         return user
-
-    def _validate_update_fields(
-        self, username: str | None, email: str | None, full_name: str | None
-    ) -> None:
-        """Validate that at least one field is provided for update."""
-        if all(param is None for param in [username, email, full_name]):
-            raise ValidationException("At least one field must be provided for update")
-
-    # todo userモデル自身の処理に変更する
-    def _update_user_fields(
-        self, user: User, username: str | None, email: str | None, full_name: str | None
-    ) -> None:
-        """Update user fields if provided."""
-        if username is not None:
-            user.username = username
-        if email is not None:
-            user.email = email
-        if full_name is not None:
-            user.full_name = full_name

@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 
+from app.domain.exceptions import ValidationException
+
 
 class UserRole(StrEnum):
     """User role definitions."""
@@ -66,6 +68,7 @@ class User:
         """
         self.username = username
 
+    # todo emailの独自型利用へ変更する
     def update_email(self, email: str) -> None:
         """Update email address.
 
@@ -76,6 +79,10 @@ class User:
             Email validation is handled by API DTOs.
         """
         self.email = email
+
+    def update_full_name(self, full_name: str | None) -> None:
+        """Update full name."""
+        self.full_name = full_name
 
     def can_manage_todo(self, todo_user_id: int) -> bool:
         """Check if this user can manage the specified todo.
@@ -89,3 +96,22 @@ class User:
         if self.id is None:
             return False
         return self.id == todo_user_id
+
+    def _validate_atleast_one_field_provided(
+        self, username: str | None, email: str | None, full_name: str | None
+    ) -> None:
+        """Ensure at least one field is provided for update."""
+        if all(field is None for field in (username, email, full_name)):
+            raise ValidationException("At least one field must be provided for update")
+
+    def update(
+        self, username: str | None, email: str | None, full_name: str | None
+    ) -> None:
+        self._validate_atleast_one_field_provided(username, email, full_name)
+        """Apply provided field changes."""
+        if username is not None:
+            self.update_username(username)
+        if email is not None:
+            self.update_email(email)
+        if full_name is not None:
+            self.update_full_name(full_name)
