@@ -1,10 +1,9 @@
 """User Domain Service - Business logic for User entity operations."""
 
 from app.domain.entities.user import User
+from app.domain.exceptions import UniqueConstraintException, ValidationException
 from app.domain.exceptions.business import UserNotFoundException
 from app.domain.repositories.user_repository import UserRepository
-
-from ..exceptions import UniqueConstraintException, ValidationException
 
 
 class UserDomainService:
@@ -14,6 +13,7 @@ class UserDomainService:
     or require repository interactions while keeping the Entity pure.
     """
 
+    # createとupdateでuniqueなルール変わらないのでは
     async def validate_user_creation_uniqueness(
         self, username: str, email: str, user_repository: UserRepository
     ) -> None:
@@ -42,6 +42,7 @@ class UserDomainService:
                 f"Email '{email}' already exists", constraint_name="email_uniqueness"
             )
 
+    # todo テストを記載する
     async def validate_user_update_uniqueness(
         self,
         user_id: int,

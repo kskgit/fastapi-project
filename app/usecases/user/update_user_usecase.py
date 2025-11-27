@@ -1,7 +1,7 @@
 """Update User UseCase implementation."""
 
 from app.core.transaction_manager import TransactionManager
-from app.domain.entities.user import User
+from app.domain.entities.user import User, UserRole
 from app.domain.exceptions import UserNotFoundException
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.user_domain_service import UserDomainService
@@ -37,6 +37,7 @@ class UpdateUserUseCase:
         username: str | None = None,
         email: str | None = None,
         full_name: str | None = None,
+        role: UserRole | None = None,
     ) -> User:
         """Execute the update user use case.
 
@@ -59,17 +60,19 @@ class UpdateUserUseCase:
             Domain exceptions are handled by FastAPI exception handlers in main.py.
             Transaction management is handled explicitly within this method.
         """
-        async with (
-            self.transaction_manager.begin_transaction()
-        ):  # Explicit transaction boundary
+        async with self.transaction_manager.begin_transaction():
             user = await self._get_user(user_id)
             await self.user_domain_service.validate_user_update_uniqueness(
                 user_id, user, username, email, self.user_repository
             )
 
-            user.update(username, email, full_name)
+            user.update(
+                username=username,
+                email=email,
+                full_name=full_name,
+                role=role,
+            )
             return await self.user_repository.update(user)
-        # Transaction automatically commits on success or rolls back on exception
 
     async def _get_user(self, user_id: int) -> User:
         """Validate that the user exists."""

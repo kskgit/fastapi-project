@@ -84,6 +84,10 @@ class User:
         """Update full name."""
         self.full_name = full_name
 
+    def update_role(self, role: UserRole) -> None:
+        """Update full name."""
+        self.role = role
+
     def can_manage_todo(self, todo_user_id: int) -> bool:
         """Check if this user can manage the specified todo.
 
@@ -105,7 +109,11 @@ class User:
             raise ValidationException("At least one field must be provided for update")
 
     def update(
-        self, username: str | None, email: str | None, full_name: str | None
+        self,
+        username: str | None,
+        email: str | None,
+        full_name: str | None,
+        role: UserRole | None,
     ) -> None:
         self._validate_atleast_one_field_provided(username, email, full_name)
         """Apply provided field changes."""
@@ -115,3 +123,5 @@ class User:
             self.update_email(email)
         if full_name is not None:
             self.update_full_name(full_name)
+        if role is not None:
+            self.update_role(role)

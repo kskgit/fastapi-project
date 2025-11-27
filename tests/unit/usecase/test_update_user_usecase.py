@@ -24,7 +24,8 @@ async def test_update_user_success(mock_transaction_manager: Mock) -> None:
         role=UserRole.MEMBER,
     )
     user_repository.find_by_id.return_value = existing_user
-    user_repository.update.return_value = existing_user
+    # 引数で受け取ったuserをそのまま返却する
+    user_repository.update.side_effect = lambda user: user
 
     usecase = UpdateUserUseCase(mock_transaction_manager, user_repository)
     usecase.user_domain_service = Mock()
@@ -33,6 +34,7 @@ async def test_update_user_success(mock_transaction_manager: Mock) -> None:
     new_username = "updated_user"
     new_email = "new@example.com"
     new_full_name = "New Name"
+    new_role = UserRole.VIEWER
 
     # Act
     updated_user = await usecase.execute(
@@ -40,6 +42,7 @@ async def test_update_user_success(mock_transaction_manager: Mock) -> None:
         username=new_username,
         email=new_email,
         full_name=new_full_name,
+        role=new_role,
     )
 
     # Assert
@@ -52,12 +55,17 @@ async def test_update_user_success(mock_transaction_manager: Mock) -> None:
         new_email,
         user_repository,
     )
+
+    assert existing_user.username == new_username
+    assert existing_user.email == new_email
+    assert existing_user.full_name == new_full_name
+    assert existing_user.role == new_role
     user_repository.update.assert_awaited_once_with(existing_user)
 
-    assert updated_user is existing_user
     assert updated_user.username == new_username
     assert updated_user.email == new_email
     assert updated_user.full_name == new_full_name
+    assert updated_user.role == new_role
 
 
 async def test_update_user_failure_user_not_found(
