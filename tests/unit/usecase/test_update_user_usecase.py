@@ -55,9 +55,9 @@ async def test_update_user_success(mock_transaction_manager: Mock) -> None:
     user_repository.update.assert_awaited_once_with(existing_user)
 
     assert updated_user is existing_user
-    assert existing_user.username == new_username
-    assert existing_user.email == new_email
-    assert existing_user.full_name == new_full_name
+    assert updated_user.username == new_username
+    assert updated_user.email == new_email
+    assert updated_user.full_name == new_full_name
 
 
 async def test_update_user_failure_user_not_found(
