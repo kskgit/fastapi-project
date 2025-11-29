@@ -12,26 +12,37 @@ from app.usecases.user.update_user_usecase import UpdateUserUseCase
 pytestmark = pytest.mark.anyio("asyncio")
 
 
-async def test_update_user_success(mock_transaction_manager: Mock) -> None:
-    """ユーザー情報を更新できることを確認する."""
-    # Arrange
+def _set_up(
+    existing_user: User, mock_transaction_manager: Mock
+) -> tuple[UpdateUserUseCase, AsyncMock]:
     user_repository = AsyncMock(spec=UserRepository)
-    existing_user = User(
-        id=1,
-        username="original_user",
-        email="old@example.com",
-        full_name="Old Name",
-        role=UserRole.MEMBER,
-    )
     user_repository.find_by_id.return_value = existing_user
     # 引数で受け取ったuserをそのまま返却する
     user_repository.update.side_effect = lambda user: user
 
     usecase = UpdateUserUseCase(mock_transaction_manager, user_repository)
-    usecase.user_domain_service = Mock()
+    usecase.user_domain_service = AsyncMock()
     usecase.user_domain_service.validate_user_update_uniqueness = AsyncMock()
 
-    new_username = "updated_user"
+    return usecase, user_repository
+
+
+async def test_update_user_success(mock_transaction_manager: Mock) -> None:
+    """ユーザー情報を更新できることを確認する."""
+    # Arrange
+    existing_user = User(
+        id=1,
+        username="old_user",
+        email="old@example.com",
+        full_name="Old Name",
+        role=UserRole.MEMBER,
+    )
+
+    usecase, user_repository = _set_up(
+        existing_user=existing_user, mock_transaction_manager=mock_transaction_manager
+    )
+
+    new_username = "new_user"
     new_email = "new@example.com"
     new_full_name = "New Name"
     new_role = UserRole.VIEWER
@@ -48,9 +59,8 @@ async def test_update_user_success(mock_transaction_manager: Mock) -> None:
     # Assert
     mock_transaction_manager.begin_transaction.assert_called_once()
     user_repository.find_by_id.assert_awaited_once_with(existing_user.id)
-    usecase.user_domain_service.validate_user_update_uniqueness.assert_awaited_once_with(
+    usecase.user_domain_service.validate_user_uniqueness.assert_awaited_once_with(
         existing_user.id,
-        existing_user,
         new_username,
         new_email,
         user_repository,
@@ -65,6 +75,51 @@ async def test_update_user_success(mock_transaction_manager: Mock) -> None:
     assert updated_user.username == new_username
     assert updated_user.email == new_email
     assert updated_user.full_name == new_full_name
+    assert updated_user.role == new_role
+
+
+async def test_update_user_success_not_call_unique_check(
+    mock_transaction_manager: Mock,
+) -> None:
+    """ユーザー情報を更新できることを確認する.
+
+    ユーザ名、emailが更新されない場合、重複チェックが行われないこと
+    """
+    # Arrange
+    existing_user = User(
+        id=1,
+        username="old_user",
+        email="old@example.com",
+        full_name="Old Name",
+        role=UserRole.MEMBER,
+    )
+
+    usecase, user_repository = _set_up(
+        existing_user=existing_user, mock_transaction_manager=mock_transaction_manager
+    )
+
+    new_username = "old_user"
+    new_email = "old@example.com"
+    new_full_name = "Old Name"
+    new_role = UserRole.VIEWER
+
+    # Act
+    updated_user = await usecase.execute(
+        user_id=existing_user.id or -1,
+        username=new_username,
+        email=new_email,
+        full_name=new_full_name,
+        role=new_role,
+    )
+
+    # Assert
+    mock_transaction_manager.begin_transaction.assert_called_once()
+    user_repository.find_by_id.assert_awaited_once_with(existing_user.id)
+    usecase.user_domain_service.validate_user_uniqueness.assert_not_called()
+    user_repository.update.assert_awaited_once_with(existing_user)
+
+    assert updated_user.username == existing_user.username
+    assert updated_user.email == existing_user.email
     assert updated_user.role == new_role
 
 
