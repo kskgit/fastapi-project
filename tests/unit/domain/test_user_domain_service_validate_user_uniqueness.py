@@ -50,12 +50,6 @@ async def test_validate_user_uniqueness_failure_other_user_email() -> None:
     )
     user_repository.find_by_username.return_value = None
     user_repository.find_by_email.return_value = conflicting_user
-    existing_user = User(
-        id=1,
-        username="current_user",
-        email="current@example.com",
-        role=UserRole.MEMBER,
-    )
     service = UserDomainService()
 
     # Act
@@ -64,26 +58,20 @@ async def test_validate_user_uniqueness_failure_other_user_email() -> None:
             username="current_user",
             email="shared@example.com",
             user_repository=user_repository,
-            current_user=existing_user,
         )
 
     # Assert
-    with pytest.raises(UniqueConstraintException, match="email"):
+    with pytest.raises(UniqueConstraintException, match="Email"):
         await act()
 
 
+# TODO Usecaseに責務を移す
 async def test_validate_user_uniqueness_success_allows_existing_values() -> None:
     """ユーザー更新時に未変更フィールドは重複チェックされないこと."""
     # Arrange
     user_repository = AsyncMock(spec=UserRepository)
     user_repository.find_by_username.return_value = None
     user_repository.find_by_email.return_value = None
-    existing_user = User(
-        id=1,
-        username="current_user",
-        email="current@example.com",
-        role=UserRole.MEMBER,
-    )
     service = UserDomainService()
 
     # Act
@@ -91,7 +79,6 @@ async def test_validate_user_uniqueness_success_allows_existing_values() -> None
         username="current_user",
         email="current@example.com",
         user_repository=user_repository,
-        current_user=existing_user,
     )
 
     # Assert
