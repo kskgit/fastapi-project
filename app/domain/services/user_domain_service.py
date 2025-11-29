@@ -13,6 +13,20 @@ class UserDomainService:
     or require repository interactions while keeping the Entity pure.
     """
 
+    async def validate_user_uniqueness(
+        self, username: str, email: str, user_repository: UserRepository
+    ) -> None:
+        if await user_repository.find_by_username(username):
+            raise UniqueConstraintException(
+                f"Username '{username}' already exists",
+                constraint_name="username_uniqueness",
+            )
+
+        if await user_repository.find_by_email(email):
+            raise UniqueConstraintException(
+                f"Email '{email}' already exists", constraint_name="email_uniqueness"
+            )
+
     # createとupdateでuniqueなルール変わらないのでは
     async def validate_user_creation_uniqueness(
         self, username: str, email: str, user_repository: UserRepository
