@@ -14,17 +14,17 @@ pytestmark = pytest.mark.anyio("asyncio")
 
 def _set_up(
     existing_user: User, mock_transaction_manager: Mock
-) -> tuple[UpdateUserUseCase, AsyncMock]:
+) -> tuple[UpdateUserUseCase, AsyncMock, AsyncMock]:
     user_repository = AsyncMock(spec=UserRepository)
     user_repository.find_by_id.return_value = existing_user
     # 引数で受け取ったuserをそのまま返却する
     user_repository.update.side_effect = lambda user: user
 
     usecase = UpdateUserUseCase(mock_transaction_manager, user_repository)
-    usecase.user_domain_service = AsyncMock()
-    usecase.user_domain_service.validate_user_update_uniqueness = AsyncMock()
+    user_domain_service = AsyncMock()
+    usecase.user_domain_service = user_domain_service
 
-    return usecase, user_repository
+    return usecase, user_repository, user_domain_service
 
 
 async def test_update_user_success(mock_transaction_manager: Mock) -> None:
@@ -38,7 +38,7 @@ async def test_update_user_success(mock_transaction_manager: Mock) -> None:
         role=UserRole.MEMBER,
     )
 
-    usecase, user_repository = _set_up(
+    usecase, user_repository, domain_service = _set_up(
         existing_user=existing_user, mock_transaction_manager=mock_transaction_manager
     )
 
@@ -59,11 +59,10 @@ async def test_update_user_success(mock_transaction_manager: Mock) -> None:
     # Assert
     mock_transaction_manager.begin_transaction.assert_called_once()
     user_repository.find_by_id.assert_awaited_once_with(existing_user.id)
-    usecase.user_domain_service.validate_user_uniqueness.assert_awaited_once_with(
-        existing_user.id,
-        new_username,
-        new_email,
-        user_repository,
+    domain_service.validate_user_uniqueness.assert_awaited_once_with(
+        username=new_username,
+        email=new_email,
+        user_repository=user_repository,
     )
 
     assert existing_user.username == new_username
@@ -94,7 +93,7 @@ async def test_update_user_success_not_call_unique_check(
         role=UserRole.MEMBER,
     )
 
-    usecase, user_repository = _set_up(
+    usecase, user_repository, domain_service = _set_up(
         existing_user=existing_user, mock_transaction_manager=mock_transaction_manager
     )
 
@@ -115,7 +114,7 @@ async def test_update_user_success_not_call_unique_check(
     # Assert
     mock_transaction_manager.begin_transaction.assert_called_once()
     user_repository.find_by_id.assert_awaited_once_with(existing_user.id)
-    usecase.user_domain_service.validate_user_uniqueness.assert_not_called()
+    domain_service.validate_user_uniqueness.assert_not_called()
     user_repository.update.assert_awaited_once_with(existing_user)
 
     assert updated_user.username == existing_user.username
@@ -156,18 +155,12 @@ async def test_update_user_failure_no_fields(
     user_repository.find_by_id.return_value = existing_user
     usecase = UpdateUserUseCase(mock_transaction_manager, user_repository)
     usecase.user_domain_service = Mock()
-    usecase.user_domain_service.validate_user_update_uniqueness = AsyncMock()
+    usecase.user_domain_service.validate_user_uniqueness = AsyncMock()
 
     # Act / Assert
     with pytest.raises(ValidationException, match="At least one field"):
         await usecase.execute(user_id=existing_user.id or -1)
 
     user_repository.find_by_id.assert_awaited_once_with(existing_user.id)
-    usecase.user_domain_service.validate_user_update_uniqueness.assert_awaited_once_with(
-        existing_user.id,
-        existing_user,
-        None,
-        None,
-        user_repository,
-    )
+    usecase.user_domain_service.validate_user_uniqueness.assert_not_called()
     user_repository.update.assert_not_called()

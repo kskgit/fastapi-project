@@ -62,8 +62,11 @@ class UpdateUserUseCase:
         """
         async with self.transaction_manager.begin_transaction():
             user = await self._get_user(user_id)
-            await self.user_domain_service.validate_user_update_uniqueness(
-                user_id, user, username, email, self.user_repository
+
+            await self._run_uniqueness_validations(
+                user=user,
+                username=username,
+                email=email,
             )
 
             user.update(
@@ -80,3 +83,27 @@ class UpdateUserUseCase:
         if not user:
             raise UserNotFoundException(user_id)
         return user
+
+    async def _run_uniqueness_validations(
+        self,
+        user: User,
+        username: str | None,
+        email: str | None,
+    ) -> None:
+        """Run appropriate uniqueness validation based on updated fields."""
+        if self._should_check_uniqueness(user, username, email):
+            await self.user_domain_service.validate_user_uniqueness(
+                username=username if username is not None else user.username,
+                email=email if email is not None else user.email,
+                user_repository=self.user_repository,
+            )
+
+    def _should_check_uniqueness(
+        self, user: User, username: str | None, email: str | None
+    ) -> bool:
+        """Determine whether uniqueness validation is required."""
+        if username is not None and username != user.username:
+            return True
+        if email is not None and email != user.email:
+            return True
+        return False
