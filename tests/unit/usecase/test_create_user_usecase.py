@@ -1,6 +1,6 @@
 """CreateUserUseCase失敗時の動作確認テスト"""
 
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -13,14 +13,24 @@ from app.usecases.user.create_user_usecase import CreateUserUseCase
 pytestmark = pytest.mark.anyio("asyncio")
 
 
+def _set_up(
+    mock_transaction_manager: Mock,
+) -> tuple[CreateUserUseCase, AsyncMock, AsyncMock]:
+    user_repository = AsyncMock(spec=UserRepository)
+    usecase = CreateUserUseCase(mock_transaction_manager, user_repository)
+    user_domain_service = AsyncMock()
+    usecase.user_domain_service = user_domain_service
+    return usecase, user_repository, user_domain_service
+
+
 async def test_create_user_success_assigns_role(
     mock_transaction_manager: Mock,
 ) -> None:
     """指定したroleが永続化対象Userに設定されることを確認する."""
     # Arrange
-    mock_user_repository = Mock(spec=UserRepository)
-    mock_user_repository.find_by_username.return_value = None
-    mock_user_repository.find_by_email.return_value = None
+    usecase, mock_user_repository, user_domain_service = _set_up(
+        mock_transaction_manager
+    )
     saved_user = User(
         id=10,
         username="viewer_user",
@@ -29,7 +39,6 @@ async def test_create_user_success_assigns_role(
         role=UserRole.VIEWER,
     )
     mock_user_repository.create.return_value = saved_user
-    usecase = CreateUserUseCase(mock_transaction_manager, mock_user_repository)
 
     # Act
     result = await usecase.execute(
@@ -40,9 +49,13 @@ async def test_create_user_success_assigns_role(
     )
 
     # Assert
-    mock_user_repository.find_by_username.assert_called_once_with("viewer_user")
-    mock_user_repository.find_by_email.assert_called_once_with("viewer@example.com")
-    mock_user_repository.create.assert_called_once()
+    mock_transaction_manager.begin_transaction.assert_called_once()
+    user_domain_service.validate_user_uniqueness.assert_awaited_once_with(
+        username="viewer_user",
+        email="viewer@example.com",
+        user_repository=mock_user_repository,
+    )
+    mock_user_repository.create.assert_awaited_once()
     save_call = mock_user_repository.create.call_args
     assert save_call is not None
     saved_entity = save_call.args[0]
