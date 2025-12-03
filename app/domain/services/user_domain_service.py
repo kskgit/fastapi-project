@@ -26,35 +26,6 @@ class UserDomainService:
                 f"Email '{email}' already exists", constraint_name="email_uniqueness"
             )
 
-    # createとupdateでuniqueなルール変わらないのでは
-    async def validate_user_creation_uniqueness(
-        self, username: str, email: str, user_repository: UserRepository
-    ) -> None:
-        """Validate uniqueness constraints for user creation.
-
-        Args:
-            username: Username to validate
-            email: Email to validate
-            user_repository: Repository for user data access
-
-        Raises:
-            ValueError: If username or email already exists
-
-        Note:
-            This is a domain rule: usernames and emails must be unique
-            across the system.
-        """
-        if await user_repository.find_by_username(username):
-            raise UniqueConstraintException(
-                f"Username '{username}' already exists",
-                constraint_name="username_uniqueness",
-            )
-
-        if await user_repository.find_by_email(email):
-            raise UniqueConstraintException(
-                f"Email '{email}' already exists", constraint_name="email_uniqueness"
-            )
-
     async def validate_user_exists(
         self, user_id: int, user_repository: UserRepository
     ) -> None:

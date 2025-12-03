@@ -57,9 +57,10 @@ class CreateUserUseCase:
         async with (
             self.transaction_manager.begin_transaction()
         ):  # Explicit transaction boundary
-            # Validate uniqueness constraints
-            await self.user_domain_service.validate_user_creation_uniqueness(
-                username, email, self.user_repository
+            await self.user_domain_service.validate_user_uniqueness(
+                username=username,
+                email=email,
+                user_repository=self.user_repository,
             )
 
             user = User.create(
