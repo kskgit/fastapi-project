@@ -53,3 +53,21 @@ async def repo_db_session_sqlalchemy_error(in_memory_engine):
 
         session.flush = _raise_sqlalchemy_error  # type: ignore[assignment]
         yield session
+
+
+@pytest.fixture(scope="function")
+async def repo_db_session_delete_sqlalchemy_error(in_memory_engine):
+    """Session fixture that forces SQLAlchemyError on delete for failure tests."""
+    AsyncSessionLocal = async_sessionmaker(
+        in_memory_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+
+    async with AsyncSessionLocal() as session:
+
+        async def _raise_sqlalchemy_error(*args, **kwargs):
+            raise SQLAlchemyError("forced SQLAlchemyError on delete for test")
+
+        session.delete = _raise_sqlalchemy_error  # type: ignore[assignment]
+        yield session
