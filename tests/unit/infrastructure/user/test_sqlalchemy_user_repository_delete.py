@@ -19,6 +19,7 @@ async def test_delete_success_removes_user(repo_db_session) -> None:
     saved = await repository.create(
         User.create(username="delete_me", email="delete@example.com")
     )
+    assert saved.id is not None
 
     # Act
     result = await repository.delete(saved.id)
@@ -51,6 +52,7 @@ async def test_delete_failure_sqlalchemy_error_raises_data_operation_exception(
     saved = await repository.create(
         User.create(username="broken", email="broken@example.com")
     )
+    assert saved.id is not None
 
     # Act / Assert
     with pytest.raises(DataOperationException) as exc_info:

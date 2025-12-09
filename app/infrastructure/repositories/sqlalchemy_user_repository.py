@@ -13,6 +13,7 @@ from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.database.models import UserModel
 
 
+# 一通りテストを書いてRuntimeErrorを修正する
 class SQLAlchemyUserRepository(UserRepository):
     """SQLAlchemy implementation of UserRepository.
 
@@ -157,10 +158,11 @@ class SQLAlchemyUserRepository(UserRepository):
                 return False
 
             await self.db.delete(model)
+            await self.db.flush()
             return True
 
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while deleting user: {str(e)}")
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
     async def exists(self, user_id: int) -> bool:
         """Check if user exists."""
