@@ -88,12 +88,3 @@ class UserRepository(ABC):
             True if user exists, False otherwise
         """
         pass
-
-    @abstractmethod
-    async def count_total(self) -> int:
-        """Count total users.
-
-        Returns:
-            Total number of users
-        """
-        pass

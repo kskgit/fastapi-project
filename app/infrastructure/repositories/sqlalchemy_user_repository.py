@@ -176,14 +176,3 @@ class SQLAlchemyUserRepository(UserRepository):
             raise DataOperationException(
                 operation_context=self,
             )
-
-    async def count_total(self) -> int:
-        """Count total users."""
-        try:
-            from sqlalchemy import func
-
-            result = await self.db.execute(select(func.count(UserModel.id)))
-            return result.scalar() or 0
-
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while counting total users: {str(e)}")
