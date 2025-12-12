@@ -144,7 +144,10 @@ class SQLAlchemyUserRepository(UserRepository):
             return [self._to_domain_entity(model) for model in models]
 
         except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding all users: {str(e)}")
+            raise DataOperationException(
+                operation_context=self,
+                details={"original_error": str(e)},
+            )
 
     async def delete(self, user_id: int) -> bool:
         """Delete user by ID."""

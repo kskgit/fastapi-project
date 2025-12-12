@@ -36,5 +36,5 @@
 
 ### SQL例外ラップ
 - DB接続エラーやユニーク制約違反などを想定し、`DataOperationException` にラップされるか確認
--  `details["operation_context"]` が対象メソッドを指すことを確認する。
+- `details["operation_context"]` が対象メソッドを指すことを確認する。
 ※ Repository レイヤではビジネスロジック起因のエラーは原則発生させない
