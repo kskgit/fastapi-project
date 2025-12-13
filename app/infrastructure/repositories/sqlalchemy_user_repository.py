@@ -118,10 +118,8 @@ class SQLAlchemyUserRepository(UserRepository):
             model = result.scalar_one_or_none()
             return self._to_domain_entity(model) if model else None
 
-        except SQLAlchemyError as e:
-            raise RuntimeError(
-                f"Database error while finding user by username: {str(e)}"
-            )
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
     async def find_by_email(self, email: str) -> User | None:
         """Find user by email."""
@@ -132,8 +130,8 @@ class SQLAlchemyUserRepository(UserRepository):
             model = result.scalar_one_or_none()
             return self._to_domain_entity(model) if model else None
 
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding user by email: {str(e)}")
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
     async def find_all(self) -> list[User]:
         """Find all users."""

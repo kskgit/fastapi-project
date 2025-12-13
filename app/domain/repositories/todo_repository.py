@@ -47,70 +47,6 @@ class TodoRepository(ABC):
         pass
 
     @abstractmethod
-    async def find_all_by_user_id(self, user_id: int) -> list[Todo]:
-        """Find all todos for a specific user.
-
-        Args:
-            user_id: ID of the user (required)
-
-        Returns:
-            List of todo domain entities
-        """
-        pass
-
-    @abstractmethod
-    async def find_active_todos(self, user_id: int) -> list[Todo]:
-        """Find active todos (pending or in_progress) for a user.
-
-        Args:
-            user_id: ID of the user
-
-        Returns:
-            List of active todo domain entities
-        """
-        pass
-
-    @abstractmethod
-    async def find_by_status(self, status: TodoStatus, user_id: int) -> list[Todo]:
-        """Find todos by status for a specific user.
-
-        Args:
-            status: Status to filter by
-            user_id: User ID to filter by (required)
-
-        Returns:
-            List of todo domain entities matching the status
-        """
-        pass
-
-    @abstractmethod
-    async def find_by_priority(
-        self, priority: TodoPriority, user_id: int
-    ) -> list[Todo]:
-        """Find todos by priority for a specific user.
-
-        Args:
-            priority: Priority to filter by
-            user_id: User ID to filter by (required)
-
-        Returns:
-            List of todo domain entities matching the priority
-        """
-        pass
-
-    @abstractmethod
-    async def find_overdue_todos(self, user_id: int) -> list[Todo]:
-        """Find overdue todos for a specific user.
-
-        Args:
-            user_id: User ID to filter by (required)
-
-        Returns:
-            List of overdue todo domain entities
-        """
-        pass
-
-    @abstractmethod
     async def find_with_pagination(
         self,
         user_id: int,
@@ -142,43 +78,6 @@ class TodoRepository(ABC):
 
         Returns:
             True if deleted successfully, False if not found
-        """
-        pass
-
-    @abstractmethod
-    async def count_by_status(self, status: TodoStatus, user_id: int) -> int:
-        """Count todos by status for a specific user.
-
-        Args:
-            status: Status to count
-            user_id: User ID to filter by (required)
-
-        Returns:
-            Number of todos with the specified status
-        """
-        pass
-
-    @abstractmethod
-    async def count_total(self, user_id: int) -> int:
-        """Count total todos for a specific user.
-
-        Args:
-            user_id: User ID to filter by (required)
-
-        Returns:
-            Total number of todos for the user
-        """
-        pass
-
-    @abstractmethod
-    async def exists(self, todo_id: int) -> bool:
-        """Check if todo exists.
-
-        Args:
-            todo_id: ID of the todo to check
-
-        Returns:
-            True if todo exists, False otherwise
         """
         pass
 

@@ -114,86 +114,8 @@ class SQLAlchemyTodoRepository(TodoRepository):
             model = result.scalar_one_or_none()
             return self._to_domain_entity(model) if model else None
 
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding todo by id: {str(e)}")
-
-    async def find_all_by_user_id(self, user_id: int) -> list[Todo]:
-        """Find all todos for a specific user."""
-        try:
-            result = await self.db.execute(
-                select(TodoModel).where(TodoModel.user_id == user_id)
-            )
-            models: Sequence[TodoModel] = result.scalars().all()
-            return [self._to_domain_entity(model) for model in models]
-
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding todos by user: {str(e)}")
-
-    async def find_active_todos(self, user_id: int) -> list[Todo]:
-        """Find active todos (pending or in_progress) for a user."""
-        try:
-            result = await self.db.execute(
-                select(TodoModel).where(
-                    TodoModel.user_id == user_id,
-                    TodoModel.status.in_([TodoStatus.pending, TodoStatus.in_progress]),
-                )
-            )
-            models: Sequence[TodoModel] = result.scalars().all()
-            return [self._to_domain_entity(model) for model in models]
-
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding active todos: {str(e)}")
-
-    async def find_by_status(self, status: TodoStatus, user_id: int) -> list[Todo]:
-        """Find todos by status for a specific user."""
-        try:
-            result = await self.db.execute(
-                select(TodoModel).where(
-                    TodoModel.user_id == user_id, TodoModel.status == status
-                )
-            )
-            models: Sequence[TodoModel] = result.scalars().all()
-            return [self._to_domain_entity(model) for model in models]
-
-        except SQLAlchemyError as e:
-            raise RuntimeError(
-                f"Database error while finding todos by status: {str(e)}"
-            )
-
-    async def find_by_priority(
-        self, priority: TodoPriority, user_id: int
-    ) -> list[Todo]:
-        """Find todos by priority for a specific user."""
-        try:
-            result = await self.db.execute(
-                select(TodoModel).where(
-                    TodoModel.user_id == user_id, TodoModel.priority == priority
-                )
-            )
-            models: Sequence[TodoModel] = result.scalars().all()
-            return [self._to_domain_entity(model) for model in models]
-
-        except SQLAlchemyError as e:
-            raise RuntimeError(
-                f"Database error while finding todos by priority: {str(e)}"
-            )
-
-    async def find_overdue_todos(self, user_id: int) -> list[Todo]:
-        """Find overdue todos for a specific user."""
-        try:
-            now = datetime.now()
-            result = await self.db.execute(
-                select(TodoModel).where(
-                    TodoModel.user_id == user_id,
-                    TodoModel.due_date < now,
-                    TodoModel.status != TodoStatus.completed,
-                )
-            )
-            models: Sequence[TodoModel] = result.scalars().all()
-            return [self._to_domain_entity(model) for model in models]
-
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding overdue todos: {str(e)}")
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
     async def find_with_pagination(
         self,
@@ -218,10 +140,8 @@ class SQLAlchemyTodoRepository(TodoRepository):
             models: Sequence[TodoModel] = result.scalars().all()
             return [self._to_domain_entity(model) for model in models]
 
-        except SQLAlchemyError as e:
-            raise RuntimeError(
-                f"Database error while finding todos with pagination: {str(e)}"
-            )
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
     async def delete(self, todo_id: int) -> bool:
         """Delete todo by ID.
@@ -240,51 +160,8 @@ class SQLAlchemyTodoRepository(TodoRepository):
             await self.db.delete(model)
             return True
 
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while deleting todo: {str(e)}")
-
-    async def count_by_status(self, status: TodoStatus, user_id: int) -> int:
-        """Count todos by status for a specific user."""
-        try:
-            from sqlalchemy import func
-
-            result = await self.db.execute(
-                select(func.count(TodoModel.id)).where(
-                    TodoModel.user_id == user_id, TodoModel.status == status
-                )
-            )
-            return result.scalar() or 0
-
-        except SQLAlchemyError as e:
-            raise RuntimeError(
-                f"Database error while counting todos by status: {str(e)}"
-            )
-
-    async def count_total(self, user_id: int) -> int:
-        """Count total todos for a specific user."""
-        try:
-            from sqlalchemy import func
-
-            result = await self.db.execute(
-                select(func.count(TodoModel.id)).where(TodoModel.user_id == user_id)
-            )
-            return result.scalar() or 0
-
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while counting total todos: {str(e)}")
-
-    async def exists(self, todo_id: int) -> bool:
-        """Check if todo exists."""
-        try:
-            result = await self.db.execute(
-                select(TodoModel.id).where(TodoModel.id == todo_id)
-            )
-            return result.scalar_one_or_none() is not None
-
-        except SQLAlchemyError as e:
-            raise RuntimeError(
-                f"Database error while checking todo existence: {str(e)}"
-            )
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
     async def delete_all_by_user_id(self, user_id: int) -> int:
         """Delete all todos for a specific user.
@@ -309,7 +186,5 @@ class SQLAlchemyTodoRepository(TodoRepository):
 
             return delete_count
 
-        except SQLAlchemyError as e:
-            raise RuntimeError(
-                f"Database error while deleting todos for user {user_id}: {str(e)}"
-            )
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
