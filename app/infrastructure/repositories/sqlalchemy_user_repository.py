@@ -13,7 +13,6 @@ from app.domain.repositories.user_repository import UserRepository
 from app.infrastructure.database.models import UserModel
 
 
-# 一通りテストを書いてRuntimeErrorを修正する
 class SQLAlchemyUserRepository(UserRepository):
     """SQLAlchemy implementation of UserRepository.
 
@@ -107,8 +106,8 @@ class SQLAlchemyUserRepository(UserRepository):
             model = result.scalar_one_or_none()
             return self._to_domain_entity(model) if model else None
 
-        except SQLAlchemyError as e:
-            raise RuntimeError(f"Database error while finding user by id: {str(e)}")
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
 
     async def find_by_username(self, username: str) -> User | None:
         """Find user by username."""
