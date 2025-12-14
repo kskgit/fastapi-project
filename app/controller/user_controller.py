@@ -83,7 +83,7 @@ async def delete_user(
     usecase: DeleteUserUseCase = Depends(get_delete_user_usecase),
 ) -> None:
     """Delete a specific user."""
-    deleted = usecase.execute(user_id=user_id)
+    deleted = await usecase.execute(user_id=user_id)
     if not deleted:
         from app.domain.exceptions import UserNotFoundException
 

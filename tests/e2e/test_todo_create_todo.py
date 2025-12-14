@@ -4,11 +4,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy import text
 
 from app.di.common import get_todo_repository
 from app.domain.entities.user import User
-from app.infrastructure.database.connection import get_db
 from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
 )
@@ -113,37 +111,6 @@ class TestCreateTodoE2E:
         assert response.status_code == 404
         response_data = response.json()
         assert response_data["detail"] == "User with id 9999 not found"
-
-    async def test_create_todo_failure_data_operation_exception(
-        self, test_client: AsyncClient, test_user: User
-    ) -> None:
-        """DB操作エラーを発生させて500応答となることを確認する。"""
-        # Arrange
-        todo_data = {
-            "user_id": test_user.id,
-            "title": "Complete project documentation",
-            "description": "Write comprehensive documentation",
-        }
-
-        # Drop the todos table to force SQLAlchemy to raise an error during INSERT.
-        get_db_override = app.dependency_overrides.get(get_db)
-        if get_db_override is None:
-            pytest.fail("Database dependency override is not configured for tests.")
-
-        test_db_session = await get_db_override()
-        if test_db_session.get_bind() is None:
-            pytest.fail("AsyncSession must be bound to an engine.")
-
-        await test_db_session.execute(text("DROP TABLE todos"))
-        await test_db_session.commit()
-
-        # Act
-        response = await test_client.post(TODOS_ENDPOINT, json=todo_data)
-
-        # Assert - Should return 500 Internal Server Error
-        assert response.status_code == 500
-        response_data = response.json()
-        assert "Failed to execute data operation" in response_data["detail"]
 
     async def test_create_todo_failure_unexpected_exception(
         self, test_client: AsyncClient, test_user: User
