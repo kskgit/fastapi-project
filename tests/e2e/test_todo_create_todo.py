@@ -7,9 +7,7 @@ from httpx import AsyncClient
 
 from app.di.common import get_todo_repository
 from app.domain.entities.user import User
-from app.infrastructure.repositories.sqlalchemy_todo_repository import (
-    SQLAlchemyTodoRepository,
-)
+from app.domain.repositories.todo_repository import TodoRepository
 from main import app
 
 TODOS_ENDPOINT = "/todos/"
@@ -123,11 +121,11 @@ class TestCreateTodoE2E:
             "description": "Write comprehensive documentation",
         }
         # Repository をモックして予期せぬ例外を送出させる
-        todo_repository_mock = AsyncMock(spec=SQLAlchemyTodoRepository)
-        todo_repository_mock.create.side_effect = Exception("unexpected_exception")
+        failing_repository = AsyncMock(spec=TodoRepository)
+        failing_repository.create.side_effect = Exception("unexpected_exception")
 
         # Override the repository dependency only
-        app.dependency_overrides[get_todo_repository] = lambda: todo_repository_mock
+        app.dependency_overrides[get_todo_repository] = lambda: failing_repository
 
         try:
             # Act
@@ -137,8 +135,7 @@ class TestCreateTodoE2E:
             assert response.status_code == 500
             response_data = response.json()
             assert "Internal Server Error" in response_data["detail"]
-            todo_repository_mock.create.assert_awaited_once()
+            failing_repository.create.assert_awaited_once()
         finally:
             # Clean up - Remove the override
-            if get_todo_repository in app.dependency_overrides:
-                del app.dependency_overrides[get_todo_repository]
+            app.dependency_overrides.pop(get_todo_repository, None)

@@ -1,7 +1,14 @@
 """E2E tests for user creation with role assignment."""
 
+from unittest.mock import AsyncMock
+
 import pytest
 from httpx import AsyncClient
+
+from app.di.common import get_user_repository
+from app.domain.entities.user import User
+from app.domain.repositories.user_repository import UserRepository
+from main import app
 
 USERS_ENDPOINT = "/api/v1/users/"
 
@@ -41,3 +48,54 @@ class TestCreateUserE2E:
         persisted = get_response.json()
         assert persisted["id"] == created_user_id
         assert persisted["role"] == "viewer"
+
+    async def test_create_user_failure_unique_constraint(
+        self,
+        test_client: AsyncClient,
+        test_user: User,
+    ) -> None:
+        """重複ユーザを作成しようとすると422になること."""
+        # Arrange
+        duplicate_payload = {
+            "username": test_user.username,
+            "email": test_user.email,
+            "full_name": "Duplicated User",
+            "role": "viewer",
+        }
+
+        # Act
+        response = await test_client.post(USERS_ENDPOINT, json=duplicate_payload)
+
+        # Assert
+        assert response.status_code == 422
+        response_data = response.json()
+        assert "already exists" in response_data["detail"]
+
+    async def test_create_user_failure_unexpected_exception(
+        self,
+        test_client: AsyncClient,
+    ) -> None:
+        """予期せぬ例外発生時は500となること."""
+        # Arrange
+        user_data = {
+            "username": "unexpected_user",
+            "email": "unexpected@example.com",
+            "full_name": "Unexpected Failure",
+            "role": "member",
+        }
+        failing_repository = AsyncMock(spec=UserRepository)
+        failing_repository.find_by_username.return_value = None
+        failing_repository.find_by_email.return_value = None
+        failing_repository.create.side_effect = Exception("unexpected failure")
+        app.dependency_overrides[get_user_repository] = lambda: failing_repository
+
+        try:
+            # Act
+            response = await test_client.post(USERS_ENDPOINT, json=user_data)
+
+            # Assert
+            assert response.status_code == 500
+            assert response.json()["detail"] == "Internal Server Error"
+            failing_repository.create.assert_awaited_once()
+        finally:
+            app.dependency_overrides.pop(get_user_repository, None)

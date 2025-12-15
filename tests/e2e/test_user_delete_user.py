@@ -6,10 +6,9 @@ import pytest
 from httpx import AsyncClient
 
 from app.di.common import get_todo_repository
-from app.di.user import get_delete_user_usecase
 from app.domain.entities.todo import Todo
 from app.domain.entities.user import User
-from app.usecases.user.delete_user_usecase import DeleteUserUseCase
+from app.domain.repositories.todo_repository import TodoRepository
 from main import app
 
 USERS_ENDPOINT = "/api/v1/users/"
@@ -78,9 +77,11 @@ class TestDeleteUserE2E:
         # Arrange
         assert test_user.id is not None
         user_id = test_user.id
-        failing_usecase = AsyncMock(spec=DeleteUserUseCase)
-        failing_usecase.execute.side_effect = Exception("unexpected failure")
-        app.dependency_overrides[get_delete_user_usecase] = lambda: failing_usecase
+        failing_todo_repository = AsyncMock(spec=TodoRepository)
+        failing_todo_repository.delete_all_by_user_id.side_effect = Exception(
+            "unexpected failure"
+        )
+        app.dependency_overrides[get_todo_repository] = lambda: failing_todo_repository
 
         try:
             # Act
@@ -90,6 +91,8 @@ class TestDeleteUserE2E:
             assert response.status_code == 500
             response_data = response.json()
             assert response_data["detail"] == "Internal Server Error"
-            failing_usecase.execute.assert_awaited_once_with(user_id=user_id)
+            failing_todo_repository.delete_all_by_user_id.assert_awaited_once_with(
+                user_id
+            )
         finally:
-            app.dependency_overrides.pop(get_delete_user_usecase, None)
+            app.dependency_overrides.pop(get_todo_repository, None)

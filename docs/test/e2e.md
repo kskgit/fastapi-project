@@ -9,7 +9,7 @@
 
 ## テスト観点と主要パターン
 - 仕様上返却し得る代表的なステータス種別（例: 成功系=200/201、クライアントエラー=4xx）を最低1ケースずつテストする。
-- 500系レスポンスは `unexpected_exception` シナリオとしてRepositoryを `app.dependency_overrides` でモックし、`Exception` や を送出させて 500 を確認する。
+- 500系レスポンスは `unexpected_exception` シナリオでのみモック利用を許可する。`app.dependency_overrides` で Repository 依存（例: `get_user_repository`, `get_todo_repository`）だけを `AsyncMock` に差し替え、`Exception` を送出させて 500 のハンドリングを確認する。UseCase や他レイヤをモックしたり、DB構造を壊すようなセットアップは行わない。
 - 500系レスポンスを除き、モックは利用しない。
 - レスポンスのステータスコードと、レスポンスのデータを確認する
   - 異常系の場合`detail`の中身を確認すると良い
