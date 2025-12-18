@@ -20,6 +20,7 @@
 - repository
 - usecase が直接依存するドメインサービスやトランザクションマネージャ（必要に応じて）
 - トランザクションマネージャは `tests/unit/usecase/conftest.py::mock_transaction_manager` を使い回し、非同期コンテキスト管理の実装差異による重複を避ける
+- 基本的にAsyncMockを利用してMockし、コンストラクタでUseCaseに渡す
 
 ## テスト観点と主要パターン
 ### 正常系
