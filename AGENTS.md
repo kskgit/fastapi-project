@@ -2,5 +2,5 @@
 - ユーザへのチャットは日本語を利用してください
 
 ## 参照すべきドキュメント
-- `docs/coding_guide.md`: コーディングに関する指針全般を記載しています。
-- `docs/test_strategy.md`: テストを追加・変更する際に必ず確認してください。
+- [`docs/coding_guide.md`](docs/coding_guide.md): コーディングに関する指針全般を記載しています。
+- [`docs/test_strategy.md`](docs/test/test_strategy.md): テストを追加・変更する際に必ず確認してください。

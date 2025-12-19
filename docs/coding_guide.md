@@ -10,6 +10,10 @@ graph TD
     Usecase --> Infrastructure
 ```
 
+# 開発の流れ
+機能追加・改修は以下のフローに沿って行うこと
+[開発の流れ](./development_flow.md)
+
 # 設計ポリシー
 - [依存関係設計ポリシー](./coding/dependency_policy.md)
 - [例外設計ポリシー](./coding/exception_policy.md)
