@@ -12,7 +12,8 @@
   - 200系
     - 必須
   - 400系
-    - 存在する場合のみ
+    - 422 バリデーションエラー
+    - 400 ビジネスロジックエラー
   - 500系
     - 必須
 - 500系レスポンスは `unexpected_exception` シナリオでのみモック利用を許可する。`app.dependency_overrides` で Repository 依存（例: `get_user_repository`, `get_todo_repository`）だけを `AsyncMock` に差し替え、`Exception` を送出させて 500 のハンドリングを確認する。UseCase や他レイヤをモックしたり、DB構造を壊すようなセットアップは行わない。
