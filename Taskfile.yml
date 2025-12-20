@@ -33,7 +33,7 @@ tasks:
 
   test:
     desc: Run unit tests
-    cmd: uv run pytest tests/unit -v
+    cmd: uv run --group test pytest {{.CLI_ARGS}}
 
   test-coverage:
     desc: Run tests with coverage report
