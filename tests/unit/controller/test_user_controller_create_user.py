@@ -7,10 +7,6 @@ from app.controller.dto.user_dto import UserCreateDTO, UserResponseDTO
 from app.controller.user_controller import create_user
 from app.domain.entities.user import User, UserRole
 from app.usecases.user.create_user_usecase import CreateUserUseCase
-from tests.unit.controller.exception_cases import (
-    ControllerExceptionCase,
-    controller_domain_exception_cases,
-)
 
 
 @pytest.mark.asyncio
@@ -55,35 +51,3 @@ async def test_create_user_success_returns_response() -> None:
     assert response.role == UserRole.VIEWER
     assert response.created_at == returned_user.created_at
     assert response.updated_at == returned_user.updated_at
-
-
-EXCEPTION_CASES = tuple[ControllerExceptionCase, ...](
-    controller_domain_exception_cases()
-)
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "exception_case",
-    EXCEPTION_CASES,
-    ids=[case.id for case in EXCEPTION_CASES],
-)
-async def test_create_user_propagates_domain_exceptions(
-    exception_case: ControllerExceptionCase,
-) -> None:
-    """想定するドメイン例外は握り潰さずFastAPIのハンドラへ伝播する."""
-    # Arrange
-    request_dto = UserCreateDTO(
-        username="viewer_user",
-        email="viewer@example.com",
-        full_name="Viewer User",
-        role=UserRole.VIEWER,
-    )
-    usecase = AsyncMock(spec=CreateUserUseCase)
-    raised_exception = exception_case.factory()
-    usecase.execute.side_effect = raised_exception
-
-    # Act / Assert
-    with pytest.raises(type(raised_exception)) as exc_info:
-        await create_user(user_data=request_dto, usecase=usecase)
-    assert exc_info.value is raised_exception

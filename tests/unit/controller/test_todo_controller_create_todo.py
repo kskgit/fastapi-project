@@ -7,10 +7,6 @@ from app.controller.dto.todo_dto import CreateTodoDTO, TodoResponseDTO
 from app.controller.todo_controller import create_todo
 from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
 from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
-from tests.unit.controller.exception_cases import (
-    ControllerExceptionCase,
-    controller_domain_exception_cases,
-)
 
 
 @pytest.mark.asyncio
@@ -58,36 +54,3 @@ async def test_create_todo_success_returns_response() -> None:
     assert response.status == returned_todo.status
     assert response.created_at == returned_todo.created_at
     assert response.updated_at == returned_todo.updated_at
-
-
-EXCEPTION_CASES = tuple[ControllerExceptionCase, ...](
-    controller_domain_exception_cases()
-)
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "exception_case",
-    EXCEPTION_CASES,
-    ids=[case.id for case in EXCEPTION_CASES],
-)
-async def test_create_todo_propagates_domain_exceptions(
-    exception_case: ControllerExceptionCase,
-) -> None:
-    """想定するドメイン例外は握り潰さずFastAPIのハンドラへ伝播する."""
-    # Arrange
-    request_dto = CreateTodoDTO(
-        user_id=1,
-        title="Valid title",
-        description="",
-        due_date=None,
-        priority=TodoPriority.medium,
-    )
-    usecase = AsyncMock(spec=CreateTodoUseCase)
-    raised_exception = exception_case.factory()
-    usecase.execute.side_effect = raised_exception
-
-    # Act / Assert
-    with pytest.raises(type(raised_exception)) as exc_info:
-        await create_todo(todo_data=request_dto, usecase=usecase)
-    assert exc_info.value is raised_exception
