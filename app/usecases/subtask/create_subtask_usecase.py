@@ -1,4 +1,3 @@
-# TODO 中身実装する
 class CreateSubTaskUseCase:
     """UseCase for creating a new Todo.
 
@@ -11,4 +10,4 @@ class CreateSubTaskUseCase:
     """
 
     async def execute(self):
-        print("test")
+        pass

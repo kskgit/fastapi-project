@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.controller import todo_controller, user_controller
+from app.controller import subtask_controller, todo_controller, user_controller
 from app.core.middleware.exception_handlers import register_exception_handlers
 
 app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
@@ -8,6 +8,7 @@ app = FastAPI(title="FastAPI Todo Management", version="0.1.0")
 register_exception_handlers(app)
 app.include_router(todo_controller.router)
 app.include_router(user_controller.router)
+app.include_router(subtask_controller.router)
 
 
 @app.get("/")
