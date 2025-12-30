@@ -22,7 +22,6 @@ async def create_subtask(
     usecase: CreateSubTaskUseCase = Depends(get_create_subtask_usecase),
 ) -> SubtaskResponseDTO:
     """Create a subtask that belongs to the specified todo."""
-    await usecase.execute()
 
     # TODO Usecaseで実装したら削除
     if todo_id == 9999:
@@ -31,8 +30,14 @@ async def create_subtask(
     # TODO Usecaseで実装したら削除
     if request.user_id == 9999:
         raise ResourceNotFoundException(
-            resource_id=request.user_id, resource_type="User"
+            resource_id=request.user_id, resource_type="ユーザ"
         )
+
+    await usecase.execute(
+        user_id=request.user_id,
+        todo_id=todo_id,
+        title=request.title,
+    )
 
     # TODO UseCaseから返却された値に変更する
     now = datetime.now()
