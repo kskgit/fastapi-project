@@ -9,5 +9,10 @@ class CreateSubTaskUseCase:
     - No dependencies on API, Services, or Infrastructure layers
     """
 
-    async def execute(self):
+    async def execute(
+        self,
+        user_id: int,
+        todo_id: int,
+        title: str,
+    ):
         pass
