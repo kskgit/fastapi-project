@@ -1,4 +1,4 @@
-"""ユーザ削除エンドポイントのE2Eテスト."""
+"""ユーザ削除エンドポイントのインテグレーションテスト."""
 
 from unittest.mock import AsyncMock
 
@@ -15,8 +15,8 @@ USERS_ENDPOINT = "/api/v1/users/"
 
 
 @pytest.mark.asyncio
-class TestDeleteUserE2E:
-    """ユーザ削除処理のE2Eテストを集約."""
+class TestDeleteUserIntegration:
+    """ユーザ削除処理のインテグレーションテストを集約."""
 
     async def test_delete_user_success_removes_related_todos(
         self,

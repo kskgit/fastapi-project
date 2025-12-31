@@ -31,7 +31,7 @@
 
 # 例外処理のテスト
 - 例外を意図的にハンドリングしていない場合のテストは行わない
-- 例外をハンドリングしていない箇所にて、発生した例外がそのままthrowされることの振る舞いはe2eテストの500系のパターンで担保する
+- 例外をハンドリングしていない箇所にて、発生した例外がそのままthrowされることの振る舞いはインテグレーションテストの500系のパターンで担保する
   - 記述の簡潔さを優先し各層ではテストを記載しない
 
 # レイヤ別ガイド
@@ -42,4 +42,4 @@
 - [Domain](./test_strategy_domain.md)
 - [Domain Service](./test_strategy_domain_service.md)
 - [Repository](./test_strategy_repository.md)
-- [E2Eテスト](./test_strategy_e2e.md)
+- [インテグレーションテスト](./integration.md)

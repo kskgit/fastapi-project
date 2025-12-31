@@ -1,4 +1,4 @@
-"""E2E tests for CreateTodoUseCase via HTTP endpoints."""
+"""Integration tests for CreateTodoUseCase via HTTP endpoints."""
 
 from unittest.mock import AsyncMock
 
@@ -14,8 +14,8 @@ TODOS_ENDPOINT = "/todos/"
 
 
 @pytest.mark.asyncio
-class TestCreateTodoE2E:
-    """E2E tests for todo creation via HTTP API."""
+class TestCreateTodoIntegration:
+    """Integration tests for todo creation via HTTP API."""
 
     async def test_create_todo_success_minimal_data(
         self, test_client: AsyncClient, test_user: User

@@ -43,9 +43,9 @@ tasks:
     desc: Run all tests
     cmd: uv run pytest tests -v
 
-  test-e2e:
-    desc: Run e2e tests
-    cmd: uv run pytest tests/e2e/ -v
+  test-integration:
+    desc: Run integration tests
+    cmd: uv run pytest tests/integration/ -v
 
   db-up:
     desc: Start PostgreSQL container

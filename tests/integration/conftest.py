@@ -1,4 +1,4 @@
-"""E2E test configuration and fixtures."""
+"""Integration test configuration and fixtures."""
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -14,7 +14,7 @@ from main import app
 
 @pytest.fixture(scope="function")
 async def in_memory_engine():
-    """Create in-memory SQLite engine for e2e tests."""
+    """Create in-memory SQLite engine for integration tests."""
     engine = create_async_engine(
         "sqlite+aiosqlite:///:memory:",
         echo=False,
@@ -44,13 +44,13 @@ async def test_db_session(in_memory_engine):
 
 @pytest.fixture(scope="function")
 async def test_user(test_db_session):
-    """Create test user for e2e tests."""
+    """Create test user for integration tests."""
     user_repo = SQLAlchemyUserRepository(test_db_session)
 
     user = User.create(
-        username="e2e_test_user",
-        email="e2e@example.com",
-        full_name="E2E Test User",
+        username="integration_test_user",
+        email="integration@example.com",
+        full_name="Integration Test User",
     )
 
     saved_user = await user_repo.create(user)

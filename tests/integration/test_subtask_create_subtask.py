@@ -1,4 +1,4 @@
-"""E2E tests for Subtask creation endpoints."""
+"""Integration tests for Subtask creation endpoints."""
 
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ SUBTASKS_ENDPOINT_TEMPLATE = "/todos/{todo_id}/subtasks"
 
 
 @pytest.mark.asyncio
-class TestCreateSubtaskE2E:
-    """E2E tests for subtask creation via HTTP API."""
+class TestCreateSubtaskIntegration:
+    """Integration tests for subtask creation via HTTP API."""
 
     async def _create_todo(self, client: AsyncClient, user: User) -> int:
         """Helper to create a todo and return its ID."""

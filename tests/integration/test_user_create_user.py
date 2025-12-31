@@ -1,4 +1,4 @@
-"""E2E tests for user creation with role assignment."""
+"""Integration tests for user creation with role assignment."""
 
 from unittest.mock import AsyncMock
 
@@ -14,8 +14,8 @@ USERS_ENDPOINT = "/api/v1/users/"
 
 
 @pytest.mark.asyncio
-class TestCreateUserE2E:
-    """Tests for creating users via HTTP API."""
+class TestCreateUserIntegration:
+    """Integration tests for creating users via HTTP API."""
 
     async def test_create_user_success_viewer_role(
         self, test_client: AsyncClient
