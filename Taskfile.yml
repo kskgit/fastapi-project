@@ -5,6 +5,18 @@ tasks:
     desc: Start the FastAPI development server
     cmd: uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
+  kill-port-8000:
+    desc: Kill any process listening on port 8000
+    cmds:
+      - |
+        pids=$(lsof -ti:8000)
+        if [ -n "$pids" ]; then
+          echo "Killing processes on port 8000: $pids"
+          echo "$pids" | xargs kill -9
+        else
+          echo "No processes found on port 8000"
+        fi
+
   start:
     desc: Start the FastAPI server
     cmd: uv run python main.py
