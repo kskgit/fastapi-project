@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Annotated
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -23,8 +24,19 @@ def _normalize_title(value: str, *, empty_error: str) -> str:
 class CreateSubTaskDTO(BaseModel):
     """DTO for creating a new subtask via API."""
 
-    user_id: int = Field(..., description="Todo owner user ID")
-    title: str = Field(..., min_length=3, max_length=100, description="Todo title")
+    user_id: Annotated[
+        int, Field(description="Todo owner user ID", frozen=True, strict=True)
+    ]
+    title: Annotated[
+        str,
+        Field(
+            min_length=3,
+            max_length=100,
+            description="Todo title",
+            frozen=True,
+            strict=True,
+        ),
+    ]
 
     @field_validator("title")
     @classmethod
