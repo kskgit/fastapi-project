@@ -5,7 +5,6 @@ from fastapi import status as http_status
 
 from app.controller.dto.subtask_dto import CreateSubTaskDTO, SubtaskResponseDTO
 from app.di.subtask import get_create_subtask_usecase
-from app.domain.exceptions import ResourceNotFoundException
 from app.usecases.subtask.create_subtask_usecase import CreateSubTaskUseCase
 
 router = APIRouter(prefix="/todos", tags=["subtasks"])
@@ -22,16 +21,6 @@ async def create_subtask(
     usecase: CreateSubTaskUseCase = Depends(get_create_subtask_usecase),
 ) -> SubtaskResponseDTO:
     """Create a subtask that belongs to the specified todo."""
-
-    # TODO Usecaseで実装したら削除
-    if todo_id == 9999:
-        raise ResourceNotFoundException(resource_id=todo_id, resource_type="Todo")
-
-    # TODO Usecaseで実装したら削除
-    if request.user_id == 9999:
-        raise ResourceNotFoundException(
-            resource_id=request.user_id, resource_type="ユーザ"
-        )
 
     await usecase.execute(
         user_id=request.user_id,
