@@ -14,14 +14,14 @@ router = APIRouter(prefix="/todos", tags=["subtasks"])
     "/{todo_id}/subtasks",
     response_model=SubtaskResponseDTO,
     status_code=http_status.HTTP_201_CREATED,
+    summary="Todo配下のサブタスク作成",
+    description="指定したTodoの子サブタスクを作成し、作成済みデータを返す。",
 )
 async def create_subtask(
     todo_id: int,
     request: CreateSubTaskDTO,
     usecase: CreateSubTaskUseCase = Depends(get_create_subtask_usecase),
 ) -> SubtaskResponseDTO:
-    """Create a subtask that belongs to the specified todo."""
-
     await usecase.execute(
         user_id=request.user_id,
         todo_id=todo_id,
