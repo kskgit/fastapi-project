@@ -5,8 +5,16 @@ from dataclasses import dataclass
 
 @dataclass
 class SubTask:
+    user_id: int
+    todo_id: int
     title: str
+    is_compleated: bool
 
     @classmethod
-    def create(cls, title: str) -> SubTask:
-        return cls(title=title)
+    def create(cls, user_id: int, todo_id: int, title: str) -> SubTask:
+        return cls(
+            user_id=user_id,
+            todo_id=todo_id,
+            title=title,
+            is_compleated=False,
+        )
