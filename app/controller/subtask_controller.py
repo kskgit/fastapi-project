@@ -35,7 +35,6 @@ async def create_subtask(
         todo_id=todo_id,
         user_id=request.user_id,
         title=request.title,
-        due_date=None,
         is_completed=False,
         completed_at=None,
         created_at=now,

@@ -63,7 +63,6 @@ class SubtaskResult:
     todo_id: int
     user_id: int
     title: str
-    due_date: datetime | None
     is_completed: bool
     completed_at: datetime | None
     created_at: datetime | None
@@ -77,7 +76,6 @@ class SubtaskResponseDTO(BaseModel):
     todo_id: int
     user_id: int
     title: str
-    due_date: datetime | None
     is_completed: bool
     completed_at: datetime | None
     created_at: datetime
@@ -98,7 +96,6 @@ class SubtaskResponseDTO(BaseModel):
             todo_id=result.todo_id,
             user_id=result.user_id,
             title=result.title,
-            due_date=result.due_date,
             is_completed=result.is_completed,
             completed_at=result.completed_at,
             created_at=result.created_at,

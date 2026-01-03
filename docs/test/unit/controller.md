@@ -41,7 +41,6 @@ async def test_create_subtask_success() -> None:
         todo_id=todo_id,
         user_id=user_id,
         title=title,
-        due_date=datetime(2024, 1, 10, tzinfo=UTC),
         is_completed=False,
         completed_at=None,
         created_at=datetime(2024, 1, 10, tzinfo=UTC),
@@ -68,7 +67,6 @@ async def test_create_subtask_success() -> None:
     assert res.todo_id == todo_id
     assert res.user_id == request_dto.user_id
     assert res.title == request_dto.title
-    assert res.due_date is None
     assert not res.is_completed
     assert res.completed_at is None
     assert res.created_at is not None

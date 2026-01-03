@@ -20,7 +20,6 @@ def _build_result(
         todo_id=10,
         user_id=5,
         title="Write docs",
-        due_date=datetime(2024, 1, 10, tzinfo=UTC),
         is_completed=False,
         completed_at=None,
         created_at=created_at_value,
@@ -41,7 +40,6 @@ def test_subtask_response_dto_from_result_success() -> None:
     assert dto.todo_id == result.todo_id
     assert dto.user_id == result.user_id
     assert dto.title == result.title
-    assert dto.due_date == result.due_date
     assert dto.is_completed is False
     assert dto.completed_at is None
     assert dto.created_at == result.created_at
