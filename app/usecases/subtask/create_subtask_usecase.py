@@ -1,3 +1,7 @@
+from app.core.transaction_manager import TransactionManager
+from app.domain.subtask import SubTask
+
+
 class CreateSubTaskUseCase:
     """UseCase for creating a new Todo.
 
@@ -9,10 +13,26 @@ class CreateSubTaskUseCase:
     - No dependencies on API, Services, or Infrastructure layers
     """
 
+    transaction_manager: TransactionManager
+
+    def __init__(
+        self,
+        transaction_manager: TransactionManager,
+    ):
+        self.transaction_manager = transaction_manager
+
     async def execute(
         self,
         user_id: int,
         todo_id: int,
         title: str,
     ):
-        pass
+        async with self.transaction_manager.begin_transaction():
+            # TODO Userの権限確認
+            # TODO 親のTodo存在チェック
+            return SubTask.create(
+                user_id=user_id,
+                todo_id=todo_id,
+                title=title,
+            )
+            # TODO Repository経由で永続化
