@@ -29,6 +29,9 @@ class CreateSubTaskUseCase:
     ):
         async with self.transaction_manager.begin_transaction():
             # TODO Userの権限確認
+            # Userの存在
+            # 親のTodoの所有者がuser_idと一致していること
+            # Userのロールがmember以上であること
             # TODO 親のTodo存在チェック
             return SubTask.create(
                 user_id=user_id,
