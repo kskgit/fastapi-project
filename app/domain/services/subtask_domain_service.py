@@ -1,4 +1,4 @@
-from app.domain.exceptions import UserNotFoundException
+from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 
@@ -11,9 +11,16 @@ class SubTaskDomainService:
         user_repository: UserRepository,
         todo_repository: TodoRepository,
     ) -> bool:
+        todo = await todo_repository.find_by_id(todo_id=todo_id)
+        if todo is None:
+            raise TodoNotFoundException(todo_id=todo_id)
+
+        # TODO todoのuseridと引数のuseridの一致確認
+
         user = await user_repository.find_by_id(user_id=user_id)
         if user is None:
             raise UserNotFoundException(user_id=user_id)
 
-        todo = await todo_repository.find_by_id(todo_id=todo_id)  # noqa: F841 TODO 利用後削除
+        # TODO userの権限確認
+
         return True
