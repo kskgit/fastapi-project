@@ -76,6 +76,35 @@ async def test_ensure_todo_user_can_modify_subtask_failer_todo_not_found() -> No
     mock_user_repository.find_by_id.assert_not_called()
 
 
+async def test_ensure_todo_user_can_modify_subtask_failer_owner_mismatch() -> None:
+    # Arrange
+    subtask_domain_service = SubTaskDomainService()
+
+    request_user_id = 1
+    mock_user_repository = AsyncMock(spec=UserRepository)
+
+    todo_id = 2
+    mock_todo_repository = AsyncMock(spec=TodoRepository)
+    mock_todo_repository.find_by_id.return_value = Todo.create(
+        user_id=999,
+        title="Todo",
+        description="test todo",
+        priority=TodoPriority.medium,
+    )
+
+    # Act / Assert
+    with pytest.raises(TodoNotFoundException):
+        await subtask_domain_service.ensure_todo_user_can_modify_subtask(
+            user_id=request_user_id,
+            todo_id=todo_id,
+            user_repository=mock_user_repository,
+            todo_repository=mock_todo_repository,
+        )
+
+    mock_todo_repository.find_by_id.assert_awaited_once_with(todo_id=todo_id)
+    mock_user_repository.find_by_id.assert_not_called()
+
+
 async def test_ensure_todo_user_can_modify_subtask_failer_user_not_found() -> None:
     # Arrange
     subtask_domain_service = SubTaskDomainService()
