@@ -6,6 +6,8 @@ from typing import Any
 class ExceptionStatusCode(Enum):
     # 処理実行前にリクエスト内容の不備で処理が実行できない
     VALIDATION_ERR = 400
+    # 権限不足
+    PERMISSION_DENIED = 403
     # 処理対象のリソースが見つからない
     NOT_FOUND = 404
     # ビジネスロジックの制約で処理が実行出来ない

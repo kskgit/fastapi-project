@@ -227,3 +227,29 @@ class TodoNotFoundException(ResourceNotFoundException):
             resource_id=todo_id,
             details=details,
         )
+
+
+class UserPermissionDeniedException(BusinessRuleException):
+    """Exception raised when user lacks required permissions."""
+
+    def __init__(
+        self,
+        user_id: int,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        """Initialize user permission denied exception.
+
+        Args:
+            user_id: ID of the user lacking permission
+            required_role: Optional role that is required
+            details: Additional context information
+        """
+        message = f"User with id {user_id} lacks required permissions"
+        exception_details = details or {}
+
+        super().__init__(message=message, details=exception_details)
+        self.user_id = user_id
+
+    @property
+    def http_status_code(self) -> ExceptionStatusCode:
+        return ExceptionStatusCode.PERMISSION_DENIED

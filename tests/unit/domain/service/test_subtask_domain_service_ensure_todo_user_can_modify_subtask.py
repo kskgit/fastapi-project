@@ -5,6 +5,7 @@ import pytest
 from app.domain.entities.todo import Todo, TodoPriority
 from app.domain.entities.user import User, UserRole
 from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
+from app.domain.exceptions.business import UserPermissionDeniedException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.subtask_domain_service import SubTaskDomainService
@@ -124,6 +125,42 @@ async def test_ensure_todo_user_can_modify_subtask_failer_user_not_found() -> No
 
     # Act / Assert
     with pytest.raises(UserNotFoundException):
+        await subtask_domain_service.ensure_todo_user_can_modify_subtask(
+            user_id=user_id,
+            todo_id=todo_id,
+            user_repository=mock_user_repository,
+            todo_repository=mock_todo_repository,
+        )
+
+    mock_user_repository.find_by_id.assert_awaited_once_with(user_id=user_id)
+    mock_todo_repository.find_by_id.assert_awaited_once_with(todo_id=todo_id)
+
+
+async def test__ensure_todo_user_can_modify_subtask_failer_user_permission_denied() -> (
+    None
+):
+    # Arrange
+    subtask_domain_service = SubTaskDomainService()
+
+    user_id = 1
+    mock_user_repository = AsyncMock(spec=UserRepository)
+    mock_user_repository.find_by_id.return_value = User(
+        id=1,
+        username="member_user",
+        email="taken@example.com",
+        role=UserRole.VIEWER,
+    )
+
+    todo_id = 2
+    mock_todo_repository = AsyncMock(spec=TodoRepository)
+    mock_todo_repository.find_by_id.return_value = Todo.create(
+        user_id=user_id,
+        title="Todo",
+        description="test todo",
+        priority=TodoPriority.medium,
+    )
+
+    with pytest.raises(UserPermissionDeniedException):
         await subtask_domain_service.ensure_todo_user_can_modify_subtask(
             user_id=user_id,
             todo_id=todo_id,

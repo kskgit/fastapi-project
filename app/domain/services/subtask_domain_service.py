@@ -1,4 +1,6 @@
+from app.domain.entities.user import UserRole
 from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
+from app.domain.exceptions.business import UserPermissionDeniedException
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 
@@ -22,6 +24,7 @@ class SubTaskDomainService:
         if user is None:
             raise UserNotFoundException(user_id=user_id)
 
-        # TODO userの権限確認
+        if user.role == UserRole.VIEWER:
+            raise UserPermissionDeniedException(user_id=user_id)
 
         return True
