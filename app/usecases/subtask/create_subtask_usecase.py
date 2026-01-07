@@ -1,4 +1,7 @@
 from app.core.transaction_manager import TransactionManager
+from app.domain.repositories.todo_repository import TodoRepository
+from app.domain.repositories.user_repository import UserRepository
+from app.domain.services.subtask_domain_service import SubTaskDomainService
 from app.domain.subtask import SubTask
 
 
@@ -14,12 +17,21 @@ class CreateSubTaskUseCase:
     """
 
     transaction_manager: TransactionManager
+    user_repository: UserRepository
+    todo_repository: TodoRepository
+    subtask_domain_service: SubTaskDomainService
 
     def __init__(
         self,
         transaction_manager: TransactionManager,
+        user_repository: UserRepository,
+        todo_repository: TodoRepository,
+        subtask_domain_service: SubTaskDomainService,
     ):
         self.transaction_manager = transaction_manager
+        self.user_repository = user_repository
+        self.todo_repository = todo_repository
+        self.subtask_domain_service = subtask_domain_service
 
     async def execute(
         self,
@@ -28,11 +40,13 @@ class CreateSubTaskUseCase:
         title: str,
     ):
         async with self.transaction_manager.begin_transaction():
-            # TODO Userの権限確認
-            # Userの存在
-            # 親のTodoの所有者がuser_idと一致していること
-            # Userのロールがmember以上であること
-            # TODO 親のTodo存在チェック
+            await self.subtask_domain_service.ensure_todo_user_can_modify_subtask(
+                user_id=user_id,
+                todo_id=todo_id,
+                user_repository=self.user_repository,
+                todo_repository=self.todo_repository,
+            )
+
             return SubTask.create(
                 user_id=user_id,
                 todo_id=todo_id,

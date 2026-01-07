@@ -34,17 +34,16 @@ async def test_ensure_todo_user_can_modify_subtask_success() -> None:
     )
 
     # Act
-    result = await subtask_domain_service.ensure_todo_user_can_modify_subtask(
+    # TODO 例外が送出されることを確認する
+    await subtask_domain_service.ensure_todo_user_can_modify_subtask(
         user_id=user_id,
         todo_id=todo_id,
         user_repository=mock_user_repository,
         todo_repository=mock_todo_repository,
     )
-
     # Assert
     mock_user_repository.find_by_id.assert_awaited_once_with(user_id=user_id)
     mock_todo_repository.find_by_id.assert_awaited_once_with(todo_id=todo_id)
-    assert result is True
 
 
 async def test_ensure_todo_user_can_modify_subtask_failer_todo_not_found() -> None:

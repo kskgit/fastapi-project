@@ -12,8 +12,9 @@ class SubTaskDomainService:
         todo_id: int,
         user_repository: UserRepository,
         todo_repository: TodoRepository,
-    ) -> bool:
+    ) -> None:
         todo = await todo_repository.find_by_id(todo_id=todo_id)
+
         if todo is None:
             raise TodoNotFoundException(todo_id=todo_id)
 
@@ -21,10 +22,9 @@ class SubTaskDomainService:
             raise TodoNotFoundException(todo_id=todo_id)
 
         user = await user_repository.find_by_id(user_id=user_id)
+
         if user is None:
             raise UserNotFoundException(user_id=user_id)
 
         if user.role == UserRole.VIEWER:
             raise UserPermissionDeniedException(user_id=user_id)
-
-        return True
