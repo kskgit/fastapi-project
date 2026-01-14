@@ -29,8 +29,9 @@
 - 非同期メソッドは `assert_awaited_once_with` などで await されているか確認
 
 #### 参考実装
-- [`tests/unit/usecase/test_create_todo_usecase.py/test_create_todo_success`](../tests/unit/usecase/test_create_todo_usecase.py)
-
+- [`tests/unit/usecase/test_create_todo_usecase.py/test_create_todo_success`](tests/unit/usecase/test_create_todo_usecase.py)
+#### 参考実装
+- [`test_create_todo_usecase.py` の `test_create_todo_success`](../../tests/unit/usecase/test_create_todo_usecase.py)
 ### ビジネスロジック例外
 - ドメインサービスや UseCase 内部の検証で想定する例外が発生するか
 - 例外が伝播・またはハンドリングされる挙動が仕様通りか
