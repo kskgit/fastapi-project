@@ -103,7 +103,9 @@ class TestCreateSubtaskIntegration:
         # Assert
         assert response.status_code == 404
         response_data = response.json()
-        assert response_data["detail"] == f"User with id {non_existent_user_id} not found"
+        assert (
+            response_data["detail"] == f"User with id {non_existent_user_id} not found"
+        )
 
     async def test_create_subtask_failure_todo_not_found(
         self, test_client: AsyncClient, test_user: User
@@ -125,7 +127,9 @@ class TestCreateSubtaskIntegration:
         # Assert
         assert response.status_code == 404
         response_data = response.json()
-        assert response_data["detail"] == f"Todo with id {non_existent_todo_id} not found"
+        assert (
+            response_data["detail"] == f"Todo with id {non_existent_todo_id} not found"
+        )
 
     async def test_create_subtask_failure_todo_user_mismatch(
         self, test_client: AsyncClient, test_user: User, test_db_session
@@ -208,7 +212,10 @@ class TestCreateSubtaskIntegration:
         # Assert
         assert response.status_code == 403
         response_data = response.json()
-        assert response_data["detail"] == f"User with id {saved_viewer_user.id} does not have permission to perform this action"
+        assert (
+            response_data["detail"]
+            == f"User with id {saved_viewer_user.id} does not have permission to perform this action"  # noqa: E501
+        )
 
     async def test_create_subtask_failure_unexpected_exception(
         self, test_client: AsyncClient, test_user: User
