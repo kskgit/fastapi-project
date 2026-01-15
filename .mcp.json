@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "activate_project",
+        "find_symbol",
+        "get_symbol_info",
+        "insert_after_symbol",
+        "replace_symbol",
+        "onboarding",
+        "get_symbols_overview",
+        "list_dir",
+        "read_file",
+        "write_memory"
+      ]
+    }
+  }
+}
