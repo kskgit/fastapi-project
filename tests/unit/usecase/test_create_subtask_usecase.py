@@ -1,5 +1,6 @@
 from unittest.mock import AsyncMock, Mock
 
+from app.domain.repositories.subtask_repository import SubTaskRepository
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.subtask_domain_service import SubTaskDomainService
@@ -11,12 +12,14 @@ async def test_create_subtask_success(mock_transaction_manager: Mock) -> None:
     # Arrange
     mock_user_repository = AsyncMock(spec=UserRepository)
     mock_todo_repository = AsyncMock(spec=TodoRepository)
+    mock_subtask_repository = AsyncMock(spec=SubTaskRepository)
     mock_subtask_domain_service = AsyncMock(spec=SubTaskDomainService)
 
     usecase = CreateSubTaskUseCase(
         transaction_manager=mock_transaction_manager,
         user_repository=mock_user_repository,
         todo_repository=mock_todo_repository,
+        subtask_repository=mock_subtask_repository,
         subtask_domain_service=mock_subtask_domain_service,
     )
 
@@ -45,5 +48,6 @@ async def test_create_subtask_success(mock_transaction_manager: Mock) -> None:
         user_repository=mock_user_repository,
         todo_repository=mock_todo_repository,
     )
+    mock_subtask_repository.create.assert_awaited_once()
 
     assert result == expected_subtask
