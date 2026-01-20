@@ -1,4 +1,5 @@
 from app.core.transaction_manager import TransactionManager
+from app.domain.repositories.subtask_repository import SubTaskRepository
 from app.domain.repositories.todo_repository import TodoRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.subtask_domain_service import SubTaskDomainService
@@ -19,6 +20,7 @@ class CreateSubTaskUseCase:
     transaction_manager: TransactionManager
     user_repository: UserRepository
     todo_repository: TodoRepository
+    subtask_repository: SubTaskRepository
     subtask_domain_service: SubTaskDomainService
 
     def __init__(
@@ -26,11 +28,13 @@ class CreateSubTaskUseCase:
         transaction_manager: TransactionManager,
         user_repository: UserRepository,
         todo_repository: TodoRepository,
+        subtask_repository: SubTaskRepository,
         subtask_domain_service: SubTaskDomainService,
     ):
         self.transaction_manager = transaction_manager
         self.user_repository = user_repository
         self.todo_repository = todo_repository
+        self.subtask_repository = subtask_repository
         self.subtask_domain_service = subtask_domain_service
 
     async def execute(
@@ -47,9 +51,9 @@ class CreateSubTaskUseCase:
                 todo_repository=self.todo_repository,
             )
 
-            return SubTask.create(
+            subtask = SubTask.create(
                 user_id=user_id,
                 todo_id=todo_id,
                 title=title,
             )
-            # TODO Repository経由で永続化
+            return await self.subtask_repository.create(subtask)

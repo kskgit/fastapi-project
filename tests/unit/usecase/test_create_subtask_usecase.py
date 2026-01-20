@@ -32,6 +32,7 @@ async def test_create_subtask_success(mock_transaction_manager: Mock) -> None:
         title="Title",
         is_compleated=False,
     )
+    mock_subtask_repository.create.return_value = expected_subtask
 
     # Act
     result = await usecase.execute(
