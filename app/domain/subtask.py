@@ -9,6 +9,7 @@ class SubTask:
     todo_id: int
     title: str
     is_compleated: bool
+    id: int | None = None
 
     @classmethod
     def create(cls, user_id: int, todo_id: int, title: str) -> SubTask:
@@ -17,4 +18,5 @@ class SubTask:
             todo_id=todo_id,
             title=title,
             is_compleated=False,
+            id=None,
         )
