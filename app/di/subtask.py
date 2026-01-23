@@ -34,5 +34,5 @@ def get_create_subtask_usecase(
         todo_repository=todo_repository,
         subtask_domain_service=subtask_domain_service,
         transaction_manager=transaction_manager,
-        subtask_repository=subtask_repository
+        subtask_repository=subtask_repository,
     )

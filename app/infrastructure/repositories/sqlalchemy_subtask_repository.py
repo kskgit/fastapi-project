@@ -3,11 +3,12 @@
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain.repositories import SubTaskRepository
 from app.domain.subtask import SubTask
 from app.infrastructure.database.models.subtask_model import SubTaskModel
 
 
-class SQLAlchemySubTaskRepository:
+class SQLAlchemySubTaskRepository(SubTaskRepository):
     """SQLAlchemy implementation of SubTaskRepository.
 
     Handles database operations using SQLAlchemy ORM with async/await support.

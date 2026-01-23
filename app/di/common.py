@@ -38,7 +38,6 @@ def get_transaction_manager(
     return SQLAlchemyTransactionManager(db)
 
 
-
 def get_subtask_repository(
     db: AsyncSession = Depends(get_db),
 ) -> SubTaskRepository:
