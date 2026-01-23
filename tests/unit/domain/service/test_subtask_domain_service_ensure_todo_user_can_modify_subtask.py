@@ -72,8 +72,8 @@ async def test_ensure_todo_user_can_modify_subtask_failer_todo_not_found() -> No
             todo_repository=mock_todo_repository,
         )
 
+    mock_user_repository.find_by_id.assert_awaited_once_with(user_id=user_id)
     mock_todo_repository.find_by_id.assert_awaited_once_with(todo_id=todo_id)
-    mock_user_repository.find_by_id.assert_not_called()
 
 
 async def test_ensure_todo_user_can_modify_subtask_failer_owner_mismatch() -> None:
@@ -82,6 +82,12 @@ async def test_ensure_todo_user_can_modify_subtask_failer_owner_mismatch() -> No
 
     request_user_id = 1
     mock_user_repository = AsyncMock(spec=UserRepository)
+    mock_user_repository.find_by_id.return_value = User(
+        id=request_user_id,
+        username="member_user",
+        email="taken@example.com",
+        role=UserRole.MEMBER,
+    )
 
     todo_id = 2
     mock_todo_repository = AsyncMock(spec=TodoRepository)
@@ -101,8 +107,8 @@ async def test_ensure_todo_user_can_modify_subtask_failer_owner_mismatch() -> No
             todo_repository=mock_todo_repository,
         )
 
+    mock_user_repository.find_by_id.assert_awaited_once_with(user_id=request_user_id)
     mock_todo_repository.find_by_id.assert_awaited_once_with(todo_id=todo_id)
-    mock_user_repository.find_by_id.assert_not_called()
 
 
 async def test_ensure_todo_user_can_modify_subtask_failer_user_not_found() -> None:
@@ -132,7 +138,7 @@ async def test_ensure_todo_user_can_modify_subtask_failer_user_not_found() -> No
         )
 
     mock_user_repository.find_by_id.assert_awaited_once_with(user_id=user_id)
-    mock_todo_repository.find_by_id.assert_awaited_once_with(todo_id=todo_id)
+    mock_todo_repository.find_by_id.assert_not_called()
 
 
 async def test__ensure_todo_user_can_modify_subtask_failer_user_permission_denied() -> (
@@ -168,4 +174,4 @@ async def test__ensure_todo_user_can_modify_subtask_failer_user_permission_denie
         )
 
     mock_user_repository.find_by_id.assert_awaited_once_with(user_id=user_id)
-    mock_todo_repository.find_by_id.assert_awaited_once_with(todo_id=todo_id)
+    mock_todo_repository.find_by_id.assert_not_called()
