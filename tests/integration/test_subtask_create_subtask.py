@@ -214,7 +214,7 @@ class TestCreateSubtaskIntegration:
         response_data = response.json()
         assert (
             response_data["detail"]
-            == f"User with id {saved_viewer_user.id} does not have permission to perform this action"  # noqa: E501
+            == f"User with id {saved_viewer_user.id} lacks required permissions"
         )
 
     async def test_create_subtask_failure_unexpected_exception(
