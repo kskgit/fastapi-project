@@ -1,1 +1,1 @@
-# システムで汎用的に利用する処理を格納
+"""Common utilities and shared components."""
