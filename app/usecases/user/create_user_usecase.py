@@ -1,9 +1,9 @@
 """Create User UseCase implementation."""
 
-from app.core.transaction_manager import TransactionManager
-from app.domain.entities.user import User, UserRole
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.user_domain_service import UserDomainService
+from app.core import TransactionManager
+from app.domain.entities import User, UserRole
+from app.domain.repositories import UserRepository
+from app.domain.services import UserDomainService
 
 
 class CreateUserUseCase:

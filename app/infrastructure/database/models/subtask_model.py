@@ -3,7 +3,7 @@
 from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import mapped_column
 
-from app.infrastructure.database.connection import Base
+from app.infrastructure.database import Base
 
 
 class SubTaskModel(Base):  # type: ignore[misc]

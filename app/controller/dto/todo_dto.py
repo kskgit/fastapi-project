@@ -2,8 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.domain.entities.todo import Todo as TodoEntity
-from app.domain.entities.todo import TodoPriority, TodoStatus
+from app.domain.entities import Todo as TodoEntity
+from app.domain.entities import TodoPriority, TodoStatus
 from app.domain.exceptions import ValidationException
 
 

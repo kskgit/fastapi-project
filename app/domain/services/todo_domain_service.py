@@ -1,12 +1,12 @@
 """Todo Domain Service - Business logic for Todo entity operations."""
 
-from app.domain.entities.todo import Todo
+from app.domain.entities import Todo
 from app.domain.exceptions import (
     TodoNotFoundException,
     UserNotFoundException,
     ValidationException,
 )
-from app.domain.repositories.user_repository import UserRepository
+from app.domain.repositories import UserRepository
 
 
 class TodoDomainService:

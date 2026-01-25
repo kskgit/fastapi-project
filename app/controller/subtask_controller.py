@@ -3,9 +3,9 @@ from datetime import datetime
 from fastapi import APIRouter, Depends
 from fastapi import status as http_status
 
-from app.controller.dto.subtask_dto import CreateSubTaskDTO, SubtaskResponseDTO
-from app.di.subtask import get_create_subtask_usecase
-from app.usecases.subtask.create_subtask_usecase import CreateSubTaskUseCase
+from app.controller.dto import CreateSubTaskDTO, SubtaskResponseDTO
+from app.di import get_create_subtask_usecase
+from app.usecases.subtask import CreateSubTaskUseCase
 
 router = APIRouter(prefix="/todos", tags=["subtasks"])
 

@@ -4,10 +4,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.domain.entities.user import User
+from app.domain.entities import User
 from app.domain.exceptions import UserNotFoundException
-from app.domain.repositories.user_repository import UserRepository
-from app.usecases.user.get_user_by_id_usecase import GetUserByIdUseCase
+from app.domain.repositories import UserRepository
+from app.usecases.user import GetUserByIdUseCase
 
 pytestmark = pytest.mark.anyio("asyncio")
 

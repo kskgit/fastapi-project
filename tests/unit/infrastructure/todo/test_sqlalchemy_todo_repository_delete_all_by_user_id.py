@@ -3,12 +3,10 @@
 import pytest
 from sqlalchemy import select
 
-from app.domain.entities.todo import Todo, TodoPriority
-from app.domain.exceptions.system import DataOperationException
+from app.domain.entities import Todo, TodoPriority
+from app.domain.exceptions import DataOperationException
 from app.infrastructure.database.models import TodoModel
-from app.infrastructure.repositories.sqlalchemy_todo_repository import (
-    SQLAlchemyTodoRepository,
-)
+from app.infrastructure.repositories import SQLAlchemyTodoRepository
 
 pytestmark = pytest.mark.anyio("asyncio")
 

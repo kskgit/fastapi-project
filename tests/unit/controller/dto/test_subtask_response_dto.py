@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from app.controller.dto.subtask_dto import SubtaskResponseDTO, SubtaskResult
+from app.controller.dto import SubtaskResponseDTO, SubtaskResult
 from app.domain.exceptions import ValidationException
 
 

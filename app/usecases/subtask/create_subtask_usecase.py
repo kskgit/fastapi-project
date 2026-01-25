@@ -1,9 +1,7 @@
-from app.core.transaction_manager import TransactionManager
-from app.domain.repositories.subtask_repository import SubTaskRepository
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.subtask_domain_service import SubTaskDomainService
-from app.domain.subtask import SubTask
+from app.core import TransactionManager
+from app.domain import SubTask
+from app.domain.repositories import SubTaskRepository, TodoRepository, UserRepository
+from app.domain.services import SubTaskDomainService
 
 
 class CreateSubTaskUseCase:

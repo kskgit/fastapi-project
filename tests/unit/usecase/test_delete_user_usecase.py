@@ -4,10 +4,9 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from app.domain.entities.user import User
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.usecases.user.delete_user_usecase import DeleteUserUseCase
+from app.domain.entities import User
+from app.domain.repositories import TodoRepository, UserRepository
+from app.usecases.user import DeleteUserUseCase
 
 pytestmark = pytest.mark.anyio("asyncio")
 

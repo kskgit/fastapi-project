@@ -3,9 +3,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.controller.dto.subtask_dto import CreateSubTaskDTO, SubtaskResponseDTO
+from app.controller.dto import CreateSubTaskDTO, SubtaskResponseDTO
 from app.controller.subtask_controller import create_subtask
-from app.usecases.subtask.create_subtask_usecase import CreateSubTaskUseCase
+from app.usecases.subtask import CreateSubTaskUseCase
 
 
 @pytest.mark.asyncio

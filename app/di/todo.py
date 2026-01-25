@@ -12,17 +12,16 @@ from app.di.common import (
     get_user_repository,
 )
 from app.di.user import get_user_domain_service
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.user_domain_service import UserDomainService
-from app.infrastructure.services.sqlalchemy_transaction_manager import (
-    SQLAlchemyTransactionManager,
+from app.domain.repositories import TodoRepository, UserRepository
+from app.domain.services import UserDomainService
+from app.infrastructure.services import SQLAlchemyTransactionManager
+from app.usecases.todo import (
+    CreateTodoUseCase,
+    DeleteTodoUseCase,
+    GetTodoByIdUseCase,
+    GetTodosUseCase,
+    UpdateTodoUseCase,
 )
-from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
-from app.usecases.todo.delete_todo_usecase import DeleteTodoUseCase
-from app.usecases.todo.get_todo_by_id_usecase import GetTodoByIdUseCase
-from app.usecases.todo.get_todos_usecase import GetTodosUseCase
-from app.usecases.todo.update_todo_usecase import UpdateTodoUseCase
 
 
 def get_create_todo_usecase(

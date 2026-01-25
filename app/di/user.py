@@ -7,17 +7,16 @@ from app.di.common import (
     get_transaction_manager,
     get_user_repository,
 )
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.user_domain_service import UserDomainService
-from app.infrastructure.services.sqlalchemy_transaction_manager import (
-    SQLAlchemyTransactionManager,
+from app.domain.repositories import TodoRepository, UserRepository
+from app.domain.services import UserDomainService
+from app.infrastructure.services import SQLAlchemyTransactionManager
+from app.usecases.user import (
+    CreateUserUseCase,
+    DeleteUserUseCase,
+    GetUserByIdUseCase,
+    GetUsersUseCase,
+    UpdateUserUseCase,
 )
-from app.usecases.user.create_user_usecase import CreateUserUseCase
-from app.usecases.user.delete_user_usecase import DeleteUserUseCase
-from app.usecases.user.get_user_by_id_usecase import GetUserByIdUseCase
-from app.usecases.user.get_users_usecase import GetUsersUseCase
-from app.usecases.user.update_user_usecase import UpdateUserUseCase
 
 
 def get_user_domain_service() -> UserDomainService:

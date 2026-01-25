@@ -5,11 +5,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
+from app.domain.entities import Todo, TodoPriority, TodoStatus
 from app.domain.exceptions import UserNotFoundException, ValidationException
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.usecases.todo.get_todos_usecase import GetTodosUseCase
+from app.domain.repositories import TodoRepository, UserRepository
+from app.usecases.todo import GetTodosUseCase
 
 pytestmark = pytest.mark.anyio("asyncio")
 

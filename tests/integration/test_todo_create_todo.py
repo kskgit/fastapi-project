@@ -6,8 +6,8 @@ import pytest
 from httpx import AsyncClient
 
 from app.di.common import get_todo_repository
-from app.domain.entities.user import User
-from app.domain.repositories.todo_repository import TodoRepository
+from app.domain.entities import User
+from app.domain.repositories import TodoRepository
 from main import app
 
 TODOS_ENDPOINT = "/todos/"

@@ -2,12 +2,10 @@
 
 import pytest
 
-from app.domain.entities.user import User, UserRole
-from app.domain.exceptions.system import DataOperationException
+from app.domain.entities import User, UserRole
+from app.domain.exceptions import DataOperationException
 from app.infrastructure.database.models import UserModel
-from app.infrastructure.repositories.sqlalchemy_user_repository import (
-    SQLAlchemyUserRepository,
-)
+from app.infrastructure.repositories import SQLAlchemyUserRepository
 
 pytestmark = pytest.mark.anyio("asyncio")
 

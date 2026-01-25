@@ -5,9 +5,7 @@ from sqlalchemy import select
 
 from app.domain.subtask import SubTask
 from app.infrastructure.database.models.subtask_model import SubTaskModel
-from app.infrastructure.repositories.sqlalchemy_subtask_repository import (
-    SQLAlchemySubTaskRepository,
-)
+from app.infrastructure.repositories import SQLAlchemySubTaskRepository
 
 
 @pytest.mark.asyncio

@@ -2,10 +2,12 @@ import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
-from app.core.middleware.exception_handlers import register_exception_handlers
-from app.domain.exceptions.base import ExceptionStatusCode
-from app.domain.exceptions.business import BusinessRuleException
-from app.domain.exceptions.system import SystemException
+from app.core.middleware import register_exception_handlers
+from app.domain.exceptions import (
+    BusinessRuleException,
+    ExceptionStatusCode,
+    SystemException,
+)
 
 pytestmark = pytest.mark.anyio("asyncio")
 

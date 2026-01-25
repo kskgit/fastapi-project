@@ -1,6 +1,6 @@
 """Unit tests for app.domain.entities.user.User."""
 
-from app.domain.entities.user import User, UserRole
+from app.domain.entities import User, UserRole
 
 
 def test_user_create_success_defaults_member_role() -> None:

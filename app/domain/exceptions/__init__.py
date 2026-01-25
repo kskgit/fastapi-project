@@ -5,28 +5,35 @@ All exceptions are defined here to maintain consistency and enable centralized
 error handling.
 """
 
-from .base import BaseCustomException
+from .base import BaseCustomException, ExceptionStatusCode
 from .business import (
+    BusinessRuleException,
     ResourceNotFoundException,
     StateTransitionException,
     TodoNotFoundException,
     UniqueConstraintException,
     UserNotFoundException,
+    UserPermissionDeniedException,
     ValidationException,
 )
 from .system import (
     ConnectionException,
+    DataOperationException,
     SystemException,
 )
 
 __all__ = [
     "BaseCustomException",
-    "ValidationException",
-    "ResourceNotFoundException",
-    "UniqueConstraintException",
-    "StateTransitionException",
-    "UserNotFoundException",
-    "TodoNotFoundException",
-    "SystemException",
+    "BusinessRuleException",
     "ConnectionException",
+    "DataOperationException",
+    "ExceptionStatusCode",
+    "ResourceNotFoundException",
+    "StateTransitionException",
+    "SystemException",
+    "TodoNotFoundException",
+    "UniqueConstraintException",
+    "UserNotFoundException",
+    "UserPermissionDeniedException",
+    "ValidationException",
 ]

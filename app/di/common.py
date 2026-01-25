@@ -3,22 +3,14 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.repositories.subtask_repository import SubTaskRepository
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.infrastructure.database.connection import get_db
-from app.infrastructure.repositories.sqlalchemy_subtask_repository import (
+from app.domain.repositories import SubTaskRepository, TodoRepository, UserRepository
+from app.infrastructure.database import get_db
+from app.infrastructure.repositories import (
     SQLAlchemySubTaskRepository,
-)
-from app.infrastructure.repositories.sqlalchemy_todo_repository import (
     SQLAlchemyTodoRepository,
-)
-from app.infrastructure.repositories.sqlalchemy_user_repository import (
     SQLAlchemyUserRepository,
 )
-from app.infrastructure.services.sqlalchemy_transaction_manager import (
-    SQLAlchemyTransactionManager,
-)
+from app.infrastructure.services import SQLAlchemyTransactionManager
 
 
 def get_todo_repository(db: AsyncSession = Depends(get_db)) -> TodoRepository:

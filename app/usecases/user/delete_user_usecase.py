@@ -1,8 +1,7 @@
 """Delete User UseCase implementation."""
 
-from app.core.transaction_manager import TransactionManager
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
+from app.core import TransactionManager
+from app.domain.repositories import TodoRepository, UserRepository
 
 
 class DeleteUserUseCase:

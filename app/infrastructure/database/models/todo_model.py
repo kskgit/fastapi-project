@@ -4,8 +4,8 @@ from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.sql import func
 
-from app.domain.entities.todo import TodoPriority, TodoStatus
-from app.infrastructure.database.connection import Base
+from app.domain.entities import TodoPriority, TodoStatus
+from app.infrastructure.database import Base
 
 
 class TodoModel(Base):  # type: ignore[misc]

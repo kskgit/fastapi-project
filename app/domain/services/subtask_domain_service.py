@@ -1,8 +1,10 @@
-from app.domain.entities.user import UserRole
-from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
-from app.domain.exceptions.business import UserPermissionDeniedException
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
+from app.domain.entities import UserRole
+from app.domain.exceptions import (
+    TodoNotFoundException,
+    UserNotFoundException,
+    UserPermissionDeniedException,
+)
+from app.domain.repositories import TodoRepository, UserRepository
 
 
 class SubTaskDomainService:

@@ -3,10 +3,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.controller.dto.todo_dto import CreateTodoDTO, TodoResponseDTO
+from app.controller.dto import CreateTodoDTO, TodoResponseDTO
 from app.controller.todo_controller import create_todo
-from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
+from app.domain.entities import Todo, TodoPriority, TodoStatus
+from app.usecases.todo import CreateTodoUseCase
 
 
 @pytest.mark.asyncio

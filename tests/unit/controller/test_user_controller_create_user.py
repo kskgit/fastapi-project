@@ -3,10 +3,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.controller.dto.user_dto import UserCreateDTO, UserResponseDTO
+from app.controller.dto import UserCreateDTO, UserResponseDTO
 from app.controller.user_controller import create_user
-from app.domain.entities.user import User, UserRole
-from app.usecases.user.create_user_usecase import CreateUserUseCase
+from app.domain.entities import User, UserRole
+from app.usecases.user import CreateUserUseCase
 
 
 @pytest.mark.asyncio

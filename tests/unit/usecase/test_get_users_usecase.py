@@ -4,11 +4,11 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from app.domain.entities.user import User
-from app.domain.exceptions.business import ValidationException
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.user_domain_service import UserDomainService
-from app.usecases.user.get_users_usecase import GetUsersUseCase
+from app.domain.entities import User
+from app.domain.exceptions import ValidationException
+from app.domain.repositories import UserRepository
+from app.domain.services import UserDomainService
+from app.usecases.user import GetUsersUseCase
 
 pytestmark = pytest.mark.anyio("asyncio")
 

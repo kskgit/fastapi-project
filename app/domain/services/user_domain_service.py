@@ -1,8 +1,11 @@
 """User Domain Service - Business logic for User entity operations."""
 
-from app.domain.exceptions import UniqueConstraintException, ValidationException
-from app.domain.exceptions.business import UserNotFoundException
-from app.domain.repositories.user_repository import UserRepository
+from app.domain.exceptions import (
+    UniqueConstraintException,
+    UserNotFoundException,
+    ValidationException,
+)
+from app.domain.repositories import UserRepository
 
 
 class UserDomainService:

@@ -6,8 +6,8 @@ import pytest
 from httpx import AsyncClient
 
 from app.di.common import get_user_repository
-from app.domain.entities.user import User
-from app.domain.repositories.user_repository import UserRepository
+from app.domain.entities import User
+from app.domain.repositories import UserRepository
 from main import app
 
 USERS_ENDPOINT = "/api/v1/users/"

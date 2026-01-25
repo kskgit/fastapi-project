@@ -6,14 +6,10 @@ from app.di.common import (
     get_transaction_manager,
     get_user_repository,
 )
-from app.domain.repositories.subtask_repository import SubTaskRepository
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.subtask_domain_service import SubTaskDomainService
-from app.infrastructure.services.sqlalchemy_transaction_manager import (
-    SQLAlchemyTransactionManager,
-)
-from app.usecases.subtask.create_subtask_usecase import CreateSubTaskUseCase
+from app.domain.repositories import SubTaskRepository, TodoRepository, UserRepository
+from app.domain.services import SubTaskDomainService
+from app.infrastructure.services import SQLAlchemyTransactionManager
+from app.usecases.subtask import CreateSubTaskUseCase
 
 
 def get_subtask_domain_service() -> SubTaskDomainService:

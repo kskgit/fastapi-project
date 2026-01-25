@@ -7,9 +7,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.entities.user import User, UserRole
-from app.domain.exceptions.system import DataOperationException
-from app.domain.repositories.user_repository import UserRepository
+from app.domain.entities import User, UserRole
+from app.domain.exceptions import DataOperationException
+from app.domain.repositories import UserRepository
 from app.infrastructure.database.models import UserModel
 
 

@@ -4,8 +4,8 @@ from sqlalchemy import Boolean, DateTime, Enum, Integer, String
 from sqlalchemy.orm import mapped_column, relationship
 from sqlalchemy.sql import func
 
-from app.domain.entities.user import UserRole
-from app.infrastructure.database.connection import Base
+from app.domain.entities import UserRole
+from app.infrastructure.database import Base
 
 
 class UserModel(Base):  # type: ignore[misc]

@@ -2,11 +2,9 @@
 
 import pytest
 
-from app.domain.entities.todo import Todo, TodoPriority
-from app.domain.exceptions.system import DataOperationException
-from app.infrastructure.repositories.sqlalchemy_todo_repository import (
-    SQLAlchemyTodoRepository,
-)
+from app.domain.entities import Todo, TodoPriority
+from app.domain.exceptions import DataOperationException
+from app.infrastructure.repositories import SQLAlchemyTodoRepository
 
 pytestmark = pytest.mark.anyio("asyncio")
 

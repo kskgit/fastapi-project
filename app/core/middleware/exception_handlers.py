@@ -9,7 +9,7 @@ import logging
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse, Response
 
-from app.domain.exceptions.base import BaseCustomException
+from app.domain.exceptions import BaseCustomException
 
 
 def register_exception_handlers(app: FastAPI) -> None:

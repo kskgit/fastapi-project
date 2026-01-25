@@ -3,9 +3,9 @@
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domain import SubTask
 from app.domain.repositories import SubTaskRepository
-from app.domain.subtask import SubTask
-from app.infrastructure.database.models.subtask_model import SubTaskModel
+from app.infrastructure.database.models import SubTaskModel
 
 
 class SQLAlchemySubTaskRepository(SubTaskRepository):

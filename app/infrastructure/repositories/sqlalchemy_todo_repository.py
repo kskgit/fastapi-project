@@ -7,10 +7,9 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.domain.exceptions.business import TodoNotFoundException
-from app.domain.exceptions.system import DataOperationException
-from app.domain.repositories.todo_repository import TodoRepository
+from app.domain.entities import Todo, TodoPriority, TodoStatus
+from app.domain.exceptions import DataOperationException, TodoNotFoundException
+from app.domain.repositories import TodoRepository
 from app.infrastructure.database.models import TodoModel
 
 

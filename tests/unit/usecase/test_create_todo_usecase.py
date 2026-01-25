@@ -5,12 +5,11 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from app.domain.entities.todo import Todo, TodoPriority
-from app.domain.exceptions.business import UserNotFoundException
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.user_domain_service import UserDomainService
-from app.usecases.todo.create_todo_usecase import CreateTodoUseCase
+from app.domain.entities import Todo, TodoPriority
+from app.domain.exceptions import UserNotFoundException
+from app.domain.repositories import TodoRepository, UserRepository
+from app.domain.services import UserDomainService
+from app.usecases.todo import CreateTodoUseCase
 
 
 async def test_create_todo_success(mock_transaction_manager: Mock) -> None:

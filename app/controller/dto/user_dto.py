@@ -8,7 +8,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.domain.entities.user import User, UserRole
+from app.domain.entities import User, UserRole
 
 
 class UserCreateDTO(BaseModel):

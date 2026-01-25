@@ -1,8 +1,7 @@
-from app.domain.entities.todo import Todo
+from app.domain.entities import Todo
 from app.domain.exceptions import TodoNotFoundException
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.todo_domain_service import TodoDomainService
+from app.domain.repositories import TodoRepository, UserRepository
+from app.domain.services import TodoDomainService
 
 
 class GetTodoByIdUseCase:

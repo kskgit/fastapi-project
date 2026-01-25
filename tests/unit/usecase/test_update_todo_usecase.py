@@ -3,10 +3,9 @@
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, Mock
 
-from app.domain.entities.todo import Todo, TodoPriority, TodoStatus
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.usecases.todo.update_todo_usecase import UpdateTodoUseCase
+from app.domain.entities import Todo, TodoPriority, TodoStatus
+from app.domain.repositories import TodoRepository, UserRepository
+from app.usecases.todo import UpdateTodoUseCase
 
 
 async def test_update_todo_success(mock_transaction_manager: Mock) -> None:

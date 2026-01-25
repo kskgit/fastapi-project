@@ -1,8 +1,8 @@
 """Get User by ID UseCase implementation."""
 
-from app.domain.entities.user import User
+from app.domain.entities import User
 from app.domain.exceptions import UserNotFoundException
-from app.domain.repositories.user_repository import UserRepository
+from app.domain.repositories import UserRepository
 
 
 class GetUserByIdUseCase:

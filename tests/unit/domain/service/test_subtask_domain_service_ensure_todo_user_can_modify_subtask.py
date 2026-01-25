@@ -2,13 +2,14 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.domain.entities.todo import Todo, TodoPriority
-from app.domain.entities.user import User, UserRole
-from app.domain.exceptions import TodoNotFoundException, UserNotFoundException
-from app.domain.exceptions.business import UserPermissionDeniedException
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.subtask_domain_service import SubTaskDomainService
+from app.domain.entities import Todo, TodoPriority, User, UserRole
+from app.domain.exceptions import (
+    TodoNotFoundException,
+    UserNotFoundException,
+    UserPermissionDeniedException,
+)
+from app.domain.repositories import TodoRepository, UserRepository
+from app.domain.services import SubTaskDomainService
 
 
 async def test_ensure_todo_user_can_modify_subtask_success() -> None:

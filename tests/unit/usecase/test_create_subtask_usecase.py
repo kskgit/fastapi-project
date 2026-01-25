@@ -1,11 +1,9 @@
 from unittest.mock import AsyncMock, Mock
 
-from app.domain.repositories.subtask_repository import SubTaskRepository
-from app.domain.repositories.todo_repository import TodoRepository
-from app.domain.repositories.user_repository import UserRepository
-from app.domain.services.subtask_domain_service import SubTaskDomainService
+from app.domain.repositories import SubTaskRepository, TodoRepository, UserRepository
+from app.domain.services import SubTaskDomainService
 from app.domain.subtask import SubTask
-from app.usecases.subtask.create_subtask_usecase import CreateSubTaskUseCase
+from app.usecases.subtask import CreateSubTaskUseCase
 
 
 async def test_create_subtask_success(mock_transaction_manager: Mock) -> None:

@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from app.controller.dto.subtask_dto import CreateSubTaskDTO
+from app.controller.dto import CreateSubTaskDTO
 
 
 def test_create_subtask_dto_user_id_required() -> None:
