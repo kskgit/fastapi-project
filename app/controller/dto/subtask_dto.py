@@ -1,10 +1,13 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from pydantic import BaseModel, Field, field_validator
 
 from app.domain.exceptions import ValidationException
+
+if TYPE_CHECKING:
+    from app.domain import SubTask
 
 
 def _normalize_title(value: str, *, empty_error: str) -> str:
@@ -80,6 +83,27 @@ class SubtaskResponseDTO(BaseModel):
     completed_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+    @classmethod
+    def from_domain_entity(cls, entity: SubTask) -> "SubtaskResponseDTO":
+        """Convert a SubTask domain entity into an API response DTO."""
+        if entity.id is None:
+            raise ValidationException("Cannot map subtask response without ID")
+        if entity.created_at is None:
+            raise ValidationException("Cannot map subtask response without created_at")
+        if entity.updated_at is None:
+            raise ValidationException("Cannot map subtask response without updated_at")
+
+        return cls(
+            id=entity.id,
+            todo_id=entity.todo_id,
+            user_id=entity.user_id,
+            title=entity.title,
+            is_completed=entity.is_compleated,
+            completed_at=None,
+            created_at=entity.created_at,
+            updated_at=entity.updated_at,
+        )
 
     @classmethod
     def from_result(cls, result: SubtaskResult) -> "SubtaskResponseDTO":

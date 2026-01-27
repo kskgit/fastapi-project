@@ -31,6 +31,8 @@ class SQLAlchemySubTaskRepository(SubTaskRepository):
             todo_id=model.todo_id,
             title=model.title,
             is_compleated=model.is_compleated,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
         )
 
     def _to_model(self, entity: SubTask) -> SubTaskModel:

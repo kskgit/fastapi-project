@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from app.domain.subtask import SubTask
+from app.domain.entities import SubTask
 
 
 class SubTaskRepository(ABC):

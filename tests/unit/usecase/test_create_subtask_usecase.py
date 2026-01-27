@@ -1,8 +1,8 @@
 from unittest.mock import AsyncMock, Mock
 
+from app.domain import SubTask
 from app.domain.repositories import SubTaskRepository, TodoRepository, UserRepository
 from app.domain.services import SubTaskDomainService
-from app.domain.subtask import SubTask
 from app.usecases.subtask import CreateSubTaskUseCase
 
 

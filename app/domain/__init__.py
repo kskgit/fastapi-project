@@ -1,6 +1,6 @@
 """Domain layer - Core business logic and entities."""
 
-from .subtask import SubTask
+from .entities import SubTask
 
 __all__ = [
     "SubTask",

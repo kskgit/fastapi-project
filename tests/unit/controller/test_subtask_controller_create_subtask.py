@@ -3,8 +3,9 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.controller.dto import CreateSubTaskDTO, SubtaskResponseDTO
+from app.controller.dto import CreateSubTaskDTO
 from app.controller.subtask_controller import create_subtask
+from app.domain import SubTask
 from app.usecases.subtask import CreateSubTaskUseCase
 
 
@@ -20,13 +21,12 @@ async def test_create_subtask_success() -> None:
         title=title,
     )
 
-    returned_subtask = SubtaskResponseDTO(
+    returned_subtask = SubTask(
         id=1,
         todo_id=todo_id,
         user_id=user_id,
         title=title,
-        is_completed=False,
-        completed_at=None,
+        is_compleated=False,
         created_at=datetime(2024, 1, 10, tzinfo=UTC),
         updated_at=datetime(2024, 1, 10, tzinfo=UTC),
     )

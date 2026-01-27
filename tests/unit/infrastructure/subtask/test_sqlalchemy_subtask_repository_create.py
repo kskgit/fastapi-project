@@ -3,7 +3,7 @@
 import pytest
 from sqlalchemy import select
 
-from app.domain.subtask import SubTask
+from app.domain import SubTask
 from app.infrastructure.database.models.subtask_model import SubTaskModel
 from app.infrastructure.repositories import SQLAlchemySubTaskRepository
 

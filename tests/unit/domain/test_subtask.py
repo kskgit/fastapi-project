@@ -1,4 +1,4 @@
-from app.domain.subtask import SubTask
+from app.domain import SubTask
 
 
 def test_user_create_success_defaults_member_role() -> None:

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from fastapi import APIRouter, Depends
 from fastapi import status as http_status
 
@@ -22,21 +20,10 @@ async def create_subtask(
     request: CreateSubTaskDTO,
     usecase: CreateSubTaskUseCase = Depends(get_create_subtask_usecase),
 ) -> SubtaskResponseDTO:
-    await usecase.execute(
+    subtask = await usecase.execute(
         user_id=request.user_id,
         todo_id=todo_id,
         title=request.title,
     )
 
-    # TODO UseCaseから返却された値に変更する
-    now = datetime.now()
-    return SubtaskResponseDTO(
-        id=1,
-        todo_id=todo_id,
-        user_id=request.user_id,
-        title=request.title,
-        is_completed=False,
-        completed_at=None,
-        created_at=now,
-        updated_at=now,
-    )
+    return SubtaskResponseDTO.from_domain_entity(subtask)
