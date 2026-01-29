@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
@@ -85,7 +87,7 @@ class SubtaskResponseDTO(BaseModel):
     updated_at: datetime
 
     @classmethod
-    def from_domain_entity(cls, entity: SubTask) -> "SubtaskResponseDTO":
+    def from_domain_entity(cls, entity: SubTask) -> SubtaskResponseDTO:
         """Convert a SubTask domain entity into an API response DTO."""
         if entity.id is None:
             raise ValidationException("Cannot map subtask response without ID")
@@ -106,7 +108,7 @@ class SubtaskResponseDTO(BaseModel):
         )
 
     @classmethod
-    def from_result(cls, result: SubtaskResult) -> "SubtaskResponseDTO":
+    def from_result(cls, result: SubtaskResult) -> SubtaskResponseDTO:
         """Convert a SubtaskResult into an API response DTO."""
         if result.id is None:
             raise ValidationException("Cannot map subtask response without ID")
