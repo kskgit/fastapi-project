@@ -28,7 +28,7 @@ class GetTodoByIdUseCase:
         self.user_repository = user_repository
         self.todo_domain_service = TodoDomainService()
 
-    async def execute(self, todo_id: int, user_id: int | None = None) -> Todo:
+    async def execute(self, todo_id: int, user_id: int) -> Todo:
         """Execute the get todo by ID use case.
 
         Args:
@@ -51,12 +51,10 @@ class GetTodoByIdUseCase:
         if not todo:
             raise TodoNotFoundException(todo_id)
 
-        # If user_id is provided, validate ownership
-        if user_id is not None:
-            # Validate that user exists
-            await self.todo_domain_service.validate_user(user_id, self.user_repository)
+        # Validate that user exists
+        await self.todo_domain_service.validate_user(user_id, self.user_repository)
 
-            # Validate todo ownership
-            self.todo_domain_service.validate_todo_ownership(todo, user_id)
+        # Validate todo ownership
+        self.todo_domain_service.validate_todo_ownership(todo, user_id)
 
         return todo
