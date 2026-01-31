@@ -21,3 +21,15 @@ class SubTaskRepository(ABC):
             SubTask entity with generated ID and timestamps
         """
         pass
+
+    @abstractmethod
+    async def find_by_todo_id(self, todo_id: int) -> list[SubTask]:
+        """Find all subtasks belonging to a specific todo.
+
+        Args:
+            todo_id: ID of the parent todo
+
+        Returns:
+            List of SubTask entities (empty list if none found)
+        """
+        pass
