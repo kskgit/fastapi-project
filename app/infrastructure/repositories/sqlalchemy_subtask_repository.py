@@ -1,9 +1,11 @@
 """SQLAlchemy implementation of SubTaskRepository."""
 
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain import SubTask
+from app.domain.exceptions import DataOperationException
 from app.domain.repositories import SubTaskRepository
 from app.infrastructure.database.models import SubTaskModel
 
@@ -62,3 +64,14 @@ class SQLAlchemySubTaskRepository(SubTaskRepository):
             return self._to_domain_entity(model)
         except SQLAlchemyError as e:
             raise e
+
+    async def find_by_todo_id(self, todo_id: int) -> list[SubTask]:
+        """Find all subtasks belonging to a specific todo."""
+        try:
+            result = await self.db.execute(
+                select(SubTaskModel).where(SubTaskModel.todo_id == todo_id)
+            )
+            models = result.scalars().all()
+            return [self._to_domain_entity(model) for model in models]
+        except SQLAlchemyError:
+            raise DataOperationException(operation_context=self)
