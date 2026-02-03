@@ -6,7 +6,12 @@ This module contains all Todo-related API endpoints.
 from fastapi import APIRouter, Depends, Query
 from fastapi import status as http_status
 
-from app.controller.dto import CreateTodoDTO, TodoResponseDTO, TodoUpdateDTO
+from app.controller.dto import (
+    CreateTodoDTO,
+    TodoResponseDTO,
+    TodoUpdateDTO,
+    TodoWithSubtasksResponseDTO,
+)
 from app.di import (
     get_create_todo_usecase,
     get_delete_todo_usecase,
@@ -64,16 +69,16 @@ async def create_todo(
     return TodoResponseDTO.from_domain_entity(todo)
 
 
-@router.get("/{todo_id}", response_model=TodoResponseDTO)
+@router.get("/{todo_id}", response_model=TodoWithSubtasksResponseDTO)
 async def get_todo(
     todo_id: int,
     usecase: GetTodoByIdUseCase = Depends(get_get_todo_by_id_usecase),
-) -> TodoResponseDTO:
-    """Get a specific todo by ID."""
+) -> TodoWithSubtasksResponseDTO:
+    """Get a specific todo by ID with its subtasks."""
     # TODO: Replace with actual user_id from authentication
     user_id = 1
-    todo = await usecase.execute(todo_id=todo_id, user_id=user_id)
-    return TodoResponseDTO.from_domain_entity(todo)
+    result = await usecase.execute(todo_id=todo_id, user_id=user_id)
+    return TodoWithSubtasksResponseDTO.from_usecase_result(result)
 
 
 @router.put("/{todo_id}", response_model=TodoResponseDTO)

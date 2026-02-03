@@ -7,6 +7,7 @@ from .todo_dto import (
     TodoResponseDTO,
     TodoSummaryDTO,
     TodoUpdateDTO,
+    TodoWithSubtasksResponseDTO,
 )
 from .user_dto import UserCreateDTO, UserResponseDTO, UserUpdateDTO
 
@@ -19,6 +20,7 @@ __all__ = [
     "TodoResponseDTO",
     "TodoSummaryDTO",
     "TodoUpdateDTO",
+    "TodoWithSubtasksResponseDTO",
     "UserCreateDTO",
     "UserResponseDTO",
     "UserUpdateDTO",

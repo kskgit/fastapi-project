@@ -1,10 +1,17 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, Field, field_validator
 
 from app.domain.entities import Todo as TodoEntity
 from app.domain.entities import TodoPriority, TodoStatus
 from app.domain.exceptions import ValidationException
+
+if TYPE_CHECKING:
+    from app.controller.dto.subtask_dto import SubtaskResponseDTO
+    from app.usecases.todo import TodoWithSubtasks
 
 
 def _normalize_title(value: str, *, empty_error: str) -> str:
@@ -86,7 +93,7 @@ class TodoResponseDTO(BaseModel):
     updated_at: datetime
 
     @classmethod
-    def from_domain_entity(cls, entity: TodoEntity) -> "TodoResponseDTO":
+    def from_domain_entity(cls, entity: TodoEntity) -> TodoResponseDTO:
         """Convert domain entity to response DTO."""
         if entity.id is None:
             raise ValidationException(
@@ -106,6 +113,51 @@ class TodoResponseDTO(BaseModel):
             priority=entity.priority,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
+        )
+
+
+class TodoWithSubtasksResponseDTO(BaseModel):
+    """DTO for todo response with subtasks from API."""
+
+    id: int
+    title: str
+    description: str | None
+    due_date: datetime | None
+    status: TodoStatus
+    priority: TodoPriority
+    created_at: datetime
+    updated_at: datetime
+    subtasks: list[SubtaskResponseDTO]
+
+    @classmethod
+    def from_usecase_result(
+        cls, result: TodoWithSubtasks
+    ) -> TodoWithSubtasksResponseDTO:
+        """Convert usecase result to response DTO."""
+        from app.controller.dto.subtask_dto import SubtaskResponseDTO
+
+        todo = result.todo
+        if todo.id is None:
+            raise ValidationException(
+                "Cannot create response DTO from entity without ID"
+            )
+        if todo.created_at is None:
+            raise ValidationException("Cannot create response DTO without created_at")
+        if todo.updated_at is None:
+            raise ValidationException("Cannot create response DTO without updated_at")
+
+        return cls(
+            id=todo.id,
+            title=todo.title,
+            description=todo.description,
+            due_date=todo.due_date,
+            status=todo.status,
+            priority=todo.priority,
+            created_at=todo.created_at,
+            updated_at=todo.updated_at,
+            subtasks=[
+                SubtaskResponseDTO.from_domain_entity(s) for s in result.subtasks
+            ],
         )
 
 
