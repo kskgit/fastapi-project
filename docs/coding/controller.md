@@ -6,15 +6,6 @@
 
 ## Controllerサンプル
 ```python
-from fastapi import APIRouter, Depends, status
-
-from app.controller.dto.subtask_dto import CreateSubTaskDTO, SubtaskResponseDTO
-from app.di.subtask import get_create_subtask_usecase
-from app.usecases.subtask.create_subtask_usecase import CreateSubTaskUseCase
-
-router = APIRouter(prefix="/todos", tags=["subtasks"])
-
-
 @router.post(
     "/{todo_id}/subtasks",
     response_model=SubtaskResponseDTO,
@@ -37,7 +28,6 @@ async def create_subtask(
 
 
 # リクエストDTO
-
 - DTO/Schema で `Field` 設定を付与する場合は `Annotated` を用い、型アノテーション内へメタ情報を記述する（例: `user_id: Annotated[int, Field(description="...", frozen=True, strict=True)]`）。
     - `Annotated` を使えば `Field(..., ...)` の `...`（省略値）を避けられ、静的型チェッカーとの相性が良くなるため。
 - 基本は `Field` に `frozen=True`（読み取り専用）と `strict=True`（暗黙の型変換を避ける）を付け、Controller 層で受けた値をそのまま Usecase へ伝播させる方針とする。緩和が必要な場合のみ理由をコメント等で残して例外的に許容する。
@@ -46,13 +36,6 @@ async def create_subtask(
 
 ## リクエストDTOサンプル
 ```python
-from typing import Annotated
-
-from pydantic import BaseModel, Field, field_validator
-
-from app.domain.exceptions import ValidationException
-
-
 class CreateSubTaskDTO(BaseModel):
     """サブタスク作成時の入力を正規化する DTO。"""
 
